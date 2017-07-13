@@ -4,6 +4,7 @@ library(rJava)
 library(rcdk)
 library(fingerprint)
 library(pheatmap)
+library(enrichR)
 
 evo <- readRDS("Data/evotec.rds")
 evo$Structure_ID <- as.character(evo$Structure_ID)
@@ -30,7 +31,10 @@ getTargetList<-function(input, sim.thres){
       })
       sims <-ldply(sims) 
       sims2 <- sims %>% filter(sim > sim.thres)
-      targets <- filter(evo, Structure_ID %in% sims2$match) %>% dplyr::select(Structure_ID, Hugo_Gene, Protein_names, N_quantitative, N_qualitative, N_inactive)
+      targets <- filter(evo, Structure_ID %in% sims2$match) %>% 
+        dplyr::select(Structure_ID, Hugo_Gene, Protein_names, MedianActivity_nM, N_quantitative, N_qualitative, N_inactive)  %>% 
+        arrange(-N_quantitative)
+      
       if(nrow(targets)>1){
       print(targets)
       }else{
@@ -138,6 +142,22 @@ getTargetNetwork<-function(input, sim.thres){
   targets <- sample_n(targets, 50) ## this is temporary limit on number of targets
   print(targets)
 }
+
+dbs <- c("GO_Molecular_Function_2017", "GO_Cellular_Component_2017", "GO_Biological_Process_2017", "MSigDB_Oncogenic_Signatures")
+
+getGeneOntologyfromTargets <- function(input, sim.thres){
+  input <- input
+  sim.thres <- sim.thres
+  targets<-getTargetList(input, sim.thres)
+
+  if(nrow(targets)>1){
+    enriched <- enrichr(as.vector(targets$Hugo_Gene), dbs) 
+  }else{
+    print("no targets")
+  }
+
+}
+
 
 getMolsFromGenes <- function(inp.gene){
   mols <- filter(evo, Hugo_Gene == inp.gene) %>% 

@@ -1,6 +1,6 @@
 library(visNetwork)
 
-shinyUI(navbarPage(strong("Polypharmacology DB"),
+shinyUI(navbarPage("Polypharmacology DB",
   tabPanel("Molecules",
   sidebarLayout(
     sidebarPanel("SMILES Input",
@@ -11,7 +11,11 @@ shinyUI(navbarPage(strong("Polypharmacology DB"),
                                      width = "100%"
                                      )), 
                  sliderInput("sim.thres", "Similarity Threshold", 
-                             min=0.3, max=1, value=0.90),
+                             min=0.3, 
+                             max=1,
+                             value=0.90,
+                             step = 0.01,
+                             ticks = FALSE),
                  submitButton("Get Targets")),
     mainPanel(
       tabsetPanel(
@@ -21,6 +25,20 @@ shinyUI(navbarPage(strong("Polypharmacology DB"),
         tabPanel(
               strong("Similar Molecules"),
               tableOutput("sims")),
+        tabPanel(strong("Enrichr"),
+          tabsetPanel(
+            tabPanel(
+              strong("GO Molecular Function"),
+              dataTableOutput("GOMF.mol")),
+            tabPanel(
+              strong("GO Cellular Component"),
+              dataTableOutput("GOCC.mol")),
+            tabPanel(
+              strong("GO Biological Process"),
+              dataTableOutput("GOBP.mol")),
+            tabPanel(
+              strong("MSigDB Oncogenic Sigs"),
+              dataTableOutput("MSigDB.onc.mol")))),
         tabPanel(
               strong("Similarity Net"),
               visNetworkOutput("net")),
