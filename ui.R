@@ -1,6 +1,8 @@
 library(visNetwork)
+library(shinythemes)
+library(igraph)
 
-shinyUI(navbarPage("Polypharmacology DB",
+shinyUI(navbarPage("Polypharmacology DB", theme = shinytheme("flatly"),
   tabPanel("Molecules",
   sidebarLayout(
     sidebarPanel("SMILES Input",
@@ -21,7 +23,7 @@ shinyUI(navbarPage("Polypharmacology DB",
       tabsetPanel(
         tabPanel(
               strong("Targets"),
-              dataTableOutput("value")),
+              DT::dataTableOutput("value")),
         tabPanel(
               strong("Similar Molecules"),
               tableOutput("sims")),
@@ -29,16 +31,16 @@ shinyUI(navbarPage("Polypharmacology DB",
           tabsetPanel(
             tabPanel(
               strong("GO Molecular Function"),
-              dataTableOutput("GOMF.mol")),
+              DT::dataTableOutput("GOMF.mol")),
             tabPanel(
               strong("GO Cellular Component"),
-              dataTableOutput("GOCC.mol")),
+              DT::dataTableOutput("GOCC.mol")),
             tabPanel(
               strong("GO Biological Process"),
-              dataTableOutput("GOBP.mol")),
+              DT::dataTableOutput("GOBP.mol")),
             tabPanel(
-              strong("MSigDB Oncogenic Sigs"),
-              dataTableOutput("MSigDB.onc.mol")))),
+              strong("PPI Hub Proteins"),
+              DT::dataTableOutput("PPI.hub.genes")))),
         tabPanel(
               strong("Similarity Net"),
               visNetworkOutput("net")),
@@ -74,6 +76,17 @@ shinyUI(navbarPage("Polypharmacology DB",
                )
              )
            )
-           
-           )
+         ),
+  tabPanel("SMILES Lookup",sidebarLayout(
+    sidebarPanel("Molecule Names",
+                 fluidRow(textInput("input.name",
+                                    "input text", 
+                                    label = NULL, 
+                                    value = "brefeldin A",
+                                    width = "100%"
+                 )),
+                 submitButton("Get Molecules")),
+    mainPanel(fluidRow(textOutput("smileslookup")))))
+  
 ))
+     
