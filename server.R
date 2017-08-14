@@ -1,28 +1,43 @@
 library(DT)
 source("helpers.R")
 
-shinyServer(function(input, output) {
-  ## molecule tab
-  output$value <- DT::renderDataTable({
-    targ <- getTargetList(input$smiles, input$sim.thres)
-    DT::datatable(targ, options = list(dom = "Bfrtip", buttons = c("copy", 
-                                                                   "excel", "pdf", "print", "colvis")), extensions = "Buttons")
-  }, server = FALSE)
+shinyServer(function(input, output, session) {
   
-  output$sims <- renderTable({
-    getSimMols(input$smiles, input$sim.thres)
+  simmols <- reactive({getSimMols(input$smiles, input$sim.thres)})
+  
+  output$sims <- renderUI({
+    mols <- simmols()
+    choices <- mols$Common_Name
+    checkboxGroupInput(inputId = "selectdrugs", "Molecules (similarity)", choices = choices, selected = choices)
   })
   
+  output$simmoltab <- renderDataTable({
+    simmols()
+  })
+  
+  ## molecule tab
+  output$value <- DT::renderDataTable({
+    targ <- getTargetList(input$selectdrugs)
+    DT::datatable(targ, options = list(dom = "Bfrtip", 
+                                       buttons = c("copy", 
+                                                   "excel", 
+                                                   "pdf", 
+                                                   "print", 
+                                                   "colvis")), extensions = "Buttons")
+  }, server = FALSE)
+  
+
   output$net <- renderVisNetwork({
-    edges <- getNetwork(input$smiles, input$sim.thres)
+    edges <- getNetwork(input$smiles, input$sim.thres, input$selectdrugs)
+    print(edges)
     nodes <- distinct(data.frame(id = as.character(c("input", edges$to)), 
                                  label = c("INPUT", edges$to)))
     visNetwork(nodes = nodes, edges = edges) %>% visIgraphLayout()
   })
   
   output$targetnet <- renderVisNetwork({
-    edges <- getTargetNetwork(input$smiles, input$sim.thres)
-    nodes <- distinct(data.frame(id = as.character(c(edges$from, edges$to)), 
+    edges <- getTargetNetwork(input$smiles, input$sim.thres, input$selectdrugs)
+    nodes <- distinct(data.frame(id = as.character(c(as.character(edges$from), edges$to)), 
                                  label = c(edges$from, edges$to), color = c(rep("blue", length(edges$from)), 
                                                                             rep("green", length(edges$to)))))
     visNetwork(nodes = nodes, edges = edges) %>% visEdges(smooth = FALSE) %>% 
@@ -31,16 +46,16 @@ shinyServer(function(input, output) {
   })
   
   gene.ont.mol <- reactive({
-    getGeneOntologyfromTargets(input$smiles, input$sim.thres)
+    getGeneOntologyfromTargets(input$selectdrugs)
   })
   
   output$GOMF.mol <- DT::renderDataTable({
-    foo <- gene.ont.mol()[["GO_Molecular_Function_2017"]] %>% select(Term, 
-                                                                     Overlap, Adjusted.P.value, Z.score) %>% filter(Adjusted.P.value < 
-                                                                                                                      0.05) %>% arrange(Adjusted.P.value)
+    foo <- gene.ont.mol()[["GO_Molecular_Function_2017"]] %>% 
+      select(Term, Overlap, Adjusted.P.value, Z.score) %>%
+      filter(Adjusted.P.value < 0.05) %>%
+      arrange(Adjusted.P.value)
     
-    DT::datatable(foo, options = list(dom = "Bfrtip", buttons = c("copy", 
-                                                                  "excel", "pdf", "print", "colvis")), extensions = "Buttons")
+    DT::datatable(foo, options = list(dom = "Bfrtip", buttons = c("copy", "excel", "pdf", "print", "colvis")), extensions = "Buttons")
   }, server = FALSE)
   
   output$GOCC.mol <- DT::renderDataTable({
@@ -57,26 +72,24 @@ shinyServer(function(input, output) {
                                                                      Overlap, Adjusted.P.value, Z.score) %>% filter(Adjusted.P.value < 
                                                                                                                       0.05) %>% arrange(Adjusted.P.value)
     
-    DT::datatable(foo, options = list(dom = "Bfrtip", buttons = c("copy", 
-                                                                  "excel", "pdf", "print", "colvis")), extensions = "Buttons")
+    DT::datatable(foo, options = list(dom = "Bfrtip", buttons = c("copy","excel", "pdf", "print", "colvis")), extensions = "Buttons")
   }, server = FALSE)
   
-  output$PPI.hub.genes <- DT::renderDataTable({
-    foo <- gene.ont.mol()[["PPI_Hub_Proteins"]] %>% select(Term, 
-                                                                      Overlap, Adjusted.P.value, Z.score) %>% filter(Adjusted.P.value < 
-                                                                                                                       0.05) %>% arrange(Adjusted.P.value)
+  output$kegg <- DT::renderDataTable({
+    foo <- gene.ont.mol()[["KEGG_2016"]] %>% select(Term, Overlap, Adjusted.P.value, Z.score) %>% 
+      filter(Adjusted.P.value <0.05) %>% 
+      arrange(Adjusted.P.value)
     
     DT::datatable(foo, options = list(dom = "Bfrtip", buttons = c("copy", 
                                                                   "excel", "pdf", "print", "colvis")), extensions = "Buttons")
   }, server = FALSE)
   
-  # output$simmat <- renderImage({ getSimMolMatrix(input$smiles,
-  # input$sim.thres) })
-  
   ## gene tab
   output$genetargets <- renderDataTable({
-    getMolsFromGenes(input$inp.gene)
-  })
+    mol<-getMolsFromGenes(input$inp.gene)
+    DT::datatable(mol, options = list(dom = "Bfrtip", buttons = c("copy", 
+                                                                  "excel", "pdf", "print", "colvis")), extensions = "Buttons")
+  }, server = FALSE)
   
   output$genetargetnet <- renderVisNetwork({
     edges <- getMolsFromGeneNetworks.edges(input$inp.gene)
@@ -86,8 +99,15 @@ shinyServer(function(input, output) {
       visLayout(randomSeed = 123) %>% visIgraphLayout()
   })
   
+  
+  ## lookup tab
   output$smileslookup <- renderText({
     getSmiles(input$input.name)
   })
   
+  updateSelectizeInput(session, "drugnames", choices = syns$Common_Name, server = TRUE) 
+  
+  output$smileslookup2 <- renderText({
+    as.character(convertDrugToSmiles(input$drugnames)[1,1])
+  })
 })

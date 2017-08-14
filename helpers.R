@@ -11,33 +11,28 @@ library(webchem)
 
 evo <- readRDS("Data/evotec.rds")
 evo$Structure_ID <- as.character(evo$Structure_ID)
+evo$Common_Name <- as.character(evo$Common_Name)
 evo <- evo %>% filter(N_quantitative >= N_inactive | N_qualitative >= N_inactive)
-fp.evo <- readRDS("Data/fpevo.rds")
+
+fp.evo <- readRDS("Data/fpevo.rds")[unique(evo$Original_molecule_SMILES)]
+syns <- readRDS("Data/commname.rds") %>% filter(Original_molecule_SMILES %in% unique(evo$Original_molecule_SMILES)) %>% 
+  filter(!is.na(Common_Name))
+
 
 parseInputFingerprint <- function(input) {
   input.mol <- parse.smiles(input)
   fp.inp <- lapply(input.mol, get.fingerprint, type = "extended")
 }
 
-getTargetList <- function(input, sim.thres) {
-  input <- input
-  
-  fp.inp <- parseInputFingerprint(input)
-  
-  sims <- lapply(fp.inp, function(i) {
-    sim <- sapply(fp.evo, function(j) {
-      distance(i, j)
-    })
-    bar <- as.data.frame(sim)
-    bar$match <- rownames(bar)
-    bar
-  })
-  sims <- ldply(sims)
-  sims2 <- sims %>% filter(sim >= sim.thres)
-  targets <- filter(evo, Structure_ID %in% sims2$match) %>% dplyr::select(Structure_ID, 
+convertDrugToSmiles <- function(input) {
+  filt <- filter(syns, Common_Name == input & Original_molecule_SMILES != "") %>% dplyr::select(Original_molecule_SMILES)
+  filt
+}
+
+getTargetList <- function(selectdrugs) {
+  targets <- filter(evo, Common_Name %in% selectdrugs) %>% dplyr::select(Structure_ID, Common_Name,
                                                                           Hugo_Gene, Protein_names, MedianActivity_nM, N_quantitative, N_qualitative, 
                                                                           N_inactive) %>% arrange(-N_quantitative)
-  
   if (nrow(targets) > 1) {
     print(targets)
   } else {
@@ -47,7 +42,6 @@ getTargetList <- function(input, sim.thres) {
 
 getSimMols <- function(input, sim.thres) {
   input <- input
-  
   fp.inp <- parseInputFingerprint(input)
   
   sims <- lapply(fp.inp, function(i) {
@@ -60,12 +54,12 @@ getSimMols <- function(input, sim.thres) {
   })
   sims <- ldply(sims)
   sims2 <- sims %>% filter(sim >= sim.thres) %>% arrange(-sim)
-  sims2$Structure_ID <- as.character(sims2$match)
-  targets <- left_join(sims2, evo) %>% dplyr::select(Structure_ID, Supplier_Molname, 
-                                                     Common_Name, sim, Original_molecule_SMILES) %>% distinct()
+  sims2$Original_molecule_SMILES <- as.character(sims2$match)
+  sims2$`Tanimoto Similarity` <- signif(sims2$sim, 3)
+  targets <- left_join(sims2, evo) %>% dplyr::select(Common_Name, `Tanimoto Similarity`) %>% distinct()
 }
 
-getNetwork <- function(input, sim.thres) {
+getNetwork <- function(input, sim.thres, selectdrugs) {
   input <- input
   
   fp.inp <- parseInputFingerprint(input)
@@ -80,49 +74,17 @@ getNetwork <- function(input, sim.thres) {
   })
   sims <- ldply(sims)
   sims2 <- sims %>% filter(sim >= sim.thres) %>% arrange(-sim)
-  sims2$Structure_ID <- as.character(sims2$match)
-  targets <- left_join(sims2, evo) %>% dplyr::select(Structure_ID, sim) %>% 
-    distinct()
+  sims2$Original_molecule_SMILES <- as.character(sims2$match)
+  targets <- left_join(sims2, evo) %>% dplyr::select(Common_Name, sim) %>% 
+    distinct() %>% filter(Common_Name %in% selectdrugs)
   targets$from <- "input"
-  targets$to <- as.character(targets$Structure_ID)
+  targets$to <- as.character(targets$Common_Name)
   targets$width <- ((targets$sim)^2) * 10
   targets$color <- "red"
   targets <- select(targets, from, to, width, color)
-  print(targets)
 }
 
-getSimMolMatrix <- function(input, sim.thres) {
-  input <- input
-  
-  fp.inp <- parseInputFingerprint(input)
-  
-  sims <- lapply(fp.inp, function(i) {
-    sim <- sapply(fp.evo, function(j) {
-      distance(i, j)
-    })
-    bar <- as.data.frame(sim)
-    bar$match <- rownames(bar)
-    bar
-  })
-  sims <- ldply(sims)
-  sims2 <- sims %>% filter(sim >= sim.thres) %>% arrange(-sim)
-  sims2$Structure_ID <- as.character(sims2$match)
-  
-  sim.mols <- filter(evo, Structure_ID %in% sims2$Structure_ID)
-  sim.mols <- unique(sim.mols$Original_molecule_SMILES)
-  
-  fp.sim <- parse.smiles(c(sim.mols, input))
-  fp.sim <- lapply(fp.sim, get.fingerprint, type = "extended")
-  
-  mat <- fp.sim.matrix(fp.sim, method = "tanimoto")
-  colnames(mat) <- names(fp.sim)
-  rownames(mat) <- names(fp.sim)
-  print(mat)
-  plot <- pheatmap(mat)
-  plot
-}
-
-getTargetNetwork <- function(input, sim.thres) {
+getTargetNetwork <- function(input, sim.thres, selectdrugs) {
   input <- input
   fp.inp <- parseInputFingerprint(input)
   
@@ -136,26 +98,22 @@ getTargetNetwork <- function(input, sim.thres) {
   })
   sims <- ldply(sims)
   sims2 <- sims %>% filter(sim >= sim.thres) %>% arrange(-sim)
-  sims2$Structure_ID <- as.character(sims2$match)
-  targets <- left_join(sims2, evo) %>% distinct()
-  targets$from <- targets$Structure_ID
-  targets$to <- as.character(targets$Uniprot_accession_numbers)
+  sims2$Original_molecule_SMILES <- as.character(sims2$match)
+  targets <- left_join(sims2, evo) %>% distinct() %>% filter(Common_Name %in% selectdrugs)
+  targets$from <- targets$Common_Name
+  targets$to <- as.character(targets$Hugo_Gene)
   targets$width <- 5
   targets$color <- "green"
-  targets <- select(targets, from, to, width, color) %>% filter(from != 
-                                                                  "NA" & to != "NA")
-  # targets <- sample_n(targets, 50) ## this is temporary limit on number
-  # of targets
-  print(targets)
+  targets <- select(targets, from, to, width, color) %>% 
+    filter(from !="NA" & to != "NA")
 }
 
 dbs <- c("GO_Molecular_Function_2017", "GO_Cellular_Component_2017", "GO_Biological_Process_2017", 
-         "PPI_Hub_Proteins")
+         "KEGG_2016")
 
-getGeneOntologyfromTargets <- function(input, sim.thres) {
-  input <- input
-  sim.thres <- sim.thres
-  targets <- getTargetList(input, sim.thres)
+getGeneOntologyfromTargets <- function(selectdrugs) {
+  selectdrugs <- selectdrugs
+  targets <- getTargetList(selectdrugs)
   
   if (nrow(targets) > 1) {
     enriched <- enrichr(as.vector(targets$Hugo_Gene), dbs)
@@ -168,7 +126,7 @@ getGeneOntologyfromTargets <- function(input, sim.thres) {
 
 getMolsFromGenes <- function(inp.gene) {
   mols <- filter(evo, Hugo_Gene == inp.gene) %>% select(Structure_ID, 
-                                                        Supplier_Molname, Common_Name, N_quantitative, N_qualitative, N_inactive) %>% 
+                                                        Supplier_Molname, Common_Name, MedianActivity_nM, N_quantitative, N_qualitative, N_inactive, Original_molecule_SMILES) %>% 
     distinct()
   mols
 }
@@ -186,7 +144,7 @@ getMolsFromGeneNetworks.edges <- function(inp.gene) {
   net$width <- net$N_quantitative/10
   net$color <- "red"
   net <- net %>% select(from, to, width, color)
-  print(as.data.frame(net))
+  as.data.frame(net)
 }
 
 getMolsFromGeneNetworks.nodes <- function(inp.gene) {
@@ -197,14 +155,12 @@ getMolsFromGeneNetworks.nodes <- function(inp.gene) {
                   1) %>% group_by(Structure_ID) %>% top_n(10, N_quantitative) %>% 
     ungroup()
   
-  print(net)
   id <- c(unique(as.character(net$Structure_ID)), unique(as.character(net$Hugo_Gene)))
   label <- c(unique(as.character(net$Structure_ID)), unique(as.character(net$Hugo_Gene)))
   color <- c(rep("blue", length(unique(as.character(net$Structure_ID)))), 
              rep("green", length(unique(as.character(net$Hugo_Gene)))))
   
   net <- as.data.frame(cbind(id, label, color))
-  print(net)
   
 }
 
