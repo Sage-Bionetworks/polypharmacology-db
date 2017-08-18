@@ -15,6 +15,26 @@ shinyServer(function(input, output, session) {
     simmols()
   })
   
+  ##molecule (SMILES) Lookput
+  
+  observeEvent(input$pubchembutton, {
+    pc.smiles <- getSmiles(input$input.name)
+    updateTextInput(session, "smiles", value = pc.smiles)
+    if(is.na(pc.smiles)){ 
+      output$pubchemsearchNA <- renderText({
+      "No Pubchem Molecule Found"
+      })
+    }
+  })
+  
+  
+  updateSelectizeInput(session, "drugnames", choices = syns$Common_Name, server = TRUE) 
+
+  observeEvent(input$ppdbsearchbutton, {
+    pp.smiles<-as.character(convertDrugToSmiles(input$drugnames)[1,1])
+    updateTextInput(session, "smiles", value = pp.smiles)
+  })
+  
   ## molecule tab
   output$value <- DT::renderDataTable({
     targ <- getTargetList(input$selectdrugs)
@@ -29,7 +49,6 @@ shinyServer(function(input, output, session) {
 
   output$net <- renderVisNetwork({
     edges <- getNetwork(input$smiles, input$sim.thres, input$selectdrugs)
-    print(edges)
     nodes <- distinct(data.frame(id = as.character(c("input", edges$to)), 
                                  label = c("INPUT", edges$to)))
     visNetwork(nodes = nodes, edges = edges) %>% visIgraphLayout()
@@ -97,17 +116,5 @@ shinyServer(function(input, output, session) {
     visNetwork(nodes = nodes, edges = edges, height = "1000px") %>% 
       visEdges(smooth = FALSE) %>% visPhysics(stabilization = FALSE) %>% 
       visLayout(randomSeed = 123) %>% visIgraphLayout()
-  })
-  
-  
-  ## lookup tab
-  output$smileslookup <- renderText({
-    getSmiles(input$input.name)
-  })
-  
-  updateSelectizeInput(session, "drugnames", choices = syns$Common_Name, server = TRUE) 
-  
-  output$smileslookup2 <- renderText({
-    as.character(convertDrugToSmiles(input$drugnames)[1,1])
   })
 })

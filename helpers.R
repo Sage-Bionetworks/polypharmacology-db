@@ -9,10 +9,10 @@ library(pheatmap)
 library(enrichR)
 library(webchem)
 
-evo <- readRDS("Data/evotec.rds")
+evo <- readRDS("Data/evotec_dgidb.rds")
 evo$Structure_ID <- as.character(evo$Structure_ID)
 evo$Common_Name <- as.character(evo$Common_Name)
-evo <- evo %>% filter(N_quantitative >= N_inactive | N_qualitative >= N_inactive)
+evo <- evo %>% filter(N_quantitative >= N_inactive | N_qualitative >= N_inactive | N_DGIDB > 0)
 
 fp.evo <- readRDS("Data/fpevo.rds")[unique(evo$Original_molecule_SMILES)]
 syns <- readRDS("Data/commname.rds") %>% filter(Original_molecule_SMILES %in% unique(evo$Original_molecule_SMILES)) %>% 
@@ -30,11 +30,10 @@ convertDrugToSmiles <- function(input) {
 }
 
 getTargetList <- function(selectdrugs) {
-  targets <- filter(evo, Common_Name %in% selectdrugs) %>% dplyr::select(Structure_ID, Common_Name,
-                                                                          Hugo_Gene, Protein_names, MedianActivity_nM, N_quantitative, N_qualitative, 
-                                                                          N_inactive) %>% arrange(-N_quantitative)
+  targets <- filter(evo, Common_Name %in% selectdrugs) %>% dplyr::select(Common_Name, Hugo_Gene, MedianActivity_nM, N_quantitative, N_qualitative, 
+                                                                          N_inactive, N_DGIDB) %>% arrange(-N_quantitative)
   if (nrow(targets) > 1) {
-    print(targets)
+    targets
   } else {
     print("none found")
   }
@@ -167,6 +166,6 @@ getMolsFromGeneNetworks.nodes <- function(inp.gene) {
 getSmiles <- function(input.name) {
   input.name <- input.name
   input.name <- URLencode(input.name)
-  query <- cir_query(input.name, representation = "smiles", first = TRUE)
+  query <- as.vector(cir_query(input.name, representation = "smiles", first = TRUE))
   query
 }

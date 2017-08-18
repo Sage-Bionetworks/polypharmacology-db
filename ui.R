@@ -1,6 +1,7 @@
 library(visNetwork)
 library(shinythemes)
 library(igraph)
+library(shinyBS)
 
 #syns <- readRDS("Data/commname.rds")
 
@@ -24,50 +25,60 @@ shinyUI(navbarPage("Polypharmacology DB",
            p("Then enter that SMILES string on the 'Molecules' tab to find related molecules in the database."),
            p("Alternatively, if you have a target in mind, please enter the HUGO Gene Symbol on the 'Genes' tab.")
            ),
-  tabPanel("SMILES Lookup",
-           
-           sidebarLayout(
-             sidebarPanel("Pubchem lookup",
-                          fluidRow(textInput("input.name",
-                                             "input text", 
-                                             label = NULL, 
-                                             value = "lenalidomide",
-                                             width = "100%"
-                          )),
-                          div(),
-                          p("Database lookup"),
-                          fluidRow(selectizeInput("drugnames",
-                                                  choices = NULL,
-                                                  label = "",
-                                                  selected = ""))),
-             mainPanel(p("Pubchem results:"),
-                       fluidRow(textOutput("smileslookup")),
-                       p("Database results:"),
-                       fluidRow(textOutput("smileslookup2"))))),
   tabPanel("Molecules",
   sidebarLayout(
-    sidebarPanel("Smiles Input",
-        fluidRow(textInput("smiles",
-                                     "input text", 
+    sidebarPanel(
+      bsCollapse(
+        bsCollapsePanel("Pubchem Search",
+                 fluidRow(textInput("input.name",
+                                    "input text", 
+                                    label = NULL, 
+                                    value = "lenalidomide",
+                                    width = "90%"),
+                                 bsTooltip("inpu", "Type molecule name here to search this database for SMILES strings.",
+                                           "right", options = list(container = "body")), align = "center"),
+                 fluidRow(actionButton("pubchembutton", "Find Pubchem Mols"), align = "center"), style = "danger"),
+        bsCollapsePanel("PPDB Lookup",
+                 fluidRow(selectizeInput("drugnames",
+                                         choices = NULL,
+                                         label = "",
+                                         selected = "",
+                                         width = "90%"),
+                          bsTooltip("drugnames", "Type molecule name here to search this database for SMILES strings.",
+                                    "right", options = list(container = "body")), align = "center"),
+                 fluidRow(actionButton("ppdbsearchbutton", "Find PPDB Mols", align = "center"), align = "center"), style = "warning"),
+        bsCollapsePanel("Direct Structure Input",fluidRow(textInput("smiles",
+                                     "SMILES string", 
                                      label = "", 
-                                     value = "CC(C)(C)C1=CN=C(CSC2=CN=C(NC(C3CCNCC3)=O)S2)O1",
-                                     width = "100%"
+                                     value = "Nc1cccc2C(=O)N(Cc12)C3CCC(=O)NC3=O",
+                                     width = "90%"
                                      ),
+                 bsTooltip("smiles", "Input the structural string (SMILES) here.",
+                           "right", options = list(container = "body")), align = "center"), style = "success"), open = "Pubchem Search"),
                  sliderInput("sim.thres", "Similarity Threshold", 
                              min=0.3, 
                              max=1,
                              value=0.90,
                              step = 0.01,
                              ticks = FALSE),
-                 uiOutput("sims"))), 
+                 bsTooltip("sim.thres", "Set the Tanimoto similarity (1 being identical) here.",
+                           "right", options = list(container = "body")),
+                 uiOutput("sims"),
+                 textOutput("pubchemsearchNA")), 
     mainPanel(
       tabsetPanel(
         tabPanel(
           strong("Similar Molecules"),
           DT::dataTableOutput("simmoltab")),
         tabPanel(
+          strong("Similarity Net"),
+          visNetworkOutput("net")),
+        tabPanel(
               strong("Targets"),
               DT::dataTableOutput("value")),
+        tabPanel(
+          strong("Target Net"),
+          visNetworkOutput("targetnet")),
         tabPanel(strong("Enrichr"),
           tabsetPanel(
             tabPanel(
@@ -81,17 +92,7 @@ shinyUI(navbarPage("Polypharmacology DB",
               DT::dataTableOutput("GOBP.mol")),
             tabPanel(
               strong("KEGG Pathways"),
-              DT::dataTableOutput("kegg")))),
-        tabPanel(
-              strong("Similarity Net"),
-              visNetworkOutput("net")),
-        tabPanel(
-          strong("Target Net"),
-          visNetworkOutput("targetnet"))
-       # tabPanel(
-      #        strong("Matrix"),
-       #       visNetworkOutput("simmat"))
-      #  )
+              DT::dataTableOutput("kegg"))))
         )
     )
   )
@@ -103,7 +104,7 @@ shinyUI(navbarPage("Polypharmacology DB",
                                              "input text", 
                                              label = NULL, 
                                              value = "HDAC6",
-                                             width = "100%"
+                                             width = "90%"
                           ))
                           ),
              mainPanel(
