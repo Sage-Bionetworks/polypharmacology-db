@@ -9,7 +9,7 @@ library(pheatmap)
 library(enrichR)
 library(webchem)
 
-evo <- readRDS("Data/evotec_dgidb.rds")
+evo <- readRDS("Data/evotec_dgidb.RDS")
 evo$Structure_ID <- as.character(evo$Structure_ID)
 evo$Common_Name <- as.character(evo$Common_Name)
 evo <- evo %>% filter(N_quantitative >= N_inactive | N_qualitative >= N_inactive | N_DGIDB > 0)
