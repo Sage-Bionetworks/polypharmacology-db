@@ -5,7 +5,6 @@ library(dplyr)
 library(rJava)
 library(rcdk)
 library(fingerprint)
-library(pheatmap)
 library(enrichR)
 library(webchem)
 
@@ -15,9 +14,7 @@ evo$Common_Name <- as.character(evo$Common_Name)
 evo <- evo %>% filter(N_quantitative >= N_inactive | N_qualitative >= N_inactive | N_DGIDB > 0)
 
 fp.evo <- readRDS("Data/fpevo.rds")[unique(evo$Original_molecule_SMILES)]
-syns <- readRDS("Data/commname.rds") %>% filter(Original_molecule_SMILES %in% unique(evo$Original_molecule_SMILES)) %>% 
-  filter(!is.na(Common_Name))
-
+syns <- readRDS("Data/commname.rds") 
 
 parseInputFingerprint <- function(input) {
   input.mol <- parse.smiles(input)
@@ -124,43 +121,41 @@ getGeneOntologyfromTargets <- function(selectdrugs) {
 
 
 getMolsFromGenes <- function(inp.gene) {
-  mols <- filter(evo, Hugo_Gene == inp.gene) %>% select(Structure_ID, 
-                                                        Supplier_Molname, Common_Name, MedianActivity_nM, N_quantitative, N_qualitative, N_inactive, Original_molecule_SMILES) %>% 
+  mols <- filter(evo, Hugo_Gene == inp.gene) %>% 
+    select(Structure_ID,Supplier_Molname, Common_Name, MedianActivity_nM, N_quantitative, N_qualitative, N_inactive, Original_molecule_SMILES) %>% 
     distinct()
-  mols
+
 }
 
 getMolsFromGeneNetworks.edges <- function(inp.gene) {
   mols <- filter(evo, Hugo_Gene == inp.gene & N_quantitative > 1) %>% 
-    select(Structure_ID, N_quantitative) %>% distinct()
+    select(Common_Name, N_quantitative) %>% distinct() %>% group_by(Common_Name) %>% top_n(5, N_quantitative) %>% ungroup()
+  print(mols)
   
-  net <- filter(evo, Structure_ID %in% mols$Structure_ID & N_quantitative > 
-                  1) %>% group_by(Structure_ID) %>% top_n(10, N_quantitative) %>% 
-    ungroup()
+  net <- filter(evo, Common_Name %in% mols$Common_Name & N_quantitative >1)
   
-  net$from <- as.character(net$Structure_ID)
+  net$from <- as.character(net$Common_Name)
   net$to <- as.character(net$Hugo_Gene)
   net$width <- net$N_quantitative/10
-  net$color <- "red"
+  net$color <- "orange"
   net <- net %>% select(from, to, width, color)
   as.data.frame(net)
+  print(net)
 }
 
 getMolsFromGeneNetworks.nodes <- function(inp.gene) {
   mols <- filter(evo, Hugo_Gene == inp.gene & N_quantitative > 1) %>% 
-    select(Structure_ID, N_quantitative) %>% distinct()
+    select(Common_Name, N_quantitative) %>% 
+    distinct() %>% group_by(Common_Name) %>% top_n(5, N_quantitative) %>% ungroup()
   
-  net <- filter(evo, Structure_ID %in% mols$Structure_ID & N_quantitative > 
-                  1) %>% group_by(Structure_ID) %>% top_n(10, N_quantitative) %>% 
-    ungroup()
+  net <- filter(evo, Common_Name %in% mols$Common_Name & N_quantitative >1) 
   
-  id <- c(unique(as.character(net$Structure_ID)), unique(as.character(net$Hugo_Gene)))
-  label <- c(unique(as.character(net$Structure_ID)), unique(as.character(net$Hugo_Gene)))
-  color <- c(rep("blue", length(unique(as.character(net$Structure_ID)))), 
+  id <- c(unique(as.character(net$Common_Name)), unique(as.character(net$Hugo_Gene)))
+  label <- c(unique(as.character(net$Common_Name)), unique(as.character(net$Hugo_Gene)))
+  color <- c(rep("blue", length(unique(as.character(net$Common_Name)))), 
              rep("green", length(unique(as.character(net$Hugo_Gene)))))
   
   net <- as.data.frame(cbind(id, label, color))
-  
 }
 
 getSmiles <- function(input.name) {

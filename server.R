@@ -1,7 +1,16 @@
+loading <- function() {
+  Sys.sleep(1)
+  hide("load")
+  show("ppdb")
+}
+
+
 library(DT)
 source("helpers.R")
 
 shinyServer(function(input, output, session) {
+
+  loading()
   
   simmols <- reactive({getSimMols(input$smiles, input$sim.thres)})
   
@@ -63,6 +72,7 @@ shinyServer(function(input, output, session) {
       visPhysics(stabilization = FALSE) %>% visLayout(randomSeed = 123) %>% 
       visIgraphLayout()
   })
+
   
   gene.ont.mol <- reactive({
     getGeneOntologyfromTargets(input$selectdrugs)
@@ -106,8 +116,13 @@ shinyServer(function(input, output, session) {
   ## gene tab
   output$genetargets <- renderDataTable({
     mol<-getMolsFromGenes(input$inp.gene)
-    DT::datatable(mol, options = list(dom = "Bfrtip", buttons = c("copy", 
-                                                                  "excel", "pdf", "print", "colvis")), extensions = "Buttons")
+    if(nrow(mol)>1){
+      DT::datatable(mol, options = list(dom = "Bfrtip", 
+                                         buttons = c("copy","excel", "pdf", "print", "colvis")), 
+                    extensions = "Buttons")
+    }else{
+      print("Target not found.")
+    }
   }, server = FALSE)
   
   output$genetargetnet <- renderVisNetwork({

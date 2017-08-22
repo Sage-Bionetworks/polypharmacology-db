@@ -1,4 +1,3 @@
-library(dplyr)
 source('helpers.R')
 
 temp <- read.table("Data/interactions.tsv", sep = "\t", quote = "",header = T) ##from DGIDB downloads section
@@ -91,3 +90,12 @@ saveRDS(evo, "Data/evotec_dgidb.rds")
 evo2<-readRDS("Data/evotec_dgidb.RDS")
 fp.evo <- parseInputFingerprint(unique(evo2$Original_molecule_SMILES))
 saveRDS(fp.evo, "Data/fpevo.rds")
+
+
+evo2<-readRDS("Data/evotec_dgidb.RDS")
+syns1 <- evo2 %>% select(Original_molecule_SMILES, Common_Name) %>% distinct() %>% filter(!is.na(Common_Name))
+syns2 <- evo2 %>% select(Original_molecule_SMILES, Common_Name_DGIDB) %>% distinct() %>% filter(!is.na(Common_Name_DGIDB))
+colnames(syns2) <- c("Original_molecule_SMILES", "Common_Name")
+syns <- bind_rows(syns1, syns2) %>% distinct()
+saveRDS(syns, "Data/commname.rds")
+

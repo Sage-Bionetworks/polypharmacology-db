@@ -2,10 +2,21 @@ library(visNetwork)
 library(shinythemes)
 library(igraph)
 library(shinyBS)
+library(shinyjs)
 
-#syns <- readRDS("Data/commname.rds")
-
-shinyUI(navbarPage("Polypharmacology DB", 
+shinyUI(
+  fluidPage(
+    useShinyjs(),
+    div(
+      id = "load",
+      p("Loading..."),
+      br(),
+      img(src = "Double Ring.gif"),
+      align = "center"),
+    hidden(
+      div(
+        id = "ppdb",
+  navbarPage("Polypharmacology DB", 
                    theme = shinytheme("flatly"),
   tabPanel("About",
            p("Welcome to the PPDB app, powered by Sage Bionetworks.
@@ -15,20 +26,48 @@ shinyUI(navbarPage("Polypharmacology DB",
            br(),
            p(strong("How does PPDB work?")),
            p("PPDB leverages structural information of molecules and the associated target annotations to build a drug-target map 
-             based on chemical similarity between molecules. Examples of use-cases for this include:"),
+             based on chemical similarity between molecules. PPDB includes drug-target interactions collated by Evotec, as well as a subset of those available in the DGIdb app.
+             Examples of use-cases for this include:"),
            p(" - prediction of molecular targets for novel molecules based on structural similarity"),
            p(" - identification of off targets for molecules of interest"), 
            p(" - facilitating polypharmacologic drug discovery"),
            br(),
-           p("To begin, please click on 'SMILES lookup' to find the SMILES string for your chemical of interest,
-             or look it up in an external database."),
-           p("Then enter that SMILES string on the 'Molecules' tab to find related molecules in the database."),
-           p("Alternatively, if you have a target in mind, please enter the HUGO Gene Symbol on the 'Genes' tab.")
+           p("Instructions:"),
+           p("Click on the 'Molecules' tab to find targets associated with your molecule of interest."),
+           p("Alternatively, if you have a target in mind, please enter the HUGO Gene Symbol on the 'Genes' tab."), 
+           br(),
+           p(strong("This app exists thanks to the following excellent R packages and organizations:")),
+           br(),
+           img(src='CTF_Logo.png'),
+           br(),
+           img(src= "sage_logo.png"),
+           br(),
+           tags$ul(
+             tags$li("shiny"), 
+             tags$li("shinyBS"),
+             tags$li("shinythemes"),
+             tags$li("rcdk"),
+             tags$li("fingerprint"),
+             tags$li("rJava"),
+             tags$li("plyr"),
+             tags$li("dplyr"),
+             tags$li("DT"),
+             tags$li("enrichR"),
+             tags$li("webchem"),
+             tags$li("visNetwork"),
+             tags$li("igraph"))
            ),
+  
   tabPanel("Molecules",
   sidebarLayout(
     sidebarPanel(
       bsCollapse(
+        bsCollapsePanel("Quick Start Guide",
+                        p("You have three options for molecule lookup. 
+                          You can 1) look up by molecule name in our database, 
+                          2) search Pubchem for structures associated with your molecule name, or
+                          3) directly enter the structure as represented by a SMILES string.
+                          Then, pick a similarity using the slider, where 0 = highly dissimilar, and 1 = identical."), style = "primary"),
         bsCollapsePanel("Molecule Lookup",
                         fluidRow(selectizeInput("drugnames",
                                                 choices = NULL,
@@ -39,7 +78,7 @@ shinyUI(navbarPage("Polypharmacology DB",
                                            "right", options = list(container = "body")), align = "center"),
                         fluidRow(actionButton("ppdbsearchbutton", "Find PPDB Mols", align = "center"), align = "center"),
                         div(),
-                        p("Search this database for structures by compound name. Can't find what you're looking for? Move to the next tab to search Pubchem names"), style = "warning"),
+                        p("Search this database for structures by compound name. Can't find what you're looking for? Move to the next panel to search Pubchem."), style = "warning"),
         bsCollapsePanel("Pubchem Search",
                  fluidRow(textInput("input.name",
                                     "input text", 
@@ -50,7 +89,7 @@ shinyUI(navbarPage("Polypharmacology DB",
                                            "right", options = list(container = "body")), align = "center"),
                  fluidRow(actionButton("pubchembutton", "Find Pubchem Mols"), align = "center"), 
                  div(),
-                 p("Input a compound name in this box to search Pubchem for the associated structure."), style = "danger"),
+                 p("Input a compound name in this box to search PubChem's structure database."), style = "danger"),
         bsCollapsePanel("Direct Structure Input", fluidRow(textInput("smiles",
                                      "SMILES string", 
                                      label = "", 
@@ -60,7 +99,7 @@ shinyUI(navbarPage("Polypharmacology DB",
                  bsTooltip("smiles", "Input the structural string (SMILES) here.",
                            "right", options = list(container = "body")), align = "center"),
                  div(),
-                 p("Know your SMILES string already? Well aren't you clever! Search by structure directly here."), style = "success"), open = "Pubchem Search"),
+                 p("Know your SMILES string already? Search by structure directly here."), style = "success"), open = "Instructions"),
                  sliderInput("sim.thres", "Similarity Threshold", 
                              min=0.3, 
                              max=1,
@@ -86,7 +125,6 @@ shinyUI(navbarPage("Polypharmacology DB",
           strong("Target Net"),
           visNetworkOutput("targetnet")),
         tabPanel(strong("Enrichr"),
-          tabsetPanel(
             tabPanel(
               strong("GO Molecular Function"),
               DT::dataTableOutput("GOMF.mol")),
@@ -98,7 +136,7 @@ shinyUI(navbarPage("Polypharmacology DB",
               DT::dataTableOutput("GOBP.mol")),
             tabPanel(
               strong("KEGG Pathways"),
-              DT::dataTableOutput("kegg"))))
+              DT::dataTableOutput("kegg")))
         )
     )
   )
@@ -126,4 +164,7 @@ shinyUI(navbarPage("Polypharmacology DB",
            )
          )
 ))
+    )
+  )
+)
      
