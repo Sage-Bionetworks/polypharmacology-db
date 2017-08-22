@@ -1,8 +1,3 @@
-library(visNetwork)
-library(shinythemes)
-library(igraph)
-library(shinyBS)
-library(shinyjs)
 
 shinyUI(
   fluidPage(

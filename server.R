@@ -1,11 +1,16 @@
+library(shinythemes)
+library(shinyBS)
+library(shinyjs)
+library(DT)
+library(visNetwork)
+library(igraph)
+
 loading <- function() {
   Sys.sleep(1)
   hide("load")
   show("ppdb")
 }
 
-
-library(DT)
 source("helpers.R")
 
 shinyServer(function(input, output, session) {
