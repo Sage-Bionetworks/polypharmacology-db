@@ -1,6 +1,3 @@
-library(shinythemes)
-library(shinyBS)
-library(shinyjs)
 library(DT)
 library(visNetwork)
 library(igraph)

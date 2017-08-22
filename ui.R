@@ -1,3 +1,6 @@
+library(shinyjs)
+library(shinyBS)
+library(shinythemes)
 
 shinyUI(
   fluidPage(
