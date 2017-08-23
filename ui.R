@@ -10,8 +10,10 @@ shinyUI(
   fluidPage(
     useShinyjs(),
     div(id = "loading_page",
-      img(src = "Double Ring.gif"),
+      img(src = "Ellipsis.svg"),
+      h3("LOADING..."),
       align = "center"),
+    tags$head(tags$style(type='text/css', "#loading_page { width:100%; margin-top: 20%;}")),
     hidden(
       div(id = "main_content",
   navbarPage("Polypharmacology DB", theme = shinytheme("flatly"),
@@ -53,7 +55,7 @@ shinyUI(
              tags$li("webchem"),
              tags$li("visNetwork"),
              tags$li("igraph"))
-           ),
+           ), 
   
   tabPanel("Molecules",
   sidebarLayout(
@@ -96,7 +98,7 @@ shinyUI(
                  bsTooltip("smiles", "Input the structural string (SMILES) here.",
                            "right", options = list(container = "body")), align = "center"),
                  div(),
-                 p("Know your SMILES string already? Search by structure directly here."), style = "success"), open = "Instructions"),
+                 p("Know your SMILES string already? Search by structure directly here."), style = "success"), open = "Quick Start Guide"),
                  sliderInput("sim.thres", "Similarity Threshold", 
                              min=0.3, 
                              max=1,
