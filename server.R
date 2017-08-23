@@ -59,7 +59,7 @@ shinyServer(function(input, output, session) {
     edges <- getNetwork(input$smiles, input$sim.thres, input$selectdrugs)
     nodes <- distinct(data.frame(id = as.character(c("input", edges$to)), 
                                  label = c("INPUT", edges$to)))
-    visNetwork(nodes = nodes, edges = edges) %>% visIgraphLayout()
+    visNetwork(nodes = nodes, edges = edges, height = "2000px") #%>% visIgraphLayout()
   })
   
   output$targetnet <- renderVisNetwork({
@@ -113,6 +113,7 @@ shinyServer(function(input, output, session) {
   }, server = FALSE)
   
   ## gene tab
+  observeEvent(input$genesearchbutton, {
   output$genetargets <- renderDataTable({
     mol<-getMolsFromGenes(input$inp.gene)
     if(nrow(mol)>1){
@@ -123,11 +124,12 @@ shinyServer(function(input, output, session) {
       print("Target not found.")
     }
   }, server = FALSE)
+  })
   
   output$genetargetnet <- renderVisNetwork({
     edges <- getMolsFromGeneNetworks.edges(input$inp.gene)
     nodes <- getMolsFromGeneNetworks.nodes(input$inp.gene)
-    visNetwork(nodes = nodes, edges = edges, height = "1000px") %>% 
+    visNetwork(nodes = nodes, edges = edges, height = "2000px") %>% 
       visEdges(smooth = FALSE) %>% visPhysics(stabilization = FALSE) %>% 
       visLayout(randomSeed = 123) %>% visIgraphLayout()
   })

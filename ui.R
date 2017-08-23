@@ -18,12 +18,12 @@ shinyUI(
       div(id = "main_content",
   navbarPage("Polypharmacology DB", theme = shinytheme("flatly"),
   tabPanel("About",
-           p("Welcome to the PPDB app, powered by Sage Bionetworks.
-             The purpose of this app is to facilitate exploration of drug-target interaction databases.
+           h4(strong("Welcome to the PPDB app, powered by Sage Bionetworks.")),
+           h5("The purpose of this app is to facilitate exploration of drug-target interaction databases.
              This app currently contains the Children's Tumor Foundation Drug-Target Database, licensed from Evotec, which
              summarizes activity data deposited in ChEMBL and inactivity data deposited in Pubchem."),
            br(),
-           p(strong("How does PPDB work?")),
+           h4(strong("How does PPDB work?")),
            p("PPDB leverages structural information of molecules and the associated target annotations to build a drug-target map 
              based on chemical similarity between molecules. PPDB includes drug-target interactions collated by Evotec, as well as a subset of those available in the DGIdb app.
              Examples of use-cases for this include:"),
@@ -31,30 +31,30 @@ shinyUI(
            p(" - identification of off targets for molecules of interest"), 
            p(" - facilitating polypharmacologic drug discovery"),
            br(),
-           p("Instructions:"),
+           h4(strong("Instructions:")),
            p("Click on the 'Molecules' tab to find targets associated with your molecule of interest."),
            p("Alternatively, if you have a target in mind, please enter the HUGO Gene Symbol on the 'Genes' tab."), 
            br(),
-           p(strong("This app exists thanks to the following excellent R packages and organizations:")),
+           h4(strong("This app exists thanks to the following excellent R packages and organizations:")),
            br(),
+           fluidRow(
            img(src='CTF_Logo.png'),
+           img(src= "sage_logo.png"), align = "center"),
            br(),
-           img(src= "sage_logo.png"),
-           br(),
-           tags$ul(
-             tags$li("shiny"), 
-             tags$li("shinyBS"),
-             tags$li("shinythemes"),
-             tags$li("rcdk"),
-             tags$li("fingerprint"),
-             tags$li("rJava"),
-             tags$li("plyr"),
-             tags$li("dplyr"),
-             tags$li("DT"),
-             tags$li("enrichR"),
-             tags$li("webchem"),
-             tags$li("visNetwork"),
-             tags$li("igraph"))
+           fluidRow(
+           h4("shiny"), 
+             h4("shinyBS"),
+             h4("shinythemes"),
+             h4("rcdk"),
+             h4("fingerprint"),
+             h4("rJava"),
+             h4("plyr"),
+             h4("dplyr"),
+             h4("DT"),
+             h4("enrichR"),
+             h4("webchem"),
+             h4("visNetwork"),
+             h4("igraph"), align = "center")
            ), 
   
   tabPanel("Molecules",
@@ -77,7 +77,7 @@ shinyUI(
                                            "right", options = list(container = "body")), align = "center"),
                         fluidRow(actionButton("ppdbsearchbutton", "Find PPDB Mols", align = "center"), align = "center"),
                         div(),
-                        p("Search this database for structures by compound name. Can't find what you're looking for? Move to the next panel to search Pubchem."), style = "warning"),
+                        p("Search this database for structures by compound name. Can't find what you're looking for? Move to the next panel to search Pubchem."), style = "info"),
         bsCollapsePanel("Pubchem Search",
                  fluidRow(textInput("input.name",
                                     "input text", 
@@ -88,7 +88,7 @@ shinyUI(
                                            "right", options = list(container = "body")), align = "center"),
                  fluidRow(actionButton("pubchembutton", "Find Pubchem Mols"), align = "center"), 
                  div(),
-                 p("Input a compound name in this box to search PubChem's structure database."), style = "danger"),
+                 p("Input a compound name in this box to search PubChem's structure database."), style = "info"),
         bsCollapsePanel("Direct Structure Input", fluidRow(textInput("smiles",
                                      "SMILES string", 
                                      label = "", 
@@ -98,32 +98,34 @@ shinyUI(
                  bsTooltip("smiles", "Input the structural string (SMILES) here.",
                            "right", options = list(container = "body")), align = "center"),
                  div(),
-                 p("Know your SMILES string already? Search by structure directly here."), style = "success"), open = "Quick Start Guide"),
-                 sliderInput("sim.thres", "Similarity Threshold", 
+                 p("Know your SMILES string already? Search by structure directly here."), style = "info"), open = "Quick Start Guide"),
+        bsCollapse(bsCollapsePanel("Similarity Threshold",  
+      sliderInput("sim.thres", label = "", 
                              min=0.3, 
                              max=1,
                              value=0.90,
                              step = 0.01,
                              ticks = FALSE),
                  bsTooltip("sim.thres", "Set the Tanimoto similarity (1 being identical) here.",
-                           "right", options = list(container = "body")),
+                           "right", options = list(container = "body")), style = "warning"), open = "Similarity Threshold"),
                  uiOutput("sims"),
                  textOutput("pubchemsearchNA")), 
     mainPanel(
       tabsetPanel(
-        tabPanel(
-          strong("Similar Molecules"),
+        tabPanel(title = img("Similar Molecules  ", id = "similarmolstab", src = "help.png", align = "right"),
+          bsTooltip(id = "similarmolstab", title = "This table displays all similar molecules to the input molecule.", placement = "bottom", trigger = "hover"),
           DT::dataTableOutput("simmoltab")),
-        tabPanel(
-          strong("Similarity Net"),
+        tabPanel(title = img("Similarity Net  ", id = "similarmolnettab", src = "help.png", align = "right"),
+          bsTooltip(id = "similarmolnettab", title = "This is a graphical representation of the previous table, where edge thickness is the similarity to the input.", placement = "bottom", trigger = "hover"),
           visNetworkOutput("net")),
-        tabPanel(
-              strong("Targets"),
-              DT::dataTableOutput("value")),
-        tabPanel(
-          strong("Target Net"),
+        tabPanel(title = img("Targets  ", id = "targetstab", src = "help.png", align = "right"), 
+          bsTooltip(id = "targetstab", title = "These are all of the targets associated with the input and similar molecules. Filter using the checkboxes in the sidebar.", placement = "bottom", trigger = "hover"),
+          DT::dataTableOutput("value")),
+        tabPanel(title = img("Target Net  ", id = "targetnettab", src = "help.png", align = "right"),
+                 bsTooltip(id = "targetnettab", title = "This a network of all similar molecules (blue) and their targets (green).", placement = "bottom", trigger = "hover"),
           visNetworkOutput("targetnet")),
-        tabPanel(strong("Enrichr"),
+        tabPanel(title = img("Enrichr  ", id = "enrichrtab", src = "help.png", align = "right"),
+                 bsTooltip(id = "enrichrtab", title = "This tab interactively queries Enrichr for enriched gene ontology and KEGG terms using your target list.", placement = "bottom", trigger = "hover"),
             tabPanel(
               strong("GO Molecular Function"),
               DT::dataTableOutput("GOMF.mol")),
@@ -142,13 +144,14 @@ shinyUI(
   ),
   tabPanel("Genes",
            sidebarLayout(
-             sidebarPanel("Genes",
+             sidebarPanel("Gene Input:",
                           fluidRow(textInput("inp.gene",
                                              "input text", 
                                              label = NULL, 
                                              value = "HDAC6",
                                              width = "90%"
-                          ))
+                          )),
+                          fluidRow(actionButton("genesearchbutton", "Search"), align = "center")
                           ),
              mainPanel(
                tabsetPanel(
