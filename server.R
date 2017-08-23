@@ -1,13 +1,10 @@
-library(DT)
-library(visNetwork)
-library(igraph)
-
 loading <- function() {
-  Sys.sleep(1)
-  hide("load")
-  show("ppdb")
+  Sys.sleep(2)
+  shinyjs::hide("loading_page")
+  shinyjs::show("main_content")
 }
 
+library(DT)
 source("helpers.R")
 
 shinyServer(function(input, output, session) {

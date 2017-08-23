@@ -1,21 +1,20 @@
-library(shinyjs)
+library(shiny)
 library(shinyBS)
 library(shinythemes)
+library(visNetwork)
+library(igraph)
+library(shinyjs)
+
 
 shinyUI(
   fluidPage(
     useShinyjs(),
-    div(
-      id = "load",
-      p("Loading..."),
-      br(),
+    div(id = "loading_page",
       img(src = "Double Ring.gif"),
       align = "center"),
     hidden(
-      div(
-        id = "ppdb",
-  navbarPage("Polypharmacology DB", 
-                   theme = shinytheme("flatly"),
+      div(id = "main_content",
+  navbarPage("Polypharmacology DB", theme = shinytheme("flatly"),
   tabPanel("About",
            p("Welcome to the PPDB app, powered by Sage Bionetworks.
              The purpose of this app is to facilitate exploration of drug-target interaction databases.
@@ -160,9 +159,10 @@ shinyUI(
                )
              )
            )
-         )
-))
-    )
+           )
   )
-)
+  )
+  )
+  )
+  )
      
