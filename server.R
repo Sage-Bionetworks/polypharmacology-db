@@ -124,7 +124,7 @@ shinyServer(function(input, output, session) {
       print("Target not found.")
     }
   }, server = FALSE)
-  })
+
   
   output$genetargetnet <- renderVisNetwork({
     edges <- getMolsFromGeneNetworks.edges(input$inp.gene)
@@ -132,5 +132,6 @@ shinyServer(function(input, output, session) {
     visNetwork(nodes = nodes, edges = edges, height = "2000px") %>% 
       visEdges(smooth = FALSE) %>% visPhysics(stabilization = FALSE) %>% 
       visLayout(randomSeed = 123) %>% visIgraphLayout()
+  })
   })
 })

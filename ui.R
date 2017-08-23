@@ -151,7 +151,7 @@ shinyUI(
                                              value = "HDAC6",
                                              width = "90%"
                           )),
-                          fluidRow(actionButton("genesearchbutton", "Search"), align = "center")
+                          fluidRow(actionButton("genesearchbutton", "Search", align = "center"), align = "center")
                           ),
              mainPanel(
                tabsetPanel(
