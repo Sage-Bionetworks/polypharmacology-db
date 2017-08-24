@@ -113,9 +113,20 @@ shinyServer(function(input, output, session) {
   }, server = FALSE)
   
   ## gene tab
-  observeEvent(input$genebutton, {
+  getMols <- eventReactive(input$genebutton, {
+    getMolsFromGenes(input$inp.gene)
+  })
+  
+  getMolNodes <- eventReactive(input$genebutton, {
+    getMolsFromGeneNetworks.nodes(input$inp.gene)
+  })
+  
+  getMolEdges <- eventReactive(input$genebutton, {
+    getMolsFromGeneNetworks.edges(input$inp.gene)
+  })
+  
   output$genetargets <- renderDataTable({
-    mol<-getMolsFromGenes(input$inp.gene)
+    mol<-getMols()
     if(nrow(mol)>1){
       DT::datatable(mol, options = list(dom = "Bfrtip", 
                                          buttons = c("copy","excel", "pdf", "print", "colvis")), 
@@ -124,16 +135,14 @@ shinyServer(function(input, output, session) {
       print("Target not found.")
     }
   }, server = FALSE)
-  })
-  
-  observeEvent(input$genebutton, {
+
   output$genetargetnet <- renderVisNetwork({
-    edges <- getMolsFromGeneNetworks.edges(input$inp.gene)
-    nodes <- getMolsFromGeneNetworks.nodes(input$inp.gene)
+    nodes <- getMolNodes()
+    edges <- getMolEdges()
     visNetwork(nodes = nodes, edges = edges, height = "2000px") %>% 
       visEdges(smooth = FALSE) %>% visPhysics(stabilization = FALSE) %>% 
       visLayout(randomSeed = 123) %>% visIgraphLayout()
-  })
-  })
+})
 
+  
 })
