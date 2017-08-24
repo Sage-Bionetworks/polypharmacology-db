@@ -113,7 +113,7 @@ shinyServer(function(input, output, session) {
   }, server = FALSE)
   
   ## gene tab
-  observeEvent(input$genesearchbutton, {
+  observeEvent(input$genebutton, {
   output$genetargets <- renderDataTable({
     mol<-getMolsFromGenes(input$inp.gene)
     if(nrow(mol)>1){
@@ -124,8 +124,9 @@ shinyServer(function(input, output, session) {
       print("Target not found.")
     }
   }, server = FALSE)
-
+  })
   
+  observeEvent(input$genebutton, {
   output$genetargetnet <- renderVisNetwork({
     edges <- getMolsFromGeneNetworks.edges(input$inp.gene)
     nodes <- getMolsFromGeneNetworks.nodes(input$inp.gene)
@@ -134,4 +135,5 @@ shinyServer(function(input, output, session) {
       visLayout(randomSeed = 123) %>% visIgraphLayout()
   })
   })
+
 })

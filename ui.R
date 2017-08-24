@@ -125,8 +125,9 @@ shinyUI(
                  bsTooltip(id = "targetnettab", title = "This a network of all similar molecules (blue) and their targets (green).", placement = "bottom", trigger = "hover"),
           visNetworkOutput("targetnet")),
         tabPanel(title = img("Enrichr  ", id = "enrichrtab", src = "help.png", align = "right"),
-                 bsTooltip(id = "enrichrtab", title = "This tab interactively queries Enrichr for enriched gene ontology and KEGG terms using your target list.", placement = "bottom", trigger = "hover"),
-            tabPanel(
+                 bsTooltip(id = "enrichrtab", title = "This tab interactively queries Enrichr for enriched gene ontology and KEGG terms using your target list. May take a few seconds, please be patient!", placement = "bottom", trigger = "hover"),
+            tabsetPanel(
+                 tabPanel(
               strong("GO Molecular Function"),
               DT::dataTableOutput("GOMF.mol")),
             tabPanel(
@@ -137,7 +138,7 @@ shinyUI(
               DT::dataTableOutput("GOBP.mol")),
             tabPanel(
               strong("KEGG Pathways"),
-              DT::dataTableOutput("kegg")))
+              DT::dataTableOutput("kegg"))))
         )
     )
   )
@@ -150,8 +151,7 @@ shinyUI(
                                              label = NULL, 
                                              value = "HDAC6",
                                              width = "90%"
-                          )),
-                          fluidRow(actionButton("genesearchbutton", "Search", align = "center"), align = "center")
+                          ), actionButton("genebutton", "Search", align = "center"), align = "center")
                           ),
              mainPanel(
                tabsetPanel(
