@@ -157,7 +157,7 @@ shinyUI(
                tabsetPanel(
                  tabPanel(
                    strong("Matched Mols"),
-                   dataTableOutput("genetargets")),
+                   DT::dataTableOutput("genetargets")),
                  tabPanel(
                    strong("Target Network"),
                    visNetworkOutput("genetargetnet"))
