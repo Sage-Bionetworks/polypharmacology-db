@@ -4,8 +4,8 @@ loading <- function() {
   shinyjs::show("main_content")
 }
 
-library(DT)
 source("helpers.R")
+library(DT)
 
 shinyServer(function(input, output, session) {
 
@@ -125,7 +125,7 @@ shinyServer(function(input, output, session) {
     getMolsFromGeneNetworks.edges(input$inp.gene)
   })
   
-  output$genetargets <- renderDataTable({
+  output$genetargets <- DT::renderDataTable({
     mol<-getMols()
     if(nrow(mol)>1){
       DT::datatable(mol, options = list(dom = "Bfrtip", 
