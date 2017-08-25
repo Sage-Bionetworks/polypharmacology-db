@@ -57,10 +57,11 @@ shinyServer(function(input, output, session) {
   
   
   output$structureimage <- renderImage({
+    outfile <- tempfile(fileext='.png')
     img<-getMolImage(input$smiles)
-    writePNG(img, target = "temp.png")
-    list(src = "temp.png",
-         alt = "This is alternate text")
+    writePNG(img, target = outfile, dpi = 600)
+    list(src = outfile,
+         alt = paste("Input molecule structure:", input$smiles))
   })
 
 
