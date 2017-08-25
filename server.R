@@ -62,7 +62,7 @@ shinyServer(function(input, output, session) {
     writePNG(img, target = outfile, dpi = 600)
     list(src = outfile,
          alt = paste("Input molecule structure:", input$smiles))
-  })
+  }, deleteFile = T)
 
 
   output$net <- renderVisNetwork({
