@@ -63,10 +63,15 @@ shinyUI(
       bsCollapse(
         bsCollapsePanel("Quick Start Guide",
                         p("You have three options for molecule lookup. 
-                          You can 1) look up by molecule name in our database, 
-                          2) search Pubchem for structures associated with your molecule name, or
-                          3) directly enter the structure as represented by a SMILES string.
-                          Then, pick a similarity using the slider, where 0 = highly dissimilar, and 1 = identical."), style = "primary"),
+                          You can:"),
+                          div(),
+                          p("1) look up by molecule name in our database,"),
+                          div(),
+                          p("2) search Pubchem for structures associated with your molecule name, or"),
+                          div(),
+                          p("3) directly enter the structure as represented by a SMILES string."),
+                          div(),
+                          p(strong("After entering a molecule, pick a similarity using the slider, where 0 = highly dissimilar, and 1 = identical.")), style = "primary"),
         bsCollapsePanel("Molecule Lookup",
                         fluidRow(selectizeInput("drugnames",
                                                 choices = NULL,
@@ -76,7 +81,7 @@ shinyUI(
                                  bsTooltip("drugnames", "Type molecule name here to search this database for SMILES strings.",
                                            "right", options = list(container = "body")), align = "center"),
                         fluidRow(actionButton("ppdbsearchbutton", "Find PPDB Mols", align = "center"), align = "center"),
-                        div(),
+                        br(),
                         p("Search this database for structures by compound name. Can't find what you're looking for? Move to the next panel to search Pubchem."), style = "info"),
         bsCollapsePanel("Pubchem Search",
                  fluidRow(textInput("input.name",
@@ -87,7 +92,7 @@ shinyUI(
                                  bsTooltip("inpu", "Type molecule name here to search this database for SMILES strings.",
                                            "right", options = list(container = "body")), align = "center"),
                  fluidRow(actionButton("pubchembutton", "Find Pubchem Mols"), align = "center"), 
-                 div(),
+                 br(),
                  p("Input a compound name in this box to search PubChem's structure database."), style = "info"),
         bsCollapsePanel("Direct Structure Input", fluidRow(textInput("smiles",
                                      "SMILES string", 
@@ -127,17 +132,13 @@ shinyUI(
         tabPanel(title = img("Enrichr  ", id = "enrichrtab", src = "help.png", align = "right"),
                  bsTooltip(id = "enrichrtab", title = "This tab interactively queries Enrichr for enriched gene ontology and KEGG terms using your target list. May take a few seconds, please be patient!", placement = "bottom", trigger = "hover"),
             tabsetPanel(
-                 tabPanel(
-              strong("GO Molecular Function"),
+                 tabPanel("GO Molecular Function",
               DT::dataTableOutput("GOMF.mol")),
-            tabPanel(
-              strong("GO Cellular Component"),
+            tabPanel("GO Cellular Component",
               DT::dataTableOutput("GOCC.mol")),
-            tabPanel(
-              strong("GO Biological Process"),
+            tabPanel("GO Biological Process",
               DT::dataTableOutput("GOBP.mol")),
-            tabPanel(
-              strong("KEGG Pathways"),
+            tabPanel("KEGG Pathways",
               DT::dataTableOutput("kegg"))))
         )
     )
@@ -155,12 +156,12 @@ shinyUI(
                           ),
              mainPanel(
                tabsetPanel(
-                 tabPanel(
-                   strong("Matched Mols"),
-                   DT::dataTableOutput("genetargets")),
-                 tabPanel(
-                   strong("Target Network"),
-                   visNetworkOutput("genetargetnet"))
+                 tabPanel(title = img("Matched Molecules  ", id = "matchmolstab", src = "help.png", align = "right"),
+                          bsTooltip(id = "matchmolstab", title = "This tab displays molecules with a known interaction with the input gene", placement = "right", trigger = "hover"),
+                          DT::dataTableOutput("genetargets")),
+                 tabPanel(title = img("Target Network  ", id = "targnetworktab", src = "help.png", align = "right"),
+                            bsTooltip(id = "targnetworktab", title = "This tab graphically displays the input gene, associated drugs, and the other targets associated with those drugs.", placement = "right", trigger = "hover"),
+                            visNetworkOutput("genetargetnet"))
                )
              )
            )
