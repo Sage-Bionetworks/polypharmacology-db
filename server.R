@@ -6,6 +6,7 @@ loading <- function() {
 
 source("helpers.R")
 library(DT)
+library(png)
 
 shinyServer(function(input, output, session) {
 
@@ -23,7 +24,7 @@ shinyServer(function(input, output, session) {
     simmols()
   })
   
-  ##molecule (SMILES) Lookput
+  ##molecule (SMILES) input
   
   observeEvent(input$pubchembutton, {
     pc.smiles <- getSmiles(input$input.name)
@@ -54,6 +55,14 @@ shinyServer(function(input, output, session) {
                                                    "colvis")), extensions = "Buttons")
   }, server = FALSE)
   
+  
+  output$structureimage <- renderImage({
+    img<-getMolImage(input$smiles)
+    writePNG(img, target = "temp.png")
+    list(src = "temp.png",
+         alt = "This is alternate text")
+  })
+
 
   output$net <- renderVisNetwork({
     edges <- getNetwork(input$smiles, input$sim.thres, input$selectdrugs)

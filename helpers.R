@@ -6,6 +6,7 @@ library(enrichR)
 library(webchem)
 library(plyr)
 library(dplyr)
+library(grid)
 
 evo <- readRDS("Data/evotec_dgidb.RDS")
 evo$Structure_ID <- as.character(evo$Structure_ID)
@@ -53,6 +54,12 @@ getSimMols <- function(input, sim.thres) {
   sims2$`Tanimoto Similarity` <- signif(sims2$sim, 3)
   targets <- left_join(sims2, evo) %>% dplyr::select(Common_Name, `Tanimoto Similarity`) %>% distinct()
 }
+
+getMolImage <- function(input) {
+  smi <- parse.smiles(input)
+  view.image.2d(smi[[1]])
+}
+
 
 getNetwork <- function(input, sim.thres, selectdrugs) {
   input <- input

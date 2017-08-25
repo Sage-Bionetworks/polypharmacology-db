@@ -114,7 +114,10 @@ shinyUI(
                  bsTooltip("sim.thres", "Set the Tanimoto similarity (1 being identical) here.",
                            "right", options = list(container = "body")), style = "warning"), open = "Similarity Threshold"),
                  uiOutput("sims"),
-                 textOutput("pubchemsearchNA")), 
+                 textOutput("pubchemsearchNA"),
+      bsCollapse(
+      bsCollapsePanel("2D Structure (input)", fluidRow(imageOutput("structureimage"), align = "center"), style = "danger"), open = "2D Structure (input)")
+      ),
     mainPanel(
       tabsetPanel(
         tabPanel(title = img("Similar Molecules  ", id = "similarmolstab", src = "help.png", align = "right"),
