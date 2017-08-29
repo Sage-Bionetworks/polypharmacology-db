@@ -18,44 +18,31 @@ shinyUI(
       div(id = "main_content",
   navbarPage("Polypharmacology DB", theme = shinytheme("flatly"),
   tabPanel("About",
-           h4(strong("Welcome to the PPDB app, powered by Sage Bionetworks.")),
+           h4(strong("Welcome to the Polypharmacology App, powered by Sage Bionetworks.")),
            h5("The purpose of this app is to facilitate exploration of drug-target interaction databases.
              This app currently contains the Children's Tumor Foundation Drug-Target Database, licensed from Evotec, which
              summarizes activity data deposited in ChEMBL and inactivity data deposited in Pubchem."),
            br(),
            h4(strong("How does PPDB work?")),
-           p("PPDB leverages structural information of molecules and the associated target annotations to build a drug-target map 
+           h5("PPDB leverages structural information of molecules and the associated target annotations to build a drug-target map 
              based on chemical similarity between molecules. PPDB includes drug-target interactions collated by Evotec, as well as a subset of those available in the DGIdb app.
              Examples of use-cases for this include:"),
-           p(" - prediction of molecular targets for novel molecules based on structural similarity"),
-           p(" - identification of off targets for molecules of interest"), 
-           p(" - facilitating polypharmacologic drug discovery"),
+           h5(" - prediction of molecular targets for novel molecules based on structural similarity"),
+           h5(" - identification of off targets for molecules of interest"), 
+           h5(" - facilitating polypharmacologic drug discovery"),
            br(),
            h4(strong("Instructions:")),
            p("Click on the 'Molecules' tab to find targets associated with your molecule of interest."),
            p("Alternatively, if you have a target in mind, please enter the HUGO Gene Symbol on the 'Genes' tab."), 
            br(),
-           h4(strong("This app exists thanks to the following excellent R packages and organizations:")),
-           br(),
            fluidRow(
            img(src='CTF_Logo.png'),
            img(src= "sage_logo.png"), align = "center"),
            br(),
+           h4(strong("This app relies on the following excellent R packages:")),
            fluidRow(
-           h4("shiny"), 
-             h4("shinyBS"),
-             h4("shinythemes"),
-             h4("rcdk"),
-             h4("fingerprint"),
-             h4("rJava"),
-             h4("plyr"),
-             h4("dplyr"),
-             h4("DT"),
-             h4("enrichR"),
-             h4("webchem"),
-             h4("visNetwork"),
-             h4("igraph"), align = "center")
-           ), 
+           h5("shiny, shinyBS, shinythemes, rcdk, fingerprint, rJava"),
+           h5("plyr, dplyr, DT, enrichR, webchem, visNetwork, igraph"), align = "center")), 
   
   tabPanel("Molecules",
   sidebarLayout(
