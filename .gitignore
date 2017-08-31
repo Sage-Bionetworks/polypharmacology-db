@@ -3,6 +3,4 @@
 .Rhistory
 .RData
 *.tsv
-packrat/lib*/
-HS01-HS11-baseline-integrated.png
 sims.rds
