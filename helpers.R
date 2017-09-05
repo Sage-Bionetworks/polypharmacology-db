@@ -28,7 +28,7 @@ convertDrugToSmiles <- function(input) {
 
 getTargetList <- function(selectdrugs) {
   targets <- filter(evo, Common_Name %in% selectdrugs) %>% dplyr::select(Common_Name, Hugo_Gene, MedianActivity_nM, N_quantitative, N_qualitative, 
-                                                                          N_inactive, N_DGIDB) %>% arrange(-N_quantitative)
+                                                                          N_inactive, N_DGIDB, Confidence_Score) %>% arrange(-N_quantitative)
   if (nrow(targets) > 1) {
     targets
   } else {

@@ -92,6 +92,7 @@ fp.evo <- parseInputFingerprint(unique(evo2$Original_molecule_SMILES))
 saveRDS(fp.evo, "Data/fpevo.rds")
 
 
+###refresh common names
 evo2<-readRDS("Data/evotec_dgidb.RDS")
 syns1 <- evo2 %>% select(Original_molecule_SMILES, Common_Name) %>% distinct() %>% filter(!is.na(Common_Name))
 syns2 <- evo2 %>% select(Original_molecule_SMILES, Common_Name_DGIDB) %>% distinct() %>% filter(!is.na(Common_Name_DGIDB))
@@ -99,3 +100,16 @@ colnames(syns2) <- c("Original_molecule_SMILES", "Common_Name")
 syns <- bind_rows(syns1, syns2) %>% distinct()
 saveRDS(syns, "Data/commname.rds")
 
+
+###refresh confidence score
+evo2<-readRDS("Data/evotec_dgidb.RDS")
+evo2 <- evo2 %>% rowwise() %>% mutate("neglogActivity" = -log10(MedianActivity_nM))
+evo2 <- evo2 %>% rowwise() %>% mutate("neglogActivityWeighted" = -MedianActivity_nM^10)
+evo2 <- evo2 %>% rowwise() %>% mutate("Confidence_Score" = sum(N_quantitative,N_qualitative,N_DGIDB,-N_inactive,neglogActivity, na.rm=T))
+evo2 <- evo2 %>% rowwise() %>% mutate("Activity_Weighted_Confidence_Score" = sum(N_quantitative,N_qualitative,N_DGIDB,-N_inactive,neglogActivityWeighted, na.rm=T))
+saveRDS(evo2, "Data/evotec_dgidb.RDS")
+
+
+###DrugBank database
+library(XML)
+drugbank<-xmlTreeParse("NoGit/full database.xml")
