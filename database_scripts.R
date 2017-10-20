@@ -53,6 +53,11 @@ saveRDS(evo2, "Data/evotec_dgidb.RDS")
 
 ##map DGIDB with evotec where chemical overlap exists
 library(parallel)
+parseInputFingerprint <- function(input) {
+  input.mol <- parse.smiles(input)
+  fp.inp <- lapply(input.mol, get.fingerprint, type = "extended")
+}
+
 evo<-readRDS("Data/evotec.RDS")
 fp.dgi <- parseInputFingerprint(as.character(unique(dgidb.int$smiles)))
 fp.evo <- parseInputFingerprint(as.character(unique(evo$Original_molecule_SMILES)))

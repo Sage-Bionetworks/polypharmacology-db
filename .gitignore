@@ -6,3 +6,7 @@
 sims.rds
 NoGit/.DS_Store
 .DS_Store
+*.sdf
+*.csv
+*.history
+.DS_Store

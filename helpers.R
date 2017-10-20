@@ -16,6 +16,8 @@ evo <- evo %>% filter(N_quantitative >= N_inactive | N_qualitative >= N_inactive
 fp.evo <- readRDS("Data/fpevo.rds")[unique(evo$Original_molecule_SMILES)]
 syns <- readRDS("Data/commname.rds") 
 
+
+##converts SMILES string to fingerprint
 parseInputFingerprint <- function(input) {
   input.mol <- parse.smiles(input)
   fp.inp <- lapply(input.mol, get.fingerprint, type = "extended")
