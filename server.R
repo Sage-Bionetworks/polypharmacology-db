@@ -12,7 +12,8 @@ shinyServer(function(input, output, session) {
 
   loading()
   
-  simmols <- reactive({getSimMols(input$smiles, input$sim.thres)})
+  simmols <- reactive({
+    getSimMols(input$smiles, input$sim.thres)})
   
   output$sims <- renderUI({
     mols <- simmols()
@@ -124,35 +125,43 @@ shinyServer(function(input, output, session) {
   
   ## gene tab
   getMols <- eventReactive(input$genebutton, {
+    validate(
+      need(input$inp.gene %in% db.genes, "Please enter a valid gene.")
+    )
     getMolsFromGenes(input$inp.gene)
   })
   
   getMolNodes <- eventReactive(input$genebutton, {
+    validate(
+      need(input$inp.gene %in% db.genes, "Please enter a valid gene.")
+    )
     getMolsFromGeneNetworks.nodes(input$inp.gene)
   })
   
   getMolEdges <- eventReactive(input$genebutton, {
+    validate(
+      need(input$inp.gene %in% db.genes, "Please enter a valid gene.")
+    )
     getMolsFromGeneNetworks.edges(input$inp.gene)
   })
   
+
   output$genetargets <- DT::renderDataTable({
     mol<-getMols()
-    if(nrow(mol)>1){
       DT::datatable(mol, options = list(dom = "Bfrtip", 
                                          buttons = c("copy","excel", "pdf", "print", "colvis")), 
                     extensions = "Buttons")
-    }else{
-      print("Target not found.")
-    }
   }, server = FALSE)
 
   output$genetargetnet <- renderVisNetwork({
+    
     nodes <- getMolNodes()
     edges <- getMolEdges()
+    
     visNetwork(nodes = nodes, edges = edges, height = "2000px") %>% 
       visEdges(smooth = FALSE) %>% visPhysics(stabilization = FALSE) %>% 
       visLayout(randomSeed = 123) %>% visIgraphLayout()
 })
 
-  
+
 })

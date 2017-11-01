@@ -13,6 +13,8 @@ evo$Structure_ID <- as.character(evo$Structure_ID)
 evo$Common_Name <- as.character(evo$Common_Name)
 evo <- evo %>% filter(N_quantitative >= N_inactive | N_qualitative >= N_inactive | N_DGIDB > 0)
 
+db.genes <- unique(evo$Hugo_Gene)
+
 fp.evo <- readRDS("Data/fpevo.rds")[unique(evo$Original_molecule_SMILES)]
 syns <- readRDS("Data/commname.rds") 
 
@@ -21,6 +23,7 @@ syns <- readRDS("Data/commname.rds")
 parseInputFingerprint <- function(input) {
   input.mol <- parse.smiles(input)
   fp.inp <- lapply(input.mol, get.fingerprint, type = "extended")
+
 }
 
 convertDrugToSmiles <- function(input) {
