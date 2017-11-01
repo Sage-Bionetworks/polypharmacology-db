@@ -1,4 +1,5 @@
 source('helpers.R')
+library(tibble)
 
 temp <- read.table("Data/interactions.tsv", sep = "\t", quote = "",header = T) ##from DGIDB downloads section
 temp2 <- temp %>% 
@@ -43,13 +44,42 @@ smiles <- smiles %>%
 
 colnames(smiles) <- c("drug_primary_name", "smiles")
 
+##this long string of dplyr pipes is to combine all compounds with an identical SMILES, of which there are several
 dgidb.int <- inner_join(temp2, smiles)
-
 colnames(dgidb.int) <- c("Hugo_Gene", "Common_Name", "N_DGIDB", "Original_molecule_SMILES")
 
+dgidb.cons <- dgidb.int %>% 
+  group_by(Hugo_Gene, Original_molecule_SMILES) %>% 
+  mutate(sum(N_DGIDB)) %>% 
+  ungroup()
 
-evo2 <- bind_rows(evo, dgidb.int)
-saveRDS(evo2, "Data/evotec_dgidb.RDS")
+dgidb.topname <- dgidb.cons %>% 
+  group_by(Original_molecule_SMILES, Common_Name) %>% 
+  summarize(n()) %>% 
+  ungroup() %>% 
+  group_by(Original_molecule_SMILES) %>% 
+  top_n(1) %>% 
+  ungroup()
+
+dgidb.topname <- dgidb.topname %>% 
+  add_column("count" = c(1:nrow(dgidb.topname))) %>% 
+  group_by(Original_molecule_SMILES) %>% 
+  top_n(1, -count) %>% 
+  ungroup() %>% 
+  select(Original_molecule_SMILES, Common_Name)
+
+dgidb.cons <- dgidb.cons %>% 
+  rename("nonstandard_name" = Common_Name) %>% 
+  left_join(dgidb.topname) %>%
+  select(Hugo_Gene, Common_Name, `sum(N_DGIDB)`, Original_molecule_SMILES) %>% 
+  distinct()
+
+colnames(dgidb.cons) <- c("Hugo_Gene", "Common_Name", "N_DGIDB", "Original_molecule_SMILES")
+
+
+##straight adding - no chemical matching
+#evo2 <- bind_rows(evo, dgidb.int)
+#saveRDS(evo2, "Data/evotec_dgidb.RDS")
 
 ##map DGIDB with evotec where chemical overlap exists
 library(parallel)
@@ -59,7 +89,7 @@ parseInputFingerprint <- function(input) {
 }
 
 evo<-readRDS("Data/evotec.RDS")
-fp.dgi <- parseInputFingerprint(as.character(unique(dgidb.int$smiles)))
+fp.dgi <- parseInputFingerprint(as.character(unique(dgidb.cons$Original_molecule_SMILES)))
 fp.evo <- parseInputFingerprint(as.character(unique(evo$Original_molecule_SMILES)))
 
 sims <- mclapply(fp.dgi, function(i) { ##this will take a really long time and yield a multi gb file
@@ -77,7 +107,7 @@ sims2 <- mclapply(sims, function(i) {
   x
 }, mc.cores = detectCores())
 
-colnames(dgidb.int) <- c("Hugo_Gene", "Common_Name2", "N_DGIDB", ".id")
+colnames(dgidb.cons) <- c("Hugo_Gene", "Common_Name2", "N_DGIDB", ".id")
 
 #join perfect matches to evo db
 sims3 <- ldply(sims2) %>% filter(sim == 1) %>% left_join(dgidb.int) %>% select(match, Hugo_Gene, Common_Name2, N_DGIDB)
@@ -111,7 +141,7 @@ evo2<-readRDS("Data/evotec_dgidb.RDS")
 evo2 <- evo2 %>% rowwise() %>% mutate("neglogActivity" = -log10(MedianActivity_nM))
 evo2 <- evo2 %>% rowwise() %>% mutate("neglogActivityWeighted" = -MedianActivity_nM^10)
 evo2 <- evo2 %>% rowwise() %>% mutate("Confidence_Score" = sum(N_quantitative,N_qualitative,N_DGIDB,-N_inactive,neglogActivity, na.rm=T))
-evo2 <- evo2 %>% rowwise() %>% mutate("Activity_Weighted_Confidence_Score" = sum(N_quantitative,N_qualitative,N_DGIDB,-N_inactive,neglogActivityWeighted, na.rm=T))
+evo2 <- evo2 %>% rowwise() %>% mutate("Activity_Weighted_Confidence_Score" = sum(N_quantitative/116859,N_qualitative/4912,N_DGIDB,-N_inactive,neglogActivityWeighted, na.rm=T))
 saveRDS(evo2, "Data/evotec_dgidb.RDS")
 
 
