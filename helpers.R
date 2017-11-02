@@ -16,7 +16,8 @@ evo <- evo %>% filter(N_quantitative >= N_inactive | N_qualitative >= N_inactive
 db.genes <- unique(evo$Hugo_Gene)
 
 fp.evo <- readRDS("Data/fpevo.rds")[unique(evo$Original_molecule_SMILES)]
-syns <- readRDS("Data/commname.rds") 
+syns <- readRDS("Data/commname.rds")
+syns$Original_molecule_SMILES <- as.character(syns$Original_molecule_SMILES)
 
 
 ##converts SMILES string to fingerprint
@@ -27,7 +28,7 @@ parseInputFingerprint <- function(input) {
 }
 
 convertDrugToSmiles <- function(input) {
-  filt <- filter(syns, Common_Name == input & Original_molecule_SMILES != "") %>% dplyr::select(Original_molecule_SMILES)
+  filt <- filter(syns, Common_Name == input) %>% dplyr::select(Original_molecule_SMILES)
   filt
 }
 
