@@ -64,6 +64,7 @@ shinyUI(
                                                 choices = NULL,
                                                 label = "",
                                                 selected = "",
+                                                multiple = FALSE,
                                                 width = "90%"),
                                  bsTooltip("drugnames", "Type molecule name here to search this database for SMILES strings.",
                                            "right", options = list(container = "body")), align = "center"),

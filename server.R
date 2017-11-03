@@ -37,7 +37,7 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  
+
   updateSelectizeInput(session, "drugnames", choices = syns$Common_Name, server = TRUE) 
 
   observeEvent(input$ppdbsearchbutton, {

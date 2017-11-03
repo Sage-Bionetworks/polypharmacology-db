@@ -1,6 +1,3 @@
-source('helpers.R')
-library(tibble)
-
 evo <- readRDS("Data/evotec.RDS")
 
 temp <- read.table("Data/interactions.tsv", sep = "\t", quote = "",header = T) ##from DGIDB downloads section
@@ -137,6 +134,7 @@ evo2 <- evo2 %>% rowwise() %>% mutate("Activity_Weighted_Confidence_Score" = sum
 saveRDS(evo2, "Data/evotec_dgidb.RDS")
 
 ###refresh common names
+library(stringr)
 evo2<-readRDS("Data/evotec_dgidb.RDS")
 allsmiles <- unique(evo2$Original_molecule_SMILES)
 write.table(allsmiles, "Data/smiles.csv", sep = ",", quote = F, col.names = F, row.names = F)
@@ -215,6 +213,7 @@ common.names.filt <- common.names %>%
   filter(!str_detect(Common_Name, "^SR-01.+")) %>%
   filter(!str_detect(Common_Name, "^SPBio.+")) %>%
   filter(!str_detect(Common_Name, "^BSPBi.+")) %>%
+  filter(!str_detect(Common_Name, "^PubChem.+")) %>%
   mutate(Common_Name = gsub("-Supplied by Selleck Chemicals", "", Common_Name)) %>% 
   filter(Common_Name != "") %>%  
   filter(!is.numeric(Common_Name)) %>% 
@@ -222,7 +221,9 @@ common.names.filt <- common.names %>%
   select(-short) %>% 
   group_by(Common_Name) %>% 
   filter(row_number() == 1) %>% 
-  ungroup()
+  ungroup() %>% 
+  group_by(Original_molecule_SMILES) %>% 
+  filter(row_number() <= 10) 
 
 common.names.filt$Original_molecule_SMILES <- as.character(common.names.filt$Original_molecule_SMILES)
 

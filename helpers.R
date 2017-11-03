@@ -7,6 +7,7 @@ library(webchem)
 library(plyr)
 library(dplyr)
 library(grid)
+library(tibble)
 
 evo <- readRDS("Data/evotec_dgidb.RDS")
 evo$Structure_ID <- as.character(evo$Structure_ID)
