@@ -7,7 +7,8 @@ library(shinyjs)
 
 
 shinyUI(
-  fluidPage(
+  fluidPage( 
+    tags$head(includeScript("google-analytics.js")),
     useShinyjs(),
     div(id = "loading_page",
       img(src = "Ellipsis.svg"),

@@ -223,8 +223,9 @@ common.names.filt <- common.names %>%
   filter(row_number() == 1) %>% 
   ungroup() %>% 
   group_by(Original_molecule_SMILES) %>% 
-  filter(row_number() <= 10) 
-
+  filter(row_number() <= 10) %>%  ##get rid of everything beyond first ten IDs per SMILES to make more snappy!
+  ungroup()
+  
 common.names.filt$Original_molecule_SMILES <- as.character(common.names.filt$Original_molecule_SMILES)
 
 saveRDS(common.names.filt, "Data/commname.rds")
