@@ -6,7 +6,9 @@ library(enrichR)
 library(webchem)
 library(plyr)
 library(dplyr)
+library(tidyr)
 library(grid)
+library(plotly)
 library(tibble)
 
 evo <- readRDS("Data/evotec_dgidb.RDS")
@@ -176,4 +178,34 @@ getSmiles <- function(input.name) {
   input.name <- URLencode(input.name)
   query <- as.vector(cir_query(input.name, representation = "smiles", first = TRUE))
   query
+}
+
+##get CTRP data for heatmap
+
+drug.resp <- readRDS("Data/drugresp.rds")
+ctrp.structures <- readRDS("Data/ctrpstructures.rds")
+fp.ctrp <- readRDS("Data/fpctrp.rds")
+
+
+plotSimCTRPDrugs <- function(input, sim.thres) {
+  input <- input
+  fp.inp <- parseInputFingerprint(input)
+  
+  sims <- lapply(fp.inp, function(i) {
+    sim <- sapply(fp.ctrp, function(j) {
+      distance(i, j)
+    })
+    bar <- as.data.frame(sim)
+    bar$match <- rownames(bar)
+    bar
+  })
+  sims <- ldply(sims)
+  sims2 <- sims %>% filter(sim >= sim.thres) %>% arrange(-sim)
+  sims2$cpd_smiles <- as.character(sims2$match)
+  sims2$`Tanimoto Similarity` <- signif(sims2$sim, 3)
+  drugs <- left_join(sims2, ctrp.structures) %>% dplyr::select(makenames, cpd_name) %>% distinct()
+
+  foo <- select(drug.resp, one_of(drugs$makenames)) %>% data.matrix(., rownames.force = T)
+  foo <- foo[complete.cases(foo),]
+  print(foo)
 }

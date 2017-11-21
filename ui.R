@@ -4,7 +4,7 @@ library(shinythemes)
 library(visNetwork)
 library(igraph)
 library(shinyjs)
-
+library(plotly)
 
 shinyUI(
   fluidPage( 
@@ -132,7 +132,11 @@ shinyUI(
             tabPanel("GO Biological Process",
               DT::dataTableOutput("GOBP.mol")),
             tabPanel("KEGG Pathways",
-              DT::dataTableOutput("kegg"))))
+              DT::dataTableOutput("kegg")))),
+        tabPanel(title = img("CCLE  ", id = "ccletab", src = "help.png", align = "right"),
+                 bsTooltip(id = "ccletab", title = "This tab searches CCLE data for drugs related to your query compound.", placement = "bottom", trigger = "hover"),
+                 plotlyOutput("ccle", height = "1000px", width = "100%"))
+                 
         )
     )
   )

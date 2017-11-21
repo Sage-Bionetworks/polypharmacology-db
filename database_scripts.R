@@ -233,3 +233,22 @@ saveRDS(common.names.filt, "Data/commname.rds")
 ###DrugBank database
 library(XML)
 drugbank<-xmlTreeParse("NoGit/full database.xml")
+
+
+###CTRP data
+library(synapseClient)
+synapseLogin()
+source("helpers.R")
+
+ctrp.structures <- read.table(synGet("syn5632193")@filePath, header = T, sep = "\t", quote = "", comment.char = "") 
+ctrp.structures$makenames <- make.names(ctrp.structures$cpd_name)
+
+drug.resp <- read.table(synGet("syn7466611")@filePath, sep = "\t", header = TRUE) #%>% 
+#rownames_to_column("cellLine") %>% 
+#gather(makenames, auc, -cellLine)
+
+fp.ctrp <- parseInputFingerprint(as.character(unique(ctrp.structures$cpd_smiles)))
+saveRDS(drug.resp, "Data/drugresp.rds")
+saveRDS(ctrp.structures, "Data/ctrpstructures.rds")
+saveRDS(fp.ctrp, "Data/fpctrp.rds")
+

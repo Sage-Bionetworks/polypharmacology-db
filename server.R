@@ -123,7 +123,37 @@ shinyServer(function(input, output, session) {
                                                                   "excel", "pdf", "print", "colvis")), extensions = "Buttons")
   }, server = FALSE)
   
-  ## gene tab
+  output$ccle <- renderPlotly({
+    ccleoutput <- plotSimCTRPDrugs(input$smiles, input$sim.thres)
+    
+    validate(
+      need(((nrow(as.matrix(ccleoutput))>0)+(ncol(as.matrix(ccleoutput))>0)==2), "No drugs found!") 
+    )
+    
+    
+    if(ncol(as.matrix(ccleoutput)) == 1){
+    
+    p <- heatmaply(as.matrix(ccleoutput),
+                   margins = c(120,100,40,20), 
+                   colors = viridis(option = "C",
+                                    direction = -1, 
+                                    n = 256),
+                   showticklabels = c(TRUE,FALSE),
+                   Colv = FALSE,
+                   key.title = "AUC") 
+    }else{
+      p <- heatmaply(as.matrix(ccleoutput),
+                     margins = c(120,100,40,20),
+                     colors = viridis(option = "C",
+                                      direction = -1, 
+                                      n = 256),
+                     showticklabels = c(TRUE,FALSE),
+                     key.title = "AUC")
+    }                
+    })
+  
+  
+####### gene tab
   getMols <- eventReactive(input$genebutton, {
     validate(
       need(input$inp.gene %in% db.genes, "Please enter a valid gene.")
