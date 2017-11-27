@@ -10,6 +10,7 @@ library(tidyr)
 library(grid)
 library(plotly)
 library(tibble)
+library(heatmaply)
 
 evo <- readRDS("Data/evotec_dgidb.RDS")
 evo$Structure_ID <- as.character(evo$Structure_ID)
