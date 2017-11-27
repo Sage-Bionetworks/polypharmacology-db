@@ -141,6 +141,16 @@ shinyServer(function(input, output, session) {
                      showticklabels = c(TRUE,FALSE),
                      Colv = FALSE,
                      key.title = "AUC")
+    }else if(nrow(as.matrix(ccleoutput[[1]])) == 1){
+        
+        p <- heatmaply(as.matrix(ccleoutput[[1]]),
+                       margins = c(120,100,40,20), 
+                       colors = viridis(option = "C",
+                                        direction = -1, 
+                                        n = 256),
+                       showticklabels = c(TRUE,FALSE),
+                       Rowv = FALSE,
+                       key.title = "AUC")
     }else{
       p <- heatmaply(as.matrix(ccleoutput[[1]]),
                      margins = c(120,100,40,20),
@@ -169,6 +179,16 @@ shinyServer(function(input, output, session) {
                                       n = 256),
                      showticklabels = c(TRUE,FALSE),
                      Colv = FALSE,
+                     key.title = "AUC")
+    }else if(nrow(as.matrix(ccleoutput[[1]])) == 1){
+      
+      p <- heatmaply(as.matrix(ccleoutput[[1]]),
+                     margins = c(120,100,40,20), 
+                     colors = viridis(option = "C",
+                                      direction = -1, 
+                                      n = 256),
+                     showticklabels = c(TRUE,FALSE),
+                     Rowv = FALSE,
                      key.title = "AUC")
     }else{
       p <- heatmaply(as.matrix(sangoutput[[1]]),
