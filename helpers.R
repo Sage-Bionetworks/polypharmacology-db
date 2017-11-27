@@ -203,9 +203,41 @@ plotSimCTRPDrugs <- function(input, sim.thres) {
   sims2 <- sims %>% filter(sim >= sim.thres) %>% arrange(-sim)
   sims2$cpd_smiles <- as.character(sims2$match)
   sims2$`Tanimoto Similarity` <- signif(sims2$sim, 3)
-  drugs <- left_join(sims2, ctrp.structures) %>% dplyr::select(makenames, cpd_name) %>% distinct()
+  drugs <- left_join(sims2, ctrp.structures) %>% dplyr::select(makenames, cpd_name, `Tanimoto Similarity`) %>% distinct()
 
-  foo <- select(drug.resp, one_of(drugs$makenames)) %>% data.matrix(., rownames.force = T)
-  foo <- foo[complete.cases(foo),]
+  foo <- select(drug.resp, one_of(drugs$makenames)) %>% na.omit() %>% data.matrix(., rownames.force = T)
+  #foo <- foo[complete.cases(foo),]
   print(foo)
+  list(foo, drugs)
+
+}
+
+##same as above but for prepared sanger data
+
+drug.resp.sang<-readRDS("Data/drugresp_sang.rds")
+sang.structures<-readRDS("Data/sangstructures.rds")
+fp.sang<-readRDS("Data/fpsang.rds")
+
+plotSimSangDrugs <- function(input, sim.thres) {
+  input <- input
+  fp.inp <- parseInputFingerprint(input)
+  
+  sims <- lapply(fp.inp, function(i) {
+    sim <- sapply(fp.sang, function(j) {
+      distance(i, j)
+    })
+    bar <- as.data.frame(sim)
+    bar$match <- rownames(bar)
+    bar
+  })
+  sims <- ldply(sims)
+  sims2 <- sims %>% filter(sim >= sim.thres) %>% arrange(-sim)
+  sims2$smiles <- as.character(sims2$match)
+  sims2$`Tanimoto Similarity` <- signif(sims2$sim, 3)
+  drugs <- left_join(sims2, sang.structures) %>% dplyr::select(makenames, sanger_names, `Tanimoto Similarity`) %>% distinct()
+  
+  foo <- select(drug.resp.sang, one_of(drugs$makenames)) %>% na.omit() %>% data.matrix(., rownames.force = T)
+  #foo <- foo[complete.cases(foo),]
+  print(foo)
+  list(foo, drugs)
 }

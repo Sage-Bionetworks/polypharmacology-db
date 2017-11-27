@@ -127,22 +127,22 @@ shinyServer(function(input, output, session) {
     ccleoutput <- plotSimCTRPDrugs(input$smiles, input$sim.thres)
     
     validate(
-      need(((nrow(as.matrix(ccleoutput))>0)+(ncol(as.matrix(ccleoutput))>0)==2), "No drugs found!") 
+      need(((nrow(as.matrix(ccleoutput[[1]]))>0)+(ncol(as.matrix(ccleoutput[[1]]))>0)==2), "No drugs found!") 
     )
     
     
-    if(ncol(as.matrix(ccleoutput)) == 1){
-    
-    p <- heatmaply(as.matrix(ccleoutput),
-                   margins = c(120,100,40,20), 
-                   colors = viridis(option = "C",
-                                    direction = -1, 
-                                    n = 256),
-                   showticklabels = c(TRUE,FALSE),
-                   Colv = FALSE,
-                   key.title = "AUC") 
+    if(ncol(as.matrix(ccleoutput[[1]])) == 1){
+      
+      p <- heatmaply(as.matrix(ccleoutput[[1]]),
+                     margins = c(120,100,40,20), 
+                     colors = viridis(option = "C",
+                                      direction = -1, 
+                                      n = 256),
+                     showticklabels = c(TRUE,FALSE),
+                     Colv = FALSE,
+                     key.title = "AUC")
     }else{
-      p <- heatmaply(as.matrix(ccleoutput),
+      p <- heatmaply(as.matrix(ccleoutput[[1]]),
                      margins = c(120,100,40,20),
                      colors = viridis(option = "C",
                                       direction = -1, 
@@ -150,8 +150,36 @@ shinyServer(function(input, output, session) {
                      showticklabels = c(TRUE,FALSE),
                      key.title = "AUC")
     }                
-    })
+  })
   
+  output$sang <- renderPlotly({
+    sangoutput <- plotSimSangDrugs(input$smiles, input$sim.thres)
+    
+    validate(
+      need(((nrow(as.matrix(sangoutput[[1]]))>0)+(ncol(as.matrix(sangoutput[[1]]))>0)==2), "No drugs found!") 
+    )
+    
+    
+    if(ncol(as.matrix(sangoutput[[1]])) == 1){
+      
+      p <- heatmaply(as.matrix(sangoutput[[1]]),
+                     margins = c(120,100,40,20), 
+                     colors = viridis(option = "C",
+                                      direction = -1, 
+                                      n = 256),
+                     showticklabels = c(TRUE,FALSE),
+                     Colv = FALSE,
+                     key.title = "AUC")
+    }else{
+      p <- heatmaply(as.matrix(sangoutput[[1]]),
+                     margins = c(120,100,40,20),
+                     colors = viridis(option = "C",
+                                      direction = -1, 
+                                      n = 256),
+                     showticklabels = c(TRUE,FALSE),
+                     key.title = "AUC")
+    }                
+  })
   
 ####### gene tab
   getMols <- eventReactive(input$genebutton, {

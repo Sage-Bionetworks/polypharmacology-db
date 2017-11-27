@@ -252,3 +252,34 @@ saveRDS(drug.resp, "Data/drugresp.rds")
 saveRDS(ctrp.structures, "Data/ctrpstructures.rds")
 saveRDS(fp.ctrp, "Data/fpctrp.rds")
 
+
+####Sanger Data
+
+sang.structures <- read.table("Data/sanger_structures.txt", header = T, sep = "\t", quote = "", comment.char = "") %>% filter(smiles != "none found")
+sang.structures$makenames <- make.names(sang.structures$sanger_names)
+
+
+drug.resp.sang <- read.table(synGet("syn9987866")@filePath, sep = "\t", header = TRUE) %>% rownames_to_column("cellLine")
+drug.resp.sang <- drug.resp.sang %>% gather(drug, auc, -cellLine)
+drug.resp.sang$drug <- gsub("_.+$", "", drug.resp.sang$drug)
+drug.resp.sang <- drug.resp.sang %>% 
+  group_by(cellLine, drug) %>% 
+  summarize(medianAUC = median(auc)) %>% 
+  ungroup()
+
+cell.deets <- read.table(synGet("syn9988099")@filePath, sep = "\t", header = TRUE) %>% select(Sample.Name, COSMIC_ID)
+colnames(cell.deets) <- c("cellName", "cellLine")
+cell.deets$cellLine <- as.character(cell.deets$cellLine)
+
+drug.resp.sang <- left_join(drug.resp.sang, cell.deets) %>% 
+  select(-cellLine) %>% 
+  spread(drug.resp.sang, drug,medianAUC) %>% 
+  remove_rownames() %>% 
+  column_to_rownames("cellName")
+
+fp.sang <- parseInputFingerprint(as.character(unique(sang.structures$smiles)))
+saveRDS(drug.resp.sang, "Data/drugresp_sang.rds")
+saveRDS(sang.structures, "Data/sangstructures.rds")
+saveRDS(fp.sang, "Data/fpsang.rds")
+
+
