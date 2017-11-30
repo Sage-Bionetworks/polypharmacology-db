@@ -10,7 +10,8 @@ library(tidyr)
 library(grid)
 library(plotly)
 library(tibble)
-library(heatmaply)
+library(synapseClient)
+synapseLogin()
 
 evo <- readRDS("Data/evotec_dgidb.RDS")
 evo$Structure_ID <- as.character(evo$Structure_ID)
@@ -187,8 +188,7 @@ drug.resp <- readRDS("Data/drugresp.rds")
 ctrp.structures <- readRDS("Data/ctrpstructures.rds")
 fp.ctrp <- readRDS("Data/fpctrp.rds")
 
-
-plotSimCTRPDrugs <- function(input, sim.thres) {
+plotSimCTRPDrugs <- function(input) {
   input <- input
   fp.inp <- parseInputFingerprint(input)
   
@@ -200,17 +200,40 @@ plotSimCTRPDrugs <- function(input, sim.thres) {
     bar$match <- rownames(bar)
     bar
   })
+  
   sims <- ldply(sims)
-  sims2 <- sims %>% filter(sim >= sim.thres) %>% arrange(-sim)
+  sims2 <- sims %>% arrange(-sim)
   sims2$cpd_smiles <- as.character(sims2$match)
   sims2$`Tanimoto Similarity` <- signif(sims2$sim, 3)
   drugs <- left_join(sims2, ctrp.structures) %>% dplyr::select(makenames, cpd_name, `Tanimoto Similarity`) %>% distinct()
+  
+  top_drug <- top_n(drugs, 1, `Tanimoto Similarity`)
+  
+  drug.resp.single <- drug.resp[[top_drug$makenames]]
 
-  foo <- select(drug.resp, one_of(drugs$makenames)) %>% na.omit() %>% data.matrix(., rownames.force = T)
-  #foo <- foo[complete.cases(foo),]
-  print(foo)
-  list(foo, drugs)
+    cors<-sapply(colnames(drug.resp), function(x){
+    test <- data.frame(drug.resp.single, drug.resp[[x]])
+    if(nrow(test[complete.cases(test),])>1){
+      cor<-cor.test(drug.resp.single, drug.resp[[x]], method = "spearman", use = "complete.obs")
+      res <- c("p.val" = cor$p.value, cor$estimate)
+      print(res)
+    }else{
+      res <- c("p.val" = -1, "rho" = 0)
+    }
+  })
 
+  cors <- cors %>% 
+    t() %>%
+    as.data.frame() %>% 
+    rownames_to_column("makenames") %>%
+    inner_join(drugs) %>% 
+    filter(p.val != -1)
+  
+  cors$Correlation <- cors$rho
+
+  cors$`BH adj p.val` <- p.adjust(cors$p.val, method = "BH")
+  print(cors)
+  cors
 }
 
 ##same as above but for prepared sanger data
@@ -218,6 +241,9 @@ plotSimCTRPDrugs <- function(input, sim.thres) {
 drug.resp.sang<-readRDS("Data/drugresp_sang.rds")
 sang.structures<-readRDS("Data/sangstructures.rds")
 fp.sang<-readRDS("Data/fpsang.rds")
+
+cell.deets <- read.table(synGet("syn9988099")@filePath, sep = "\t", header = TRUE) %>% select(-COSMIC_ID, -CCLE.name)
+colnames(cell.deets) <- c("cellLine", "cancerType")
 
 plotSimSangDrugs <- function(input, sim.thres) {
   input <- input
@@ -231,6 +257,7 @@ plotSimSangDrugs <- function(input, sim.thres) {
     bar$match <- rownames(bar)
     bar
   })
+  
   sims <- ldply(sims)
   sims2 <- sims %>% filter(sim >= sim.thres) %>% arrange(-sim)
   sims2$smiles <- as.character(sims2$match)
@@ -239,6 +266,10 @@ plotSimSangDrugs <- function(input, sim.thres) {
   
   foo <- select(drug.resp.sang, one_of(drugs$makenames)) %>% na.omit() %>% data.matrix(., rownames.force = T)
   #foo <- foo[complete.cases(foo),]
-  print(foo)
-  list(foo, drugs)
+  print(rownames(foo))
+  cells <- as.data.frame(rownames(foo))
+  colnames(cells) <- "cellLine"
+  cells <- left_join(cells, cell.deets) %>% select(-cellLine) %>% as.data.frame()
+  print(cells)
+  list(foo, cells)
 }

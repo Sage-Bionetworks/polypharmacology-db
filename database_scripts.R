@@ -267,11 +267,12 @@ drug.resp.sang <- drug.resp.sang %>%
   summarize(medianAUC = median(auc)) %>% 
   ungroup()
 
-cell.deets <- read.table(synGet("syn9988099")@filePath, sep = "\t", header = TRUE) %>% select(Sample.Name, COSMIC_ID)
+cell.deets <- read.table(synGet("syn9988099")@filePath, sep = "\t", header = TRUE)
 colnames(cell.deets) <- c("cellName", "cellLine")
 cell.deets$cellLine <- as.character(cell.deets$cellLine)
 
-drug.resp.sang <- left_join(drug.resp.sang, cell.deets) %>% 
+mini.deets <- cell.deets %>% select(Sample.Name, COSMIC_ID)
+drug.resp.sang <- left_join(drug.resp.sang, mini.deets) %>% 
   select(-cellLine) %>% 
   spread(drug.resp.sang, drug,medianAUC) %>% 
   remove_rownames() %>% 

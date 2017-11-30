@@ -7,6 +7,7 @@ loading <- function() {
 source("helpers.R")
 library(DT)
 library(png)
+library(ggrepel)
 
 shinyServer(function(input, output, session) {
 
@@ -123,44 +124,35 @@ shinyServer(function(input, output, session) {
                                                                   "excel", "pdf", "print", "colvis")), extensions = "Buttons")
   }, server = FALSE)
   
-  output$ccle <- renderPlotly({
-    ccleoutput <- plotSimCTRPDrugs(input$smiles, input$sim.thres)
+    ccleoutput <- reactive(plotSimCTRPDrugs(input$smiles))
     
-    validate(
-      need(((nrow(as.matrix(ccleoutput[[1]]))>0)+(ncol(as.matrix(ccleoutput[[1]]))>0)==2), "No drugs found!") 
-    )
+    output$ccle_1 <- renderPlotly({
+      validate(
+        need(((nrow(as.matrix(ccleoutput()))>0)+(ncol(as.matrix(ccleoutput()))>0)==2),"") 
+      )
     
+    plot1<-ggplot(data = ccleoutput(), aes(x = Correlation, y = -`BH adj p.val`, text = makenames)) +
+      geom_point() +
+      theme_bw()
     
-    if(ncol(as.matrix(ccleoutput[[1]])) == 1){
+    ggplotly(p = plot1, tooltip = "all")
+    
+    })
+    
+    output$ccle_2 <- renderPlotly({
+      validate(
+        need(((nrow(as.matrix(ccleoutput()))>0)+(ncol(as.matrix(ccleoutput()))>0)==2),"") 
+      )
       
-      p <- heatmaply(as.matrix(ccleoutput[[1]]),
-                     margins = c(120,100,40,20), 
-                     colors = viridis(option = "C",
-                                      direction = -1, 
-                                      n = 256),
-                     showticklabels = c(TRUE,FALSE),
-                     Colv = FALSE,
-                     key.title = "AUC")
-    }else if(nrow(as.matrix(ccleoutput[[1]])) == 1){
-        
-        p <- heatmaply(as.matrix(ccleoutput[[1]]),
-                       margins = c(120,100,40,20), 
-                       colors = viridis(option = "C",
-                                        direction = -1, 
-                                        n = 256),
-                       showticklabels = c(TRUE,FALSE),
-                       Rowv = FALSE,
-                       key.title = "AUC")
-    }else{
-      p <- heatmaply(as.matrix(ccleoutput[[1]]),
-                     margins = c(120,100,40,20),
-                     colors = viridis(option = "C",
-                                      direction = -1, 
-                                      n = 256),
-                     showticklabels = c(TRUE,FALSE),
-                     key.title = "AUC")
-    }                
-  })
+    plot2<-ggplot(data = ccleoutput(), aes(x = Correlation, y = `Tanimoto Similarity`, text = makenames, color = -log(`BH adj p.val`))) +
+      geom_point() +
+      theme_bw()
+    
+    ggplotly(p = plot2 , tooltip = "all")
+    
+    })
+    
+
   
   output$sang <- renderPlotly({
     sangoutput <- plotSimSangDrugs(input$smiles, input$sim.thres)
@@ -179,7 +171,8 @@ shinyServer(function(input, output, session) {
                                       n = 256),
                      showticklabels = c(TRUE,FALSE),
                      Colv = FALSE,
-                     key.title = "AUC")
+                     key.title = "AUC",
+                     row_side_colors = sangoutput[[2]])
     }else if(nrow(as.matrix(sangoutput[[1]])) == 1){
       
       p <- heatmaply(as.matrix(sangoutput[[1]]),
@@ -189,7 +182,8 @@ shinyServer(function(input, output, session) {
                                       n = 256),
                      showticklabels = c(TRUE,FALSE),
                      Rowv = FALSE,
-                     key.title = "AUC")
+                     key.title = "AUC",
+                     row_side_colors = sangoutput[[2]])
     }else{
       p <- heatmaply(as.matrix(sangoutput[[1]]),
                      margins = c(120,100,40,20),
@@ -197,7 +191,8 @@ shinyServer(function(input, output, session) {
                                       direction = -1, 
                                       n = 256),
                      showticklabels = c(TRUE,FALSE),
-                     key.title = "AUC")
+                     key.title = "AUC", 
+                     row_side_colors = sangoutput[[2]])
     }                
   })
   
