@@ -135,11 +135,16 @@ shinyUI(
               DT::dataTableOutput("kegg")))),
         tabPanel(title = img("CCLE  ", id = "ccletab", src = "help.png", align = "right"),
                  bsTooltip(id = "ccletab", title = "This tab searches CCLE drug response data for drugs related to your query compound.", placement = "bottom", trigger = "hover"),
-                 plotlyOutput("ccle_2", height = "400px", width = "100%"),
-                 plotlyOutput("ccle_1", height = "400px", width = "100%")),
+                 h4(textOutput("ccle_mol")),
+                 div(),
+                 plotlyOutput("ccle_2", height = "400px", width = "90%"),
+                 plotlyOutput("ccle_1", height = "400px", width = "90%")),
         tabPanel(title = img("Sanger  ", id = "sangertab", src = "help.png", align = "right"),
                  bsTooltip(id = "sangertab", title = "This tab searches Sanger cell line response data for drugs related to your query compound.", placement = "bottom", trigger = "hover"),
-                 plotlyOutput("sang", height = "1000px", width = "100%"))
+                 h4(textOutput("sang_mol")),
+                 div(),
+                 plotlyOutput("sang_2", height = "400px", width = "90%"),
+                 plotlyOutput("sang_1", height = "400px", width = "90%"))
                  
         )
     )

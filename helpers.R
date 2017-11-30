@@ -216,7 +216,6 @@ plotSimCTRPDrugs <- function(input) {
     if(nrow(test[complete.cases(test),])>1){
       cor<-cor.test(drug.resp.single, drug.resp[[x]], method = "spearman", use = "complete.obs")
       res <- c("p.val" = cor$p.value, cor$estimate)
-      print(res)
     }else{
       res <- c("p.val" = -1, "rho" = 0)
     }
@@ -232,7 +231,6 @@ plotSimCTRPDrugs <- function(input) {
   cors$Correlation <- cors$rho
 
   cors$`BH adj p.val` <- p.adjust(cors$p.val, method = "BH")
-  print(cors)
   cors
 }
 
@@ -242,10 +240,10 @@ drug.resp.sang<-readRDS("Data/drugresp_sang.rds")
 sang.structures<-readRDS("Data/sangstructures.rds")
 fp.sang<-readRDS("Data/fpsang.rds")
 
-cell.deets <- read.table(synGet("syn9988099")@filePath, sep = "\t", header = TRUE) %>% select(-COSMIC_ID, -CCLE.name)
-colnames(cell.deets) <- c("cellLine", "cancerType")
 
-plotSimSangDrugs <- function(input, sim.thres) {
+input <- "C1=CC(=CC=C1CCCC(=O)O)N(CCCl)CCCl"
+
+plotSimSangDrugs <- function(input) {
   input <- input
   fp.inp <- parseInputFingerprint(input)
   
@@ -259,17 +257,34 @@ plotSimSangDrugs <- function(input, sim.thres) {
   })
   
   sims <- ldply(sims)
-  sims2 <- sims %>% filter(sim >= sim.thres) %>% arrange(-sim)
+  sims2 <- sims %>% arrange(-sim)
   sims2$smiles <- as.character(sims2$match)
   sims2$`Tanimoto Similarity` <- signif(sims2$sim, 3)
   drugs <- left_join(sims2, sang.structures) %>% dplyr::select(makenames, sanger_names, `Tanimoto Similarity`) %>% distinct()
   
-  foo <- select(drug.resp.sang, one_of(drugs$makenames)) %>% na.omit() %>% data.matrix(., rownames.force = T)
-  #foo <- foo[complete.cases(foo),]
-  print(rownames(foo))
-  cells <- as.data.frame(rownames(foo))
-  colnames(cells) <- "cellLine"
-  cells <- left_join(cells, cell.deets) %>% select(-cellLine) %>% as.data.frame()
-  print(cells)
-  list(foo, cells)
+  top_drug <- top_n(drugs, 1, `Tanimoto Similarity`)
+  
+  drug.resp.single <- drug.resp.sang[[top_drug$makenames]]
+    
+  cors<-sapply(colnames(drug.resp.sang), function(x){
+    test <- data.frame(drug.resp.single, drug.resp.sang[[x]])
+    if(nrow(test[complete.cases(test),])>1){
+      cor<-cor.test(drug.resp.single, drug.resp.sang[[x]], method = "spearman", use = "complete.obs")
+      res <- c("p.val" = cor$p.value, cor$estimate)
+    }else{
+      res <- c("p.val" = -1, "rho" = 0)
+    }
+  })
+  
+  cors <- cors %>% 
+    t() %>%
+    as.data.frame() %>% 
+    rownames_to_column("makenames") %>%
+    inner_join(drugs) %>% 
+    filter(p.val != -1)
+  
+  cors$Correlation <- cors$rho
+  
+  cors$`BH adj p.val` <- p.adjust(cors$p.val, method = "BH")
+  cors
 }

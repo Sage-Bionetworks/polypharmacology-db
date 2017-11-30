@@ -7,7 +7,6 @@ loading <- function() {
 source("helpers.R")
 library(DT)
 library(png)
-library(ggrepel)
 
 shinyServer(function(input, output, session) {
 
@@ -126,16 +125,28 @@ shinyServer(function(input, output, session) {
   
     ccleoutput <- reactive(plotSimCTRPDrugs(input$smiles))
     
+    output$ccle_mol <- renderText({
+      validate(
+        need(((nrow(as.matrix(ccleoutput()))>0)+(ncol(as.matrix(ccleoutput()))>0)==2), "No drugs found!")
+      )
+      
+      mol <- ccleoutput() %>% top_n(1,`Tanimoto Similarity`)
+      print(paste0("Nearest molecule in CCLE data is ", mol[1,1], ". Correlation calculation relative to ", mol[1,1], "."))
+      
+    })
+    
     output$ccle_1 <- renderPlotly({
       validate(
         need(((nrow(as.matrix(ccleoutput()))>0)+(ncol(as.matrix(ccleoutput()))>0)==2),"") 
       )
     
-    plot1<-ggplot(data = ccleoutput(), aes(x = Correlation, y = -`BH adj p.val`, text = makenames)) +
-      geom_point() +
-      theme_bw()
+    plot1<-ggplot(data = ccleoutput()) +
+      geom_point(aes(x = Correlation, y = -`BH adj p.val`, text = cpd_name, color = (`BH adj p.val` < 0.05))) +
+      theme_bw() +
+      scale_color_discrete(name = "p-value < 0.05") +
+      labs(x = "Drug Response Correlation", y = "BH adjusted p-value")
     
-    ggplotly(p = plot1, tooltip = "all")
+    ggplotly(p = plot1, tooltip = c("text", "x", "y"))
     
     })
     
@@ -144,57 +155,60 @@ shinyServer(function(input, output, session) {
         need(((nrow(as.matrix(ccleoutput()))>0)+(ncol(as.matrix(ccleoutput()))>0)==2),"") 
       )
       
-    plot2<-ggplot(data = ccleoutput(), aes(x = Correlation, y = `Tanimoto Similarity`, text = makenames, color = -log(`BH adj p.val`))) +
+    plot2<-ggplot(data = ccleoutput(), aes(x = Correlation, y = `Tanimoto Similarity`, text = cpd_name, color = (`BH adj p.val` < 0.05))) +
       geom_point() +
-      theme_bw()
+      theme_bw() +
+      scale_color_discrete(name = "p-value < 0.05") +
+      labs(x = "Drug Response Correlation", y = "Chemical Similarity")
     
-    ggplotly(p = plot2 , tooltip = "all")
+    ggplotly(p = plot2, tooltip = c("text", "x", "y"))
     
     })
     
-
-  
-  output$sang <- renderPlotly({
-    sangoutput <- plotSimSangDrugs(input$smiles, input$sim.thres)
+    sangoutput <- reactive(plotSimSangDrugs(input$smiles))
     
+    output$sang_mol <- renderText({
     validate(
-      need(((nrow(as.matrix(sangoutput[[1]]))>0)+(ncol(as.matrix(sangoutput[[1]]))>0)==2), "No drugs found!") 
+      need(((nrow(as.matrix(sangoutput()))>0)+(ncol(as.matrix(sangoutput()))>0)==2), "No drugs found!")
     )
     
+    mol <- sangoutput() %>% top_n(1,`Tanimoto Similarity`)
+    print(paste0("Nearest molecule in Sanger data is ", mol[1,1], ". Correlation calculation relative to ", mol[1,1], "."))
+      
+    })
     
-    if(ncol(as.matrix(sangoutput[[1]])) == 1){
+    output$sang_1 <- renderPlotly({
+      validate(
+        need(((nrow(as.matrix(sangoutput()))>0)+(ncol(as.matrix(sangoutput()))>0)==2), "No drugs found!")
+      )
       
-      p <- heatmaply(as.matrix(sangoutput[[1]]),
-                     margins = c(120,100,40,20), 
-                     colors = viridis(option = "C",
-                                      direction = -1, 
-                                      n = 256),
-                     showticklabels = c(TRUE,FALSE),
-                     Colv = FALSE,
-                     key.title = "AUC",
-                     row_side_colors = sangoutput[[2]])
-    }else if(nrow(as.matrix(sangoutput[[1]])) == 1){
+      plot1<-ggplot(data = sangoutput(), aes(x = Correlation, y = -`BH adj p.val`, text = sanger_names, color = (`BH adj p.val` < 0.05))) +
+        geom_point() +
+        theme_bw() +
+        scale_color_discrete(name = "p-value < 0.05") +
+        labs(x = "Drug Response Correlation", y = "BH adjusted p-value")
       
-      p <- heatmaply(as.matrix(sangoutput[[1]]),
-                     margins = c(120,100,40,20), 
-                     colors = viridis(option = "C",
-                                      direction = -1, 
-                                      n = 256),
-                     showticklabels = c(TRUE,FALSE),
-                     Rowv = FALSE,
-                     key.title = "AUC",
-                     row_side_colors = sangoutput[[2]])
-    }else{
-      p <- heatmaply(as.matrix(sangoutput[[1]]),
-                     margins = c(120,100,40,20),
-                     colors = viridis(option = "C",
-                                      direction = -1, 
-                                      n = 256),
-                     showticklabels = c(TRUE,FALSE),
-                     key.title = "AUC", 
-                     row_side_colors = sangoutput[[2]])
-    }                
-  })
+      ggplotly(p = plot1, tooltip = c("text", "x", "y"))
+      
+    })
+    
+    output$sang_2 <- renderPlotly({
+      validate(
+        need(((nrow(as.matrix(sangoutput()))>0)+(ncol(as.matrix(sangoutput()))>0)==2), "")
+      )
+      
+      plot2<-ggplot(data = sangoutput(), aes(x = Correlation, y = `Tanimoto Similarity`, text = sanger_names, color = (`BH adj p.val` < 0.05))) +
+        geom_point() +
+        theme_bw() +
+        scale_color_discrete(name = "p-value < 0.05") +
+        labs(x = "Drug Response Correlation", y = "Chemical Similarity")
+      
+      ggplotly(p = plot2, tooltip = c("text", "x", "y"))
+      
+    })
+  
+
+    
   
 ####### gene tab
   getMols <- eventReactive(input$genebutton, {
