@@ -18,14 +18,14 @@ shinyUI(
     tags$head(tags$style(type='text/css', "#loading_page { width:100%; margin-top: 20%;}")),
     hidden(
       div(id = "main_content",
-  navbarPage("Polypharmacology DB", theme = shinytheme("flatly"),
+  navbarPage("Drug-Target Explorer", theme = shinytheme("flatly"),
   tabPanel("About",
-           h4(strong("Welcome to the Polypharmacology App, powered by Sage Bionetworks.")),
+           h4(strong("Welcome to the Drug-Target Explorer, powered by Sage Bionetworks.")),
            h5("The purpose of this app is to facilitate exploration of drug-target interaction databases.
              This app currently contains the Children's Tumor Foundation Drug-Target Database, licensed from Evotec, which
              summarizes activity data deposited in ChEMBL and inactivity data deposited in Pubchem."),
            br(),
-           h4(strong("How does PPDB work?")),
+           h4(strong("How does this app work?")),
            h5("PPDB leverages structural information of molecules and the associated target annotations to build a drug-target map 
              based on chemical similarity between molecules. PPDB includes drug-target interactions collated by Evotec, as well as a subset of those available in the DGIdb app.
              Examples of use-cases for this include:"),

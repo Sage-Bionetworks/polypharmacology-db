@@ -241,8 +241,6 @@ sang.structures<-readRDS("Data/sangstructures.rds")
 fp.sang<-readRDS("Data/fpsang.rds")
 
 
-input <- "C1=CC(=CC=C1CCCC(=O)O)N(CCCl)CCCl"
-
 plotSimSangDrugs <- function(input) {
   input <- input
   fp.inp <- parseInputFingerprint(input)
