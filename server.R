@@ -38,7 +38,7 @@ shinyServer(function(input, output, session) {
   })
   
 
-  updateSelectizeInput(session, "drugnames", choices = syns$common_name, server = TRUE) 
+  updateSelectizeInput(session, "drugnames", choices = db.names$common_name, server = TRUE) 
 
   observeEvent(input$ppdbsearchbutton, {
     pp.smiles<-as.character(convertDrugToSmiles(input$drugnames)[1,1])

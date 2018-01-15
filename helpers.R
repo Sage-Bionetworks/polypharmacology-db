@@ -45,8 +45,6 @@ getTargetList <- function(selectdrugs) {
   }
 }
 
-input <- "CCCC"
-sim.thres <- 0.01
 
 getSimMols <- function(input, sim.thres) {
   input <- input
