@@ -17,7 +17,7 @@ shinyServer(function(input, output, session) {
   
   output$sims <- renderUI({
     mols <- simmols()
-    choices <- mols$Common_Name
+    choices <- mols$common_name
     checkboxGroupInput(inputId = "selectdrugs", "Molecules (similarity)", choices = choices, selected = choices)
   })
   
@@ -38,7 +38,7 @@ shinyServer(function(input, output, session) {
   })
   
 
-  updateSelectizeInput(session, "drugnames", choices = syns$Common_Name, server = TRUE) 
+  updateSelectizeInput(session, "drugnames", choices = syns$common_name, server = TRUE) 
 
   observeEvent(input$ppdbsearchbutton, {
     pp.smiles<-as.character(convertDrugToSmiles(input$drugnames)[1,1])

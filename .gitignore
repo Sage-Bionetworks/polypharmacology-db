@@ -1,10 +1,11 @@
-
 *.txt
 .Rhistory
 .RData
 *.tsv
-sims.rds
-NoGit/.DS_Store
+*.rds
+*.RDS
+Data/*
+NoGit/*
 .DS_Store
 *.sdf
 *.csv
@@ -12,3 +13,5 @@ NoGit/.DS_Store
 .DS_Store
 .DS_Store
 *.history
+*.json
+*.xml

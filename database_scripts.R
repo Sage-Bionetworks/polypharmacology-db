@@ -1,10 +1,18 @@
+library(plyr)
+library(tidyverse)
+library(rJava)
+library(rcdk)
+library(fingerprint)
+library(parallel)
+
+
 evo <- readRDS("Data/evotec.RDS")
 
 temp <- read.table("Data/interactions.tsv", sep = "\t", quote = "",header = T) ##from DGIDB downloads section
 temp2 <- temp %>% 
-  select(entrez_gene_symbol, drug_primary_name) %>% 
+  dplyr::select(entrez_gene_symbol, drug_primary_name) %>% 
   group_by(entrez_gene_symbol,drug_primary_name) %>% 
-  summarize(count = n()) %>% 
+  dplyr::summarize("count" = n()) %>% 
   ungroup()
 
 #clean up weird name formatting for pubchem
@@ -54,7 +62,7 @@ dgidb.cons <- dgidb.int %>%
 
 dgidb.topname <- dgidb.cons %>% 
   group_by(Original_molecule_SMILES, Common_Name) %>% 
-  summarize(n()) %>% 
+  dplyr::summarize(n()) %>% 
   ungroup() %>% 
   group_by(Original_molecule_SMILES) %>% 
   top_n(1) %>% 
@@ -68,9 +76,8 @@ dgidb.topname <- dgidb.topname %>%
   select(Original_molecule_SMILES, Common_Name)
 
 dgidb.cons <- dgidb.cons %>% 
-  rename("nonstandard_name" = Common_Name) %>% 
   left_join(dgidb.topname) %>%
-  select(Hugo_Gene, Common_Name, `sum(N_DGIDB)`, Original_molecule_SMILES) %>% 
+  select(Hugo_Gene, Common_Name, N_DGIDB, Original_molecule_SMILES) %>% 
   distinct()
 
 colnames(dgidb.cons) <- c("Hugo_Gene", "Common_Name", "N_DGIDB", "Original_molecule_SMILES")
@@ -81,9 +88,11 @@ colnames(dgidb.cons) <- c("Hugo_Gene", "Common_Name", "N_DGIDB", "Original_molec
 #saveRDS(evo2, "Data/evotec_dgidb.RDS")
 
 ##map DGIDB with evotec where chemical overlap exists
-library(parallel)
 parseInputFingerprint <- function(input) {
   input.mol <- parse.smiles(input)
+  lapply(input.mol, do.typing)
+  lapply(input.mol, do.aromaticity)
+  lapply(input.mol, do.isotopes)
   fp.inp <- lapply(input.mol, get.fingerprint, type = "extended")
 }
 
