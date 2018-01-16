@@ -11,10 +11,18 @@ library(grid)
 library(plotly)
 library(tibble)
 library(synapser)
+library(parallel)
+
 synLogin()
 
 db <- read.table(synGet("syn11681928")$path, header = T) %>% 
   filter(!is.na(hugo_gene))
+
+mini.db <- db %>% group_by(internal_id) %>% 
+  mutate(n = sum(n_qualitative, n_quantitative, na.rm = T)) %>% 
+  select(internal_id, common_name, n) %>% 
+  distinct() %>% 
+  filter(n>=5)
 
 db.names <- read.table(synGet("syn11681849")$path, header = T)
 
@@ -22,6 +30,8 @@ db$internal_id <- as.character(db$internal_id)
 
 fp.db <- readRDS(synGet("syn11683261")$path)
 fp.db <- fp.db[names(fp.db) %in% unique(db$internal_id)]
+
+fp.snappy <- fp.db[names(fp.db) %in% unique(mini.db$internal_id)]
 
 parseInputFingerprint <- function(input) {
   input.mol <- parse.smiles(as.character(input))
@@ -45,21 +55,35 @@ getTargetList <- function(selectdrugs) {
   }
 }
 
-
-getSimMols <- function(input, sim.thres) {
+getSimMols <- function(input, sim.thres, snappy) {
   input <- input
   fp.inp <- parseInputFingerprint(input)
-  
+
+  if(snappy == FALSE){
   sims <- lapply(fp.inp, function(i) {
-    sim <- sapply(fp.db, function(j) {
+    sim <- mclapply(fp.db, function(j) {
       distance(i, j)
-    })
-    bar <- as.data.frame(sim)
-    bar$match <- rownames(bar)
+    }, mc.cores = 6)
+    bar <- ldply(sim)
+    bar$match <- bar$.id
     bar
   })
+  }
+  
+  if(snappy == TRUE){
+    sims <- lapply(fp.inp, function(i) {
+      sim <- mclapply(fp.snappy, function(j) {
+        distance(i, j)
+      }, mc.cores = 6)
+      bar <- ldply(sim)
+      colnames(bar) <- c("match", "sim")
+      bar
+    })
+  }
   
   sims <- ldply(sims)
+  
+  
   sims2 <- sims %>% filter(sim >= sim.thres) %>% arrange(-sim)
   sims2$internal_id <- as.character(sims2$match)
   sims2$`Tanimoto Similarity` <- signif(sims2$sim, 3)

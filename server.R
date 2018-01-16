@@ -13,7 +13,7 @@ shinyServer(function(input, output, session) {
   loading()
   
   simmols <- reactive({
-    getSimMols(input$smiles, input$sim.thres)})
+    getSimMols(input$smiles, input$sim.thres, input$snappy)})
   
   output$sims <- renderUI({
     mols <- simmols()
