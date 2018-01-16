@@ -13,7 +13,8 @@ shinyServer(function(input, output, session) {
   loading()
   
   simmols <- reactive({
-    getSimMols(input$smiles, input$sim.thres, input$snappy)})
+    getSimMols(input$smiles, input$sim.thres, input$snappy)
+    })
   
   output$sims <- renderUI({
     mols <- simmols()
@@ -67,7 +68,8 @@ shinyServer(function(input, output, session) {
 
 
   output$net <- renderVisNetwork({
-    edges <- getNetwork(input$smiles, input$sim.thres, input$selectdrugs)
+    drugsfound <- simmols()
+    edges <- getNetwork(drugsfound, input$selectdrugs)
     nodes <- distinct(data.frame(id = as.character(c("input", edges$to)), 
                                  label = c("INPUT", edges$to)))
     visNetwork(nodes = nodes, edges = edges, height = "2000px") #%>% visIgraphLayout()

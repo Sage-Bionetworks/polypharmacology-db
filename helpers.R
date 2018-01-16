@@ -16,7 +16,8 @@ library(parallel)
 synLogin()
 
 db <- read.table(synGet("syn11681928")$path, header = T) %>% 
-  filter(!is.na(hugo_gene))
+  filter(!is.na(hugo_gene)) %>% 
+  select(internal_id, common_name, hugo_gene, mean_pchembl, n_quantitative, n_qualitative)
 
 mini.db <- db %>% group_by(internal_id) %>% 
   mutate(n = sum(n_qualitative, n_quantitative, na.rm = T)) %>% 
@@ -65,7 +66,7 @@ getSimMols <- function(input, sim.thres, snappy) {
       distance(i, j)
     }, mc.cores = 6)
     bar <- ldply(sim)
-    bar$match <- bar$.id
+    colnames(bar) <- c("match", "sim")
     bar
   })
   }
@@ -87,7 +88,9 @@ getSimMols <- function(input, sim.thres, snappy) {
   sims2 <- sims %>% filter(sim >= sim.thres) %>% arrange(-sim)
   sims2$internal_id <- as.character(sims2$match)
   sims2$`Tanimoto Similarity` <- signif(sims2$sim, 3)
-  targets <- left_join(sims2, db) %>% dplyr::select(common_name, `Tanimoto Similarity`) %>% distinct()
+  targets <- left_join(sims2, db) %>% 
+    dplyr::select(common_name, `Tanimoto Similarity`) %>% 
+    distinct()
 }
 
 getMolImage <- function(input) {
@@ -95,29 +98,12 @@ getMolImage <- function(input) {
   view.image.2d(smi[[1]])
 }
 
-
-getNetwork <- function(input, sim.thres, selectdrugs) {
-  input <- input
-  
-  fp.inp <- parseInputFingerprint(input)
-  
-  sims <- lapply(fp.inp, function(i) {
-    sim <- sapply(fp.db, function(j) {
-      distance(i, j)
-    })
-    bar <- as.data.frame(sim)
-    bar$match <- rownames(bar)
-    bar
-  })
-  
-  sims <- ldply(sims)
-  sims2 <- sims %>% filter(sim >= sim.thres) %>% arrange(-sim)
-  sims2$internal_id <- as.character(sims2$match)
-  targets <- left_join(sims2, db) %>% dplyr::select(common_name, sim) %>% 
+getNetwork <- function(drugsfound, selectdrugs) {
+  targets <- drugsfound %>% 
     distinct() %>% filter(common_name %in% selectdrugs)
   targets$from <- "input"
   targets$to <- as.character(targets$common_name)
-  targets$width <- ((targets$sim)^2) * 10
+  targets$width <- ((targets$`Tanimoto Similarity`)^2) * 10
   targets$color <- "red"
   targets <- select(targets, from, to, width, color)
 }

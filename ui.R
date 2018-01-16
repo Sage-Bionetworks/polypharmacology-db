@@ -5,6 +5,9 @@ library(visNetwork)
 library(igraph)
 library(shinyjs)
 library(plotly)
+library(shinycssloaders)
+
+options(spinner.color="#0dc5c1", spinner.color.background="#FFFFFF", spinner.type = 2)
 
 shinyUI(
   fluidPage( 
@@ -114,39 +117,39 @@ shinyUI(
       tabsetPanel(
         tabPanel(title = img("Similar Molecules  ", id = "similarmolstab", src = "help.png", align = "right"),
           bsTooltip(id = "similarmolstab", title = "This table displays all similar molecules to the input molecule.", placement = "bottom", trigger = "hover"),
-          DT::dataTableOutput("simmoltab")),
+          DT::dataTableOutput("simmoltab") %>% withSpinner()),
         tabPanel(title = img("Similarity Net  ", id = "similarmolnettab", src = "help.png", align = "right"),
           bsTooltip(id = "similarmolnettab", title = "This is a graphical representation of the previous table, where edge thickness is the similarity to the input.", placement = "bottom", trigger = "hover"),
-          visNetworkOutput("net")),
+          visNetworkOutput("net") %>% withSpinner()),
         tabPanel(title = img("Targets  ", id = "targetstab", src = "help.png", align = "right"), 
           bsTooltip(id = "targetstab", title = "These are all of the targets associated with the input and similar molecules. Filter using the checkboxes in the sidebar.", placement = "bottom", trigger = "hover"),
-          DT::dataTableOutput("value")),
+          DT::dataTableOutput("value") %>% withSpinner()),
         tabPanel(title = img("Target Net  ", id = "targetnettab", src = "help.png", align = "right"),
                  bsTooltip(id = "targetnettab", title = "This a network of all similar molecules (blue) and their targets (green).", placement = "bottom", trigger = "hover"),
-          visNetworkOutput("targetnet")),
+          visNetworkOutput("targetnet") %>% withSpinner()),
         tabPanel(title = img("Enrichr  ", id = "enrichrtab", src = "help.png", align = "right"),
                  bsTooltip(id = "enrichrtab", title = "This tab interactively queries Enrichr for enriched gene ontology and KEGG terms using your target list. May take a few seconds, please be patient!", placement = "bottom", trigger = "hover"),
             tabsetPanel(
                  tabPanel("GO Molecular Function",
-              DT::dataTableOutput("GOMF.mol")),
+              DT::dataTableOutput("GOMF.mol") %>% withSpinner()),
             tabPanel("GO Cellular Component",
-              DT::dataTableOutput("GOCC.mol")),
+              DT::dataTableOutput("GOCC.mol") %>% withSpinner()),
             tabPanel("GO Biological Process",
-              DT::dataTableOutput("GOBP.mol")),
+              DT::dataTableOutput("GOBP.mol") %>% withSpinner()),
             tabPanel("KEGG Pathways",
               DT::dataTableOutput("kegg")))),
         tabPanel(title = img("CCLE  ", id = "ccletab", src = "help.png", align = "right"),
                  bsTooltip(id = "ccletab", title = "This tab searches CCLE drug response data for drugs related to your query compound.", placement = "bottom", trigger = "hover"),
                  h4(textOutput("ccle_mol")),
                  div(),
-                 plotlyOutput("ccle_2", height = "400px", width = "90%"),
-                 plotlyOutput("ccle_1", height = "400px", width = "90%")),
+                 plotlyOutput("ccle_2", height = "400px", width = "90%") %>% withSpinner(),
+                 plotlyOutput("ccle_1", height = "400px", width = "90%") %>% withSpinner()),
         tabPanel(title = img("Sanger  ", id = "sangertab", src = "help.png", align = "right"),
                  bsTooltip(id = "sangertab", title = "This tab searches Sanger cell line response data for drugs related to your query compound.", placement = "bottom", trigger = "hover"),
                  h4(textOutput("sang_mol")),
                  div(),
-                 plotlyOutput("sang_2", height = "400px", width = "90%"),
-                 plotlyOutput("sang_1", height = "400px", width = "90%"))
+                 plotlyOutput("sang_2", height = "400px", width = "90%") %>% withSpinner(),
+                 plotlyOutput("sang_1", height = "400px", width = "90%") %>% withSpinner())
                  
         )
     )
@@ -166,10 +169,10 @@ shinyUI(
                tabsetPanel(
                  tabPanel(title = img("Matched Molecules  ", id = "matchmolstab", src = "help.png", align = "right"),
                           bsTooltip(id = "matchmolstab", title = "This tab displays molecules with a known interaction with the input gene", placement = "right", trigger = "hover"),
-                          DT::dataTableOutput("genetargets")),
+                          DT::dataTableOutput("genetargets") %>% withSpinner()),
                  tabPanel(title = img("Target Network  ", id = "targnetworktab", src = "help.png", align = "right"),
                             bsTooltip(id = "targnetworktab", title = "This tab graphically displays the input gene, associated drugs, and the other targets associated with those drugs.", placement = "right", trigger = "hover"),
-                            visNetworkOutput("genetargetnet"))
+                            visNetworkOutput("genetargetnet") %>% withSpinner())
                )
              )
            )
