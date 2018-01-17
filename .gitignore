@@ -15,3 +15,5 @@ NoGit/*
 *.history
 *.json
 *.xml
+.Rproj.user
+polypharmacology-db.Rproj

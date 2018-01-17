@@ -77,17 +77,16 @@ getSimMols <- function(input, sim.thres, snappy) {
         distance(i, j)
       }, mc.cores = 6)
       bar <- ldply(sim)
-      colnames(bar) <- c("match", "sim")
+      colnames(bar) <- c("match", "similarity")
       bar
     })
   }
   
   sims <- ldply(sims)
   
-  
-  sims2 <- sims %>% filter(sim >= sim.thres) %>% arrange(-sim)
+  sims2 <- sims %>% filter(similarity >= sim.thres) %>% arrange(-similarity)
   sims2$internal_id <- as.character(sims2$match)
-  sims2$`Tanimoto Similarity` <- signif(sims2$sim, 3)
+  sims2$`Tanimoto Similarity` <- signif(sims2$similarity, 3)
   targets <- left_join(sims2, db) %>% 
     dplyr::select(common_name, `Tanimoto Similarity`) %>% 
     distinct()
