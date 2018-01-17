@@ -23,7 +23,7 @@ mini.db <- db %>% group_by(internal_id) %>%
   mutate(n = sum(n_qualitative, n_quantitative, na.rm = T)) %>% 
   select(internal_id, common_name, n) %>% 
   distinct() %>% 
-  filter(n>=5)
+  filter(n>=10)
 
 db.names <- read.table(synGet("syn11681849")$path, header = T)
 
@@ -62,9 +62,9 @@ getSimMols <- function(input, sim.thres, snappy) {
 
   if(snappy == FALSE){
   sims <- lapply(fp.inp, function(i) {
-    sim <- mclapply(fp.db, function(j) {
+    sim <- lapply(fp.db, function(j) {
       distance(i, j)
-    }, mc.cores = 6)
+    })
     bar <- ldply(sim)
     colnames(bar) <- c("match", "sim")
     bar
@@ -73,9 +73,9 @@ getSimMols <- function(input, sim.thres, snappy) {
   
   if(snappy == TRUE){
     sims <- lapply(fp.inp, function(i) {
-      sim <- mclapply(fp.snappy, function(j) {
+      sim <- lapply(fp.snappy, function(j) {
         distance(i, j)
-      }, mc.cores = 6)
+      })
       bar <- ldply(sim)
       colnames(bar) <- c("match", "similarity")
       bar
