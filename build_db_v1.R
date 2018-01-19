@@ -1,4 +1,4 @@
-##options(java.parameters = "-Xmx36g" ) 
+options(java.parameters = "-Xmx12g" ) 
 ##set above parameter before loading rJavaif generating fingerprints
 ##should be on c4.8xlarge or equiv
 
@@ -12,6 +12,7 @@ library(synapser)
 library(rlist)
 library(pbapply)
 synLogin()
+
 
 this.file = "https://raw.githubusercontent.com/Sage-Bionetworks/polypharmacology-db/master/build_db_v1.R"
 
@@ -54,14 +55,14 @@ db_struct <- x %>% dplyr::select(DrugBank.ID, SMILES) %>%
   set_names(c("external_id", "smiles")) %>% 
   filter(smiles != "")
 
-db_struct$db <- "drugbank"
+db_struct$database <- "drugbank"
 
 ##import CHeMBL v23 structure data downloaded from ftp site
 chembl_struct <- read.csv(synGet("syn11672894")$path, header = T, comment.char = "", allowEscapes = FALSE) %>% distinct()
 colnames(chembl_struct) <- c("external_id", "smiles")
 chembl_struct$external_id <- as.factor(chembl_struct$external_id)
 
-chembl_struct$db <- "chembl"
+chembl_struct$database <- "chembl"
 
 ##import DGIDB 3.0
 dgidb_struct <- read.table(synGet("syn11673095")$path, 
@@ -80,8 +81,39 @@ dgidb_struct <- dgidb_struct %>%
   ungroup() %>% 
   set_names(c("external_id", "smiles"))
 
-dgidb_struct$db <- "dgidb"
-structures <- bind_rows(chembl_struct, db_struct, dgidb_struct)
+dgidb_struct$database <- "dgidb"
+
+##import ChemicalProbes.org structures
+cp_struct <- read.table(synGet("syn11685572")$path, 
+                        sep = "\t",
+                        quote = "",
+                        header = T, 
+                        comment.char = "",
+                        na.strings = NA,
+                        allowEscapes = FALSE) %>% 
+  group_by(external.id) %>% 
+  mutate(count = n()) %>% slice(1) %>% 
+  ungroup() %>% 
+  select(external.id, smiles, database) %>% 
+  set_names(c("external_id", "smiles", "database")) %>% 
+  mutate(source = "cp") %>% 
+  unite(external_id, c("external_id", "source"), sep = "_")
+
+##import 
+klaeger_struct <- read.table(synGet("syn11685586")$path, 
+                             sep = "\t",
+                             quote = "",
+                             header = T, 
+                             comment.char = "",
+                             na.strings = NA,
+                             allowEscapes = FALSE) %>% 
+  select(Drug, SMILES.code) %>% 
+  set_names(c("external_id", "smiles")) %>% 
+  mutate(database = "klaeger", source = "klaeger") %>% 
+  unite(external_id, c("external_id", "source"), sep = "_")
+
+
+structures <- bind_rows(chembl_struct, db_struct, dgidb_struct, cp_struct, klaeger_struct)
 
 valid.smiles<-pbsapply(structures$smiles, is.smiles)
 
@@ -133,9 +165,9 @@ mat.df2 <- mat.df %>%
 
 mat.df2$internal_id <- group_indices(mat.df2, fp)  
 
-write.table(mat.df2, "grouped_structures.txt", sep = "\t", row.names = F)
-synStore(File("grouped_structures.txt", parentId = ""), ####"syn11678675"), change this to parentId for current build
-         used = c("syn11672894","syn11673040", "syn11673095"), executed = this.file)
+write.table(mat.df2, "NoGit/grouped_structures.txt", sep = "\t", row.names = F)
+synStore(File("NoGit/grouped_structures.txt", parentId = "syn11678675"), ####"syn11678675"), change this to parentId for current build
+         used = c("syn11672894","syn11673040","syn11673095","syn11685572","syn11685586"), executed = this.file)
 
 
 ####assemble all the bits together
@@ -146,7 +178,9 @@ grouped_structures <- read.table(synGet("syn11678713")$path,
                                  colClasses = c("character", 
                                                 "character",
                                                 "character",
-                                                "character")) %>% dplyr::select(2:4)
+                                                "character")) %>% 
+  select(2:5) %>% 
+  filter(smiles != "")
 
 ##Targets
 
@@ -171,8 +205,24 @@ dgidb.targets <- read.table(synGet("syn11672978")$path, sep = "\t", quote = "",h
   ungroup() %>% 
   distinct()
 
+##CP Jan 2018 Targets
+
+cp.targets <- read.table(synGet("syn11685574")$path, sep = "\t", quote = "", header = T) %>% 
+  filter(Number.of.SAB.Reviews > 0) %>% 
+  mutate(Protein.target = gsub("\"","",Protein.target), external_id = Probe.Name, source = c("cp"))%>% 
+  unite(external_id, c("external_id", "source"), sep = "_") %>% 
+  select(external_id, Protein.target) %>% 
+  separate(Protein.target, into = c("1","2","3","4","5"), sep = ",") %>% 
+  gather(key = "key", value = "hugo_gene", -external_id) %>%
+  select(-key) %>% 
+  filter(!is.na(hugo_gene)) %>% 
+  group_by(external_id, hugo_gene) %>% 
+  dplyr::add_tally() %>% 
+  ungroup() %>% 
+  distinct()
+
 ######### ALL QUALITATIVE DATA - 24080 Qualitative Drug-Target Associations
-qual.targets <- bind_rows(drugbank.targets, dgidb.targets) %>% 
+qual.targets <- bind_rows(drugbank.targets, dgidb.targets, cp.targets) %>% 
   left_join(x=grouped_structures, y = .) %>% 
   dplyr::select(internal_id, hugo_gene, n) %>% 
   group_by(internal_id, hugo_gene) %>% 
@@ -181,6 +231,41 @@ qual.targets <- bind_rows(drugbank.targets, dgidb.targets) %>%
   filter(!is.na(hugo_gene))
 
 ######### Summarize Quantitative Data
+##Klaeger 2017
+klaeger.drugnames <- t(read.table(synGet("syn11685587")$path, sep = "\t",
+                                  header = F, comment.char = "", quote = "")[1,4:246]) %>% 
+  as.data.frame() %>% 
+  remove_rownames() %>% 
+  set_names(c("external_id")) %>% 
+  mutate(Drug = make.names(external_id))
+
+klaeger.targets <- read.table(synGet("syn11685587")$path, sep = "\t",
+                              header =T, comment.char = "", quote = "") %>% 
+  dplyr::select(-Kinase, -Direct.binder) %>% 
+  gather(key = "Drug", value = "Kd", -Gene.name) %>% 
+  filter(!is.na(Kd)) %>% 
+  mutate(pchembl_value = -log10(Kd/1000000000)) %>%  #-log10(Kd molar)
+  separate(Gene.name, into = c("1","2"), sep = ";") %>% ##some genes have 2 isoforms listed, separate and gather data
+  gather(key = "key", value = "hugo_gene", -Drug, -Kd, -pchembl_value) %>% 
+  select(-key) %>% 
+  filter(!is.na(hugo_gene)) %>% 
+  left_join(klaeger.drugnames) %>% 
+  mutate(source = "klaeger") %>% 
+  unite("external_id", external_id , source, sep = "_") %>% 
+  left_join(grouped_structures) 
+
+klaeger_pchembl <- klaeger.targets %>% 
+  select(internal_id, hugo_gene, pchembl_value)
+
+klaeger_assaytype_summary <- klaeger.targets %>% 
+  mutate("IC50_nM"=NA, "AC50_nM"=NA, "EC50_nM"=NA, "C50_nM"=NA, "Potency_nM"=NA,"Ki_nM"=NA,
+         "Kd_nM"=Kd,"GI50_nM"=NA) %>% 
+  select(internal_id, 
+         hugo_gene, 
+         IC50_nM, 
+         AC50_nM, 
+         EC50_nM, C50_nM, Potency_nM, Ki_nM, Kd_nM, GI50_nM)
+
 ##ChEMBL v23 - SQL query on synapse file page V
 chembl.targets <- read.table(synGet("syn11672909")$path, sep = "\t",
                              header = T, comment.char = "", quote = "")
@@ -189,31 +274,33 @@ pchembl.summary <- chembl.targets %>%
   mutate(external_id = as.character(molregno)) %>% 
   left_join(x=grouped_structures, y = .) %>% 
   dplyr::select(internal_id, component_synonym, pchembl_value) %>% 
+  set_names(c("internal_id", "hugo_gene", "pchembl_value")) %>% 
   filter(pchembl_value != "NULL") %>% 
   mutate(pchembl_value = as.numeric(as.character(pchembl_value))) %>% 
-  group_by(internal_id, component_synonym) %>%
+  bind_rows(klaeger_pchembl) %>% 
+  group_by(internal_id, hugo_gene) %>% 
   summarize("n_quantitative" = n(), 
-            "mean_value" = mean(pchembl_value, na.rm = T)) %>% 
-  set_names(c("internal_id", "hugo_gene", "n_quantitative", "mean_pchembl")) %>% 
+            "mean_pchembl" = mean(pchembl_value, na.rm = T)) %>% 
   ungroup()
 
-chembl.assaytype.summary <- chembl.targets %>% 
+chembl.assaytype.summary <- chembl.targets %>% ##add in klaeger_quant data too
   mutate(external_id = as.character(molregno)) %>% 
   left_join(x=grouped_structures, y = .) %>% 
   dplyr::select(internal_id, component_synonym, standard_value, standard_type) %>% 
   filter(!is.na(standard_type)) %>% 
   group_by(internal_id, component_synonym, standard_type) %>% 
   summarize(mean_value = mean(standard_value)) %>% 
+  ungroup() %>% 
   spread(standard_type, mean_value) %>% 
   select(internal_id, component_synonym, IC50, AC50, EC50, C50, Potency, Ki, Kd, GI50) %>% 
   set_names(c("internal_id", "hugo_gene", "IC50_nM","AC50_nM",
               "EC50_nM", "C50_nM", "Potency_nM", "Ki_nM", "Kd_nM", 
               "GI50_nM")) %>% 
-  ungroup()
-  
-all.chembl.summary <- full_join(pchembl.summary, chembl.assaytype.summary)
+  rbind(klaeger_assaytype_summary)
 
-full.db <- full_join(all.chembl.summary, qual.targets)
+quant.targets <- full_join(pchembl.summary, chembl.assaytype.summary)
+
+full.db <- full_join(quant.targets, qual.targets)
 
 
 ##generate database name map, trying to retain useful IDs as well as human readable names for compounds that have them
@@ -224,7 +311,9 @@ grouped_structures <- read.table(synGet("syn11678713")$path,
                                  colClasses = c("character", 
                                                 "character",
                                                 "character",
-                                                "character")) %>% dplyr::select(2:4)
+                                                "character")) %>% 
+  select(2:5) %>% 
+  filter(smiles != "")
 
 dgidb.names <- read.table(synGet("syn11672978")$path, sep = "\t", quote = "", header = T) %>% 
   select(drug_claim_primary_name, drug_claim_name, drug_name, drug_chembl_id) %>% 
@@ -267,7 +356,13 @@ chembl.names <- read.table(synGet("syn11681825")$path,
   filter(common_name != "NULL") %>% 
   mutate(external_id = as.character(external_id))
 
-all.names <- bind_rows(dgidb.names, db.names, chembl.names) %>% 
+cp.names <- cp_struct %>% select(external_id) %>% 
+  mutate(common_name = gsub("_.+", "", external_id))
+
+klaeger.names <- klaeger_struct %>% select(external_id) %>% 
+  mutate(common_name = gsub("_.+", "", external_id))
+
+all.names <- bind_rows(dgidb.names, db.names, chembl.names, cp.names, klaeger.names) %>% 
   inner_join(grouped_structures)
 
 
@@ -278,12 +373,10 @@ syns <- all.names %>%
   mutate(count = n()) %>% slice(1) %>% 
   select(internal_id, common_name)
 
-View(table(syns$common_name))
-
 full.db <- left_join(full.db, syns)
 
-write.table(full.db, "drug_target_associations_v1.txt", row.names = F)
-synStore(File("drug_target_associations_v1.txt", parentId = "syn11678675"), executed = this.file, 
+write.table(full.db, "NoGit/drug_target_associations_v1.txt", row.names = F)
+synStore(File("NoGit/drug_target_associations_v1.txt", parentId = "syn11678675"), executed = this.file, 
          used = c("syn11672909", "syn11672978", "syn11673549", "syn11678713"))
 
 write.table(all.names, "NoGit/compound_names.txt", sep = '\t', row.names = F)
@@ -300,7 +393,9 @@ structures <- read.table(synGet("syn11678713")$path, header = T)
 structures.distinct <- structures %>% 
   group_by(internal_id) %>% 
   top_n(1) %>% 
-  mutate(count = n()) %>% slice(1)
+  mutate(count = n()) %>% 
+  slice(1) %>% 
+  select(-fp, -external_id, -database)
 
 valid <- as.character(structures.distinct$smiles)
 
@@ -335,5 +430,7 @@ for(i in 1:ceiling(length(valid)/5000)){
   }
 }
 
-saveRDS(foo, "db_fingerprints.rds")
-synStore(File("db_fingerprints.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
+names(foo) <- structures.distinct$internal_id
+
+saveRDS(foo, "NoGit/db_fingerprints.rds")
+synStore(File("NoGit/db_fingerprints.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)

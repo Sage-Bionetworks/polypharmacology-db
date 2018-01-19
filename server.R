@@ -76,7 +76,9 @@ shinyServer(function(input, output, session) {
   })
   
   output$targetnet <- renderVisNetwork({
-    edges <- getTargetNetwork(input$smiles, input$sim.thres, input$selectdrugs)
+    drugsfound <- simmols()
+    print(drugsfound)
+    edges <- getTargetNetwork(drugsfound, input$selectdrugs)
     nodes <- distinct(data.frame(id = as.character(c(as.character(edges$from), edges$to)), 
                                  label = c(edges$from, edges$to), color = c(rep("blue", length(edges$from)), 
                                                                             rep("green", length(edges$to)))))

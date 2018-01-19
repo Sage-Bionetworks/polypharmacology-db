@@ -5,13 +5,9 @@ library(fingerprint)
 library(enrichR)
 library(webchem)
 library(plyr)
-library(dplyr)
-library(tidyr)
-library(grid)
+library(tidyverse)
 library(plotly)
-library(tibble)
 library(synapser)
-library(parallel)
 
 synLogin()
 
@@ -29,7 +25,7 @@ db.names <- read.table(synGet("syn11681849")$path, header = T)
 
 db$internal_id <- as.character(db$internal_id)
 
-fp.db <- readRDS(synGet("syn11683261")$path)
+fp.db <- readRDS(synGet("syn11693143")$path)
 fp.db <- fp.db[names(fp.db) %in% unique(db$internal_id)]
 
 fp.snappy <- fp.db[names(fp.db) %in% unique(mini.db$internal_id)]
@@ -39,7 +35,7 @@ parseInputFingerprint <- function(input) {
   lapply(input.mol, do.typing)
   lapply(input.mol, do.aromaticity)
   lapply(input.mol, do.isotopes)
-  fp.inp <- lapply(input.mol, get.fingerprint, type = "circular")
+  fp.inp <- lapply(input.mol, get.fingerprint, type = "extended")
 }
 
 convertDrugToSmiles <- function(input) {
@@ -66,11 +62,11 @@ getSimMols <- function(input, sim.thres, snappy) {
       distance(i, j)
     })
     bar <- ldply(sim)
-    colnames(bar) <- c("match", "sim")
+    colnames(bar) <- c("match", "similarity")
     bar
   })
   }
-  
+
   if(snappy == TRUE){
     sims <- lapply(fp.inp, function(i) {
       sim <- lapply(fp.snappy, function(j) {
@@ -81,10 +77,8 @@ getSimMols <- function(input, sim.thres, snappy) {
       bar
     })
   }
-  
   sims <- ldply(sims)
-  
-  sims2 <- sims %>% filter(similarity >= sim.thres) %>% arrange(-similarity)
+  sims2 <- sims %>% dplyr::filter(similarity >= sim.thres) %>% arrange(-similarity)
   sims2$internal_id <- as.character(sims2$match)
   sims2$`Tanimoto Similarity` <- signif(sims2$similarity, 3)
   targets <- left_join(sims2, db) %>% 
@@ -107,22 +101,8 @@ getNetwork <- function(drugsfound, selectdrugs) {
   targets <- select(targets, from, to, width, color)
 }
 
-getTargetNetwork <- function(input, sim.thres, selectdrugs) {
-  input <- input
-  fp.inp <- parseInputFingerprint(input)
-  
-  sims <- lapply(fp.inp, function(i) {
-    sim <- sapply(fp.db, function(j) {
-      distance(i, j)
-    })
-    bar <- as.data.frame(sim)
-    bar$match <- rownames(bar)
-    bar
-  })
-  sims <- ldply(sims)
-  sims2 <- sims %>% filter(sim >= sim.thres) %>% arrange(-sim)
-  sims2$internal_id <- as.character(sims2$match)
-  targets <- left_join(sims2, db) %>% distinct() %>% filter(common_name %in% selectdrugs)
+getTargetNetwork <- function(drugsfound, selectdrugs) {
+  targets <- drugsfound %>% distinct() %>% filter(common_name %in% selectdrugs)
   targets$from <- targets$common_name
   targets$to <- as.character(targets$hugo_gene)
   targets$width <- 5

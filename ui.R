@@ -82,7 +82,7 @@ shinyUI(
                  fluidRow(textInput("input.name",
                                     "input text", 
                                     label = NULL, 
-                                    value = "lenalidomide",
+                                    value = "brigatinib",
                                     width = "90%"),
                                  bsTooltip("input.name", "Type molecule name here to search this database for SMILES strings.",
                                            "right", options = list(container = "body")), align = "center"),
