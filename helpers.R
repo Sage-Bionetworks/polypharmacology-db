@@ -46,7 +46,7 @@ convertDrugToSmiles <- function(input) {
 getTargetList <- function(selectdrugs) {
   targets <- filter(db, common_name %in% selectdrugs) %>% 
     arrange(-n_quantitative) %>%
-    select(common_name, hugo_gene, pchembl, n_quantitative, n_qualitative)
+    select(common_name, hugo_gene, mean_pchembl, n_quantitative, n_qualitative)
   
   if (nrow(targets) > 1) {
     targets
@@ -104,8 +104,9 @@ getNetwork <- function(drugsfound, selectdrugs) {
   targets <- select(targets, from, to, width, color)
 }
 
-getTargetNetwork <- function(drugsfound, selectdrugs) {
-  targets <- drugsfound %>% distinct() %>% filter(common_name %in% selectdrugs)
+getTargetNetwork <- function(selectdrugs) {
+  selectdrugs <- selectdrugs
+  targets <- getTargetList(selectdrugs) %>% distinct() %>% filter(common_name %in% selectdrugs)
   targets$from <- targets$common_name
   targets$to <- as.character(targets$hugo_gene)
   targets$width <- 5
@@ -139,7 +140,6 @@ getMolsFromGenes <- function(inp.gene) {
 getMolsFromGeneNetworks.edges <- function(inp.gene) {
   mols <- filter(db, hugo_gene == inp.gene & n_quantitative > 1) %>% 
     select(common_name, n_quantitative) %>% distinct() %>% group_by(common_name) %>% top_n(5, n_quantitative) %>% ungroup()
-  print(mols)
   
   net <- filter(db, common_name %in% mols$common_name & n_quantitative >1)
   
@@ -149,7 +149,6 @@ getMolsFromGeneNetworks.edges <- function(inp.gene) {
   net$color <- "orange"
   net <- net %>% select(from, to, width, color)
   as.data.frame(net)
-  print(net)
 }
 
 getMolsFromGeneNetworks.nodes <- function(inp.gene) {

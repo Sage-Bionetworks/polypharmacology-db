@@ -23,7 +23,7 @@ shinyServer(function(input, output, session) {
   })
   
   output$simmoltab <- renderDataTable({
-    simmols()
+    DT::datatable(simmols(), colnames = c("Molecule Name", "Tanimoto Similarity"))
   })
   
   ##molecule (SMILES) input
@@ -54,7 +54,8 @@ shinyServer(function(input, output, session) {
                                                    "excel", 
                                                    "pdf", 
                                                    "print", 
-                                                   "colvis")), extensions = "Buttons")
+                                                   "colvis")), extensions = "Buttons",
+                  colnames =  c("Molecule Name", "HGNC Symbol", "Mean pChEMBL", "n Quantitative", "n Qualitative"))
   }, server = FALSE)
   
   
@@ -76,12 +77,12 @@ shinyServer(function(input, output, session) {
   })
   
   output$targetnet <- renderVisNetwork({
-    drugsfound <- simmols()
-    print(drugsfound)
-    edges <- getTargetNetwork(drugsfound, input$selectdrugs)
-    nodes <- distinct(data.frame(id = as.character(c(as.character(edges$from), edges$to)), 
-                                 label = c(edges$from, edges$to), color = c(rep("blue", length(edges$from)), 
+    edges <- getTargetNetwork(input$selectdrugs)
+    print(edges)
+    nodes <- distinct(data.frame(id = c(as.character(edges$from),  as.character(edges$to)), 
+                                 label = c(as.character(edges$from),  as.character(edges$to)), color = c(rep("blue", length(edges$from)), 
                                                                             rep("green", length(edges$to)))))
+    print(nodes)
     visNetwork(nodes = nodes, edges = edges) %>% visEdges(smooth = FALSE) %>% 
       visPhysics(stabilization = FALSE) %>% visLayout(randomSeed = 123) %>% 
       visIgraphLayout()
