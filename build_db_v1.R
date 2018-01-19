@@ -258,13 +258,9 @@ klaeger_pchembl <- klaeger.targets %>%
   select(internal_id, hugo_gene, pchembl_value)
 
 klaeger_assaytype_summary <- klaeger.targets %>% 
-  mutate("IC50_nM"=NA, "AC50_nM"=NA, "EC50_nM"=NA, "C50_nM"=NA, "Potency_nM"=NA,"Ki_nM"=NA,
-         "Kd_nM"=Kd,"GI50_nM"=NA) %>% 
-  select(internal_id, 
-         hugo_gene, 
-         IC50_nM, 
-         AC50_nM, 
-         EC50_nM, C50_nM, Potency_nM, Ki_nM, Kd_nM, GI50_nM)
+  select(internal_id, hugo_gene, Kd) %>% 
+  set_names("internal_id", "component_synonym", "standard_value") %>% 
+  mutate(standard_type = "Kd")
 
 ##ChEMBL v23 - SQL query on synapse file page V
 chembl.targets <- read.table(synGet("syn11672909")$path, sep = "\t",
@@ -288,6 +284,7 @@ chembl.assaytype.summary <- chembl.targets %>% ##add in klaeger_quant data too
   left_join(x=grouped_structures, y = .) %>% 
   dplyr::select(internal_id, component_synonym, standard_value, standard_type) %>% 
   filter(!is.na(standard_type)) %>% 
+  rbind(klaeger_assaytype_summary) %>% 
   group_by(internal_id, component_synonym, standard_type) %>% 
   summarize(mean_value = mean(standard_value)) %>% 
   ungroup() %>% 
@@ -295,8 +292,7 @@ chembl.assaytype.summary <- chembl.targets %>% ##add in klaeger_quant data too
   select(internal_id, component_synonym, IC50, AC50, EC50, C50, Potency, Ki, Kd, GI50) %>% 
   set_names(c("internal_id", "hugo_gene", "IC50_nM","AC50_nM",
               "EC50_nM", "C50_nM", "Potency_nM", "Ki_nM", "Kd_nM", 
-              "GI50_nM")) %>% 
-  rbind(klaeger_assaytype_summary)
+              "GI50_nM"))
 
 quant.targets <- full_join(pchembl.summary, chembl.assaytype.summary)
 

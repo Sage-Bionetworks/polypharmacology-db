@@ -44,7 +44,10 @@ convertDrugToSmiles <- function(input) {
 }
 
 getTargetList <- function(selectdrugs) {
-  targets <- filter(db, common_name %in% selectdrugs) %>% arrange(-n_quantitative)
+  targets <- filter(db, common_name %in% selectdrugs) %>% 
+    arrange(-n_quantitative) %>%
+    select(common_name, hugo_gene, pchembl, n_quantitative, n_qualitative)
+  
   if (nrow(targets) > 1) {
     targets
   } else {
