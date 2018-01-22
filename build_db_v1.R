@@ -185,7 +185,7 @@ grouped_structures <- read.table(synGet("syn11678713")$path,
 ##Targets
 
 ##DrugBank 5.0.11
-drugbank.targets <- read.table(synGet("syn11673549")$path) %>% 
+drugbank.targets <- read.table(synGet("syn11673549")$path, strip.white = TRUE) %>% 
   dplyr::select(drug, hugo_gene) %>% 
   filter(drug != "", hugo_gene != "") %>% 
   set_names(c("external_id", "hugo_gene")) %>% 
@@ -195,7 +195,7 @@ drugbank.targets <- read.table(synGet("syn11673549")$path) %>%
   distinct()
 
 ##DGIDB 3.0 ##this currently contains some likely redundant information from Chembl, remove
-dgidb.targets <- read.table(synGet("syn11672978")$path, sep = "\t", quote = "",header = T) %>%
+dgidb.targets <- read.table(synGet("syn11672978")$path, sep = "\t", quote = "",header = T, strip.white = TRUE) %>%
   filter(interaction_claim_source != "ChemblInteractions") %>% 
   dplyr::select(drug_claim_primary_name, gene_name) %>% 
   filter(drug_claim_primary_name != "", gene_name != "") %>% 
@@ -207,7 +207,7 @@ dgidb.targets <- read.table(synGet("syn11672978")$path, sep = "\t", quote = "",h
 
 ##CP Jan 2018 Targets
 
-cp.targets <- read.table(synGet("syn11685574")$path, sep = "\t", quote = "", header = T) %>% 
+cp.targets <- read.table(synGet("syn11685574")$path, sep = "\t", quote = "", header = T, strip.white = TRUE) %>% 
   filter(Number.of.SAB.Reviews > 0) %>% 
   mutate(Protein.target = gsub("\"","",Protein.target), external_id = Probe.Name, source = c("cp"))%>% 
   unite(external_id, c("external_id", "source"), sep = "_") %>% 
@@ -240,7 +240,7 @@ klaeger.drugnames <- t(read.table(synGet("syn11685587")$path, sep = "\t",
   mutate(Drug = make.names(external_id))
 
 klaeger.targets <- read.table(synGet("syn11685587")$path, sep = "\t",
-                              header =T, comment.char = "", quote = "") %>% 
+                              header =T, comment.char = "", quote = "", strip.white = TRUE) %>% 
   dplyr::select(-Kinase, -Direct.binder) %>% 
   gather(key = "Drug", value = "Kd", -Gene.name) %>% 
   filter(!is.na(Kd)) %>% 
@@ -264,7 +264,12 @@ klaeger_assaytype_summary <- klaeger.targets %>%
 
 ##ChEMBL v23 - SQL query on synapse file page V
 chembl.targets <- read.table(synGet("syn11672909")$path, sep = "\t",
-                             header = T, comment.char = "", quote = "")
+                             header = T, comment.char = "", quote = "", strip.white = TRUE)
+
+##filter out non-hugo genes introduced by chembl synonyms
+hugo <- read.table(synGet("syn11695142")$path, header = T, sep = "\t", quote = "", comment.char = "", colClasses = "character")
+
+chembl.targets <- dplyr::filter(chembl.targets, component_synonym %in% as.character(hugo$symbol))
 
 pchembl.summary <- chembl.targets %>% 
   mutate(external_id = as.character(molregno)) %>% 
@@ -297,6 +302,7 @@ chembl.assaytype.summary <- chembl.targets %>% ##add in klaeger_quant data too
 quant.targets <- full_join(pchembl.summary, chembl.assaytype.summary)
 
 full.db <- full_join(quant.targets, qual.targets)
+
 
 
 ##generate database name map, trying to retain useful IDs as well as human readable names for compounds that have them
