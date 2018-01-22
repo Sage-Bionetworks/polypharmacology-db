@@ -9,6 +9,23 @@ library(tidyverse)
 library(plotly)
 library(synapser)
 
+is.smiles <- function(x, verbose = TRUE) { ##corrected version from webchem
+  if (!requireNamespace("rcdk", quietly = TRUE)) {
+    stop("rcdk needed for this function to work. Please install it.",
+         call. = FALSE)
+  }
+  # x <- 'Clc(c(Cl)c(Cl)c1C(=O)O)c(Cl)c1Cl'
+  if (length(x) > 1) {
+    stop('Cannot handle multiple input strings.')
+  }
+  out <- try(rcdk::parse.smiles(x), silent = TRUE)
+  if (inherits(out[[1]], "try-error") | is.null(out[[1]])) {
+    return(FALSE)
+  } else {
+    return(TRUE)
+  }
+}
+
 synLogin()
 
 db <- read.table(synGet("syn11681928")$path, header = T) %>% 
@@ -30,13 +47,21 @@ fp.db <- fp.db[names(fp.db) %in% unique(db$internal_id)]
 
 fp.snappy <- fp.db[names(fp.db) %in% unique(mini.db$internal_id)]
 
+db.genes <- unique(db$hugo_gene)
+
 parseInputFingerprint <- function(input) {
-  input.mol <- parse.smiles(as.character(input))
-  lapply(input.mol, do.typing)
-  lapply(input.mol, do.aromaticity)
-  lapply(input.mol, do.isotopes)
-  fp.inp <- lapply(input.mol, get.fingerprint, type = "extended")
+  test_smiles <- is.smiles(input)
+  if(is.smiles(input==TRUE)){
+    input.mol <- parse.smiles(as.character(input))
+    lapply(input.mol, do.typing)
+    lapply(input.mol, do.aromaticity)
+    lapply(input.mol, do.isotopes)
+    fp.inp <- lapply(input.mol, get.fingerprint, type = "extended")
+  }else{
+    print('Please input a valid SMILES string.')
+  }
 }
+
 
 convertDrugToSmiles <- function(input) {
   filt <- filter(db.names, common_name == input) %>% dplyr::select(smiles)
@@ -156,7 +181,7 @@ getMolsFromGeneNetworks.nodes <- function(inp.gene) {
     select(common_name, n_quantitative) %>% 
     distinct() %>% group_by(common_name) %>% top_n(5, n_quantitative) %>% ungroup()
   
-  net <- filter(db, common_name %in% mols$common_name & m_quantitative >1) 
+  net <- filter(db, common_name %in% mols$common_name & n_quantitative >1) 
   
   id <- c(unique(as.character(net$common_name)), unique(as.character(net$hugo_gene)))
   label <- c(unique(as.character(net$common_name)), unique(as.character(net$hugo_gene)))

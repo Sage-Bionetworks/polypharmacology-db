@@ -13,6 +13,9 @@ shinyServer(function(input, output, session) {
   loading()
   
   simmols <- reactive({
+    validate(
+      need(is.smiles(input$smiles)==TRUE, "")
+    )
     getSimMols(input$smiles, input$sim.thres, input$snappy)
     })
   
@@ -48,6 +51,9 @@ shinyServer(function(input, output, session) {
   
   ## molecule tab
   output$value <- DT::renderDataTable({
+    validate(
+      need(is.smiles(input$smiles)==TRUE, "Please enter a valid SMILES.")
+    )
     targ <- getTargetList(input$selectdrugs)
     DT::datatable(targ, options = list(dom = "Bfrtip", 
                                        buttons = c("copy", 
@@ -60,6 +66,9 @@ shinyServer(function(input, output, session) {
   
   
   output$structureimage <- renderImage({
+    validate(
+      need(is.smiles(input$smiles)==TRUE, "Please enter a valid SMILES.")
+    )
     outfile <- tempfile(fileext='.png')
     img<-getMolImage(input$smiles)
     writePNG(img, target = outfile, dpi = 600)
@@ -77,6 +86,9 @@ shinyServer(function(input, output, session) {
   })
   
   output$targetnet <- renderVisNetwork({
+    validate(
+      need(is.smiles(input$smiles)==TRUE, "Please enter a valid SMILES.")
+    )
     edges <- getTargetNetwork(input$selectdrugs)
     print(edges)
     nodes <- distinct(data.frame(id = c(as.character(edges$from),  as.character(edges$to)), 
@@ -90,6 +102,9 @@ shinyServer(function(input, output, session) {
 
   
   gene.ont.mol <- reactive({
+    validate(
+      need(is.smiles(input$smiles)==TRUE, "Please enter a valid SMILES.")
+    )
     getGeneOntologyfromTargets(input$selectdrugs)
   })
   
@@ -128,7 +143,13 @@ shinyServer(function(input, output, session) {
                                                                   "excel", "pdf", "print", "colvis")), extensions = "Buttons")
   }, server = FALSE)
   
-    ccleoutput <- reactive(plotSimCTRPDrugs(input$smiles))
+    ccleoutput <- reactive({
+      validate(
+        need(is.smiles(input$smiles)==TRUE, "Please enter a valid SMILES.")
+      )
+      plotSimCTRPDrugs(input$smiles)
+    })
+     
     
     output$ccle_mol <- renderText({
       validate(
@@ -156,7 +177,7 @@ shinyServer(function(input, output, session) {
     })
     
     output$ccle_2 <- renderPlotly({
-      validate(
+      validate(     
         need(((nrow(as.matrix(ccleoutput()))>0)+(ncol(as.matrix(ccleoutput()))>0)==2),"") 
       )
       
@@ -170,7 +191,13 @@ shinyServer(function(input, output, session) {
     
     })
     
-    sangoutput <- reactive(plotSimSangDrugs(input$smiles))
+    sangoutput <- reactive({
+      validate(
+        need(is.smiles(input$smiles)==TRUE, "Please enter a valid SMILES.")
+      )
+      plotSimSangDrugs(input$smiles)
+      })
+    
     
     output$sang_mol <- renderText({
     validate(
