@@ -71,7 +71,7 @@ shinyUI(
                           div(),
                           p(strong("After entering a molecule, pick a similarity using the slider, where 0 = highly dissimilar, and 1 = identical.")),
                           div(),
-                          checkboxInput("snappy", label = "Snappy mode? Uses smaller dataset.", value = TRUE), style = "primary"),
+                          checkboxInput("snappy", label = "Snappy mode? Uses smaller dataset.", value = FALSE), style = "primary"),
         bsCollapsePanel("Molecule Lookup",
                         fluidRow(selectizeInput("drugnames",
                                                 choices = NULL,

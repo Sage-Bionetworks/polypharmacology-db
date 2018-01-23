@@ -180,7 +180,7 @@ getMolsFromGeneNetworks.edges <- function(inp.gene, genenetmols) {
   net$from <- as.character(net$common_name)
   net$to <- as.character(net$hugo_gene)
   net$width <- net$n_quantitative/10
-  net$color <- "orange"
+  net$color <- "black"
   net <- net %>% select(from, to, width, color)
   as.data.frame(net)
 }
@@ -196,7 +196,7 @@ getMolsFromGeneNetworks.nodes <- function(inp.gene, genenetmols) {
   id <- c(unique(as.character(net$common_name)), unique(as.character(net$hugo_gene)))
   label <- c(unique(as.character(net$common_name)), unique(as.character(net$hugo_gene)))
   color <- c(rep("blue", length(unique(as.character(net$common_name)))), 
-             rep("green", length(unique(as.character(net$Hugo_Gene)))))
+             rep("green", length(unique(as.character(net$hugo_gene)))))
   
   net <- as.data.frame(cbind(id, label, color))
 }
