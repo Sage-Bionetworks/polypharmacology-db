@@ -4,14 +4,18 @@ loading <- function() {
   shinyjs::show("main_content")
 }
 
-source("helpers.R")
-library(DT)
-library(png)
 
 shinyServer(function(input, output, session) {
+  
+  session$sendCustomMessage(type="readCookie", message=list(name='org.sagebionetworks.security.user.login.token'))
+  
+  foo <- observeEvent(input$cookie, {
 
   loading()
   
+  synapseLogin(sessionToken=input$cookie)
+  source("helpers.R")
+    
   simmols <- reactive({
     validate(
       need(is.smiles(input$smiles)==TRUE, "")
@@ -90,11 +94,9 @@ shinyServer(function(input, output, session) {
       need(is.smiles(input$smiles)==TRUE, "Please enter a valid SMILES.")
     )
     edges <- getTargetNetwork(input$selectdrugs)
-    print(edges)
     nodes <- distinct(data.frame(id = c(as.character(edges$from),  as.character(edges$to)), 
                                  label = c(as.character(edges$from),  as.character(edges$to)), color = c(rep("blue", length(edges$from)), 
                                                                             rep("green", length(edges$to)))))
-    print(nodes)
     visNetwork(nodes = nodes, edges = edges) %>% visEdges(smooth = FALSE) %>% 
       visPhysics(stabilization = FALSE) %>% visLayout(randomSeed = 123) %>% 
       visIgraphLayout()
@@ -285,6 +287,5 @@ shinyServer(function(input, output, session) {
       visEdges(smooth = FALSE) %>% visPhysics(stabilization = FALSE) %>% 
       visLayout(randomSeed = 123) %>% visIgraphLayout()
 })
-
-
+})
 })

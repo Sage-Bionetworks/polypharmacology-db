@@ -1,16 +1,12 @@
-library(shiny)
-library(shinyBS)
-library(shinythemes)
-library(visNetwork)
-library(igraph)
-library(shinyjs)
-library(plotly)
-library(shinycssloaders)
-
 options(spinner.color="#0dc5c1", spinner.color.background="#FFFFFF", spinner.type = 2)
 
 shinyUI(
   fluidPage( 
+    tags$head(
+      singleton(
+        includeScript("www/readCookie.js")
+      )
+    ),
     tags$head(includeScript("https://www.googletagmanager.com/gtag/js?id=UA-109127366-1"),
               includeScript("www/google_analytics.js")),
     useShinyjs(),
@@ -98,7 +94,7 @@ shinyUI(
         bsCollapsePanel("Direct Structure Input", fluidRow(textInput("smiles",
                                      "SMILES string", 
                                      label = "", 
-                                     value = "Nc1cccc2C(=O)N(Cc12)C3CCC(=O)NC3=O",
+                                     value = "",
                                      width = "90%"
                                      ),
                  bsTooltip("smiles", "Input the structural string (SMILES) here.",

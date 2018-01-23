@@ -1,7 +1,6 @@
 options(java.parameters = "-Xmx12g" ) 
 ##set above parameter before loading rJavaif generating fingerprints
 ##should be on c4.8xlarge or equiv
-
 library(plyr)
 library(tidyverse)
 library(rJava)
