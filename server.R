@@ -8,12 +8,11 @@ loading <- function() {
 shinyServer(function(input, output, session) {
   
   session$sendCustomMessage(type="readCookie", message=list(name='org.sagebionetworks.security.user.login.token'))
+  loading()
   
   foo <- observeEvent(input$cookie, {
 
-  loading()
-  
-  synapseLogin(sessionToken=input$cookie)
+  synLogin(sessionToken=input$cookie)
   source("helpers.R")
     
   simmols <- reactive({
