@@ -21,24 +21,30 @@ shinyUI(
     tags$head(tags$style(type='text/css', "#loading_page { width:100%; margin-top: 20%;}")),
     hidden(
       div(id = "main_content",
-  navbarPage("Drug-Target Explorer", theme = shinytheme("flatly"),
+  navbarPage("Drug-Target EXplorer", theme = shinytheme("flatly"),
   tabPanel("About",
            h4(strong("Welcome to the Drug-Target Explorer, powered by Sage Bionetworks.")),
            h5("The purpose of this app is to facilitate exploration of drug-target interaction databases.
-             This app currently contains the Children's Tumor Foundation Drug-Target Database, licensed from Evotec, which
-             summarizes activity data deposited in ChEMBL and inactivity data deposited in Pubchem."),
+             The underlying database for this app is a harmonized dataset which summarizes quantitative and qualitative 
+             small molecule activity data for human targets from ChEMBL, the Drug-Gene Interaction Database, DrugBank, ChemicalProbes.org, and ProteomicsDB (Klaeger et al, Science, 2017).
+             The database contains summarizes evidence for >480,000 small-molecule-target interactions (>282,000 chemical entities and approximately 4000 human targets)."),
            br(),
            h4(strong("How does this app work?")),
-           h5("PPDB leverages structural information of molecules and the associated target annotations to build a drug-target map 
-             based on chemical similarity between molecules. PPDB includes drug-target interactions collated by Evotec, as well as a subset of those available in the DGIdb app.
+           h5("D-TEX leverages structural information of molecules and the associated target annotations to build a drug-target map 
+             based on chemical similarity between molecules.
              Examples of use-cases for this include:"),
            h5(" - prediction of molecular targets for novel molecules based on structural similarity"),
            h5(" - identification of off targets for molecules of interest"), 
            h5(" - facilitating polypharmacologic drug discovery"),
+           h5(" - identifying Gene Ontology terms and KEGG pathways associated with small molecule target lists"),
            br(),
-           h4(strong("Instructions:")),
-           p("Click on the 'Molecules' tab to find targets associated with your molecule of interest."),
-           p("Alternatively, if you have a target in mind, please enter the HUGO Gene Symbol on the 'Genes' tab."), 
+           h4(strong("How do I use the app to search by chemical entity?")),
+           p("Click on the 'Molecules' tab to find targets associated with your molecule of interest. 
+             Search for the drug using the 'Molecule Lookup' panel on the left. 
+             Alternatively, use the 'Pubchem Search' panel to search Pubchem, or directly enter the SMILES structural string in the 'Direct Structure Input' panel.
+             Set the Tanimoto similarity threshold using the slider, where 1 represents an identical molecular fingerprint."),
+           h4(strong("How do I use the app to search by target?")),
+           p("If you have a target in mind, please enter the HUGO Gene Symbol on the 'Genes' tab."), 
            br(),
            fluidRow(
            img(src='CTF_Logo.png'),
@@ -163,7 +169,9 @@ shinyUI(
                                              label = NULL, 
                                              value = "HDAC6",
                                              width = "90%"
-                          ), actionButton("genebutton", "Search", align = "center"), align = "center")
+                          ),
+                          bsTooltip(id = "inp.gene", title = "Input 1 HUGO gene symbol, or multiple comma separated symbols.", placement = "right", trigger = "hover"),
+                          actionButton("genebutton", "Search", align = "center"), align = "center")
                           ),
              mainPanel(
                tabsetPanel(

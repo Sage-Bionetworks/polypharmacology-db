@@ -157,14 +157,23 @@ getGeneOntologyfromTargets <- function(selectdrugs) {
 
 
 getMolsFromGenes <- function(inp.gene) {
-  mols <- filter(db, hugo_gene == inp.gene) %>% 
-    distinct()
-
+  genes <- trimws(unlist(strsplit(inp.gene,",")))
+  mols <- db %>% 
+    mutate(hugo_gene = as.character(hugo_gene)) %>% 
+    mutate(keep = hugo_gene %in% genes) %>% 
+    group_by(internal_id, keep) %>% 
+    mutate(count = n()) %>% 
+    filter(keep == TRUE, count >= length(genes)) %>% 
+    ungroup() %>% 
+    distinct() %>% 
+    select(-keep, -count)
 }
 
-getMolsFromGeneNetworks.edges <- function(inp.gene) {
-  mols <- filter(db, hugo_gene == inp.gene & n_quantitative > 1) %>% 
-    select(common_name, n_quantitative) %>% distinct() %>% group_by(common_name) %>% top_n(5, n_quantitative) %>% ungroup()
+getMolsFromGeneNetworks.edges <- function(inp.gene, genenetmols) {
+   mols <- genenetmols %>% 
+    group_by(common_name) %>% 
+    top_n(5, n_quantitative) %>%
+    ungroup()
   
   net <- filter(db, common_name %in% mols$common_name & n_quantitative >1)
   
@@ -176,10 +185,11 @@ getMolsFromGeneNetworks.edges <- function(inp.gene) {
   as.data.frame(net)
 }
 
-getMolsFromGeneNetworks.nodes <- function(inp.gene) {
-  mols <- filter(db, hugo_gene == inp.gene & n_quantitative > 1) %>% 
-    select(common_name, n_quantitative) %>% 
-    distinct() %>% group_by(common_name) %>% top_n(5, n_quantitative) %>% ungroup()
+getMolsFromGeneNetworks.nodes <- function(inp.gene, genenetmols) {
+  mols <- genenetmols %>% 
+    group_by(common_name) %>% 
+    top_n(5, n_quantitative) %>%
+    ungroup()
   
   net <- filter(db, common_name %in% mols$common_name & n_quantitative >1) 
   
