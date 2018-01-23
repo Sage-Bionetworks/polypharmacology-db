@@ -1,3 +1,4 @@
+options(java.parameters = "-Xmx8g" ) 
 library(shiny)
 library(rJava)
 library(rcdk)
