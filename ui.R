@@ -8,8 +8,8 @@ shinyUI(
         includeScript("www/readCookie.js")
       )
     ),
-    # tags$head(includeScript("https://www.googletagmanager.com/gtag/js?id=UA-109127366-1"),
-    #           includeScript("www/google_analytics.js")),
+    tags$head(includeScript("https://www.googletagmanager.com/gtag/js?id=UA-109127366-1"),
+              includeScript("www/google_analytics.js")),
     useShinyjs(),
     div(id = "loading_page",
       img(src = "Ellipsis.svg"),
