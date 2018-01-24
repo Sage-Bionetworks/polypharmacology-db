@@ -1,20 +1,14 @@
-loading <- function() {
-  Sys.sleep(2)
-  shinyjs::hide("loading_page")
-  shinyjs::show("main_content")
-}
-
+source("global.R")
 
 shinyServer(function(input, output, session) {
+  loading()
   
   session$sendCustomMessage(type="readCookie", message=list(name='org.sagebionetworks.security.user.login.token'))
   
   foo <- observeEvent(input$cookie, {
-    
-  synLogin(sessionToken=input$cookie)
+  synapseLogin(sessionToken=input$cookie)
   source("helpers.R")
-  loading()
-    
+  
   simmols <- reactive({
     validate(
       need(is.smiles(input$smiles)==TRUE, "")

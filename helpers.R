@@ -1,3 +1,4 @@
+
 db <- read.table(synGet("syn11681928")$path, header = T) %>% 
   filter(!is.na(hugo_gene)) %>% 
   select(internal_id, common_name, hugo_gene, mean_pchembl, n_quantitative, n_qualitative)
@@ -31,3 +32,6 @@ fp.ctrp <- readRDS("Data/fpctrp.rds")
 drug.resp.sang<-readRDS("Data/drugresp_sang.rds")
 sang.structures<-readRDS("Data/sangstructures.rds")
 fp.sang<-readRDS("Data/fpsang.rds")
+
+loading()
+

@@ -10,7 +10,7 @@ library(webchem)
 library(plyr)
 library(tidyverse)
 library(plotly)
-library(synapser)
+library(synapseClient)
 library(shinyBS)
 library(shinythemes)
 library(visNetwork)
@@ -19,6 +19,11 @@ library(shinyjs)
 library(plotly)
 library(shinycssloaders)
 
+loading <- function() {
+  Sys.sleep(2)
+  shinyjs::hide("loading_page")
+  shinyjs::show("main_content")
+}
 
 is.smiles <- function(x, verbose = TRUE) { ##corrected version from webchem
   if (!requireNamespace("rcdk", quietly = TRUE)) {
