@@ -1,3 +1,4 @@
+
 options(spinner.color="#0dc5c1", spinner.color.background="#FFFFFF", spinner.type = 2)
 
 shinyUI(
@@ -7,8 +8,8 @@ shinyUI(
         includeScript("www/readCookie.js")
       )
     ),
-    tags$head(includeScript("https://www.googletagmanager.com/gtag/js?id=UA-109127366-1"),
-              includeScript("www/google_analytics.js")),
+    # tags$head(includeScript("https://www.googletagmanager.com/gtag/js?id=UA-109127366-1"),
+    #           includeScript("www/google_analytics.js")),
     useShinyjs(),
     div(id = "loading_page",
       img(src = "Ellipsis.svg"),
@@ -94,7 +95,7 @@ shinyUI(
         bsCollapsePanel("Direct Structure Input", fluidRow(textInput("smiles",
                                      "SMILES string", 
                                      label = "", 
-                                     value = "",
+                                     value = "O=C1N=C(N)C=CN1[C@@H]2O[C@H](CO)[C@@H](O)[C@@H]2O.[H]Cl ",
                                      width = "90%"
                                      ),
                  bsTooltip("smiles", "Input the structural string (SMILES) here.",
