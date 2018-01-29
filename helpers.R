@@ -1,5 +1,5 @@
 
-db <- read.table(synGet("syn11681928")$path, header = T) %>% 
+db <- readRDS(synGet("syn11712148")$path) %>% 
   filter(!is.na(hugo_gene)) %>% 
   select(internal_id, common_name, hugo_gene, mean_pchembl, n_quantitative, n_qualitative)
 
@@ -9,7 +9,7 @@ mini.db <- db %>% group_by(internal_id) %>%
   distinct() %>% 
   filter(n>=10)
 
-db.names <- read.table(synGet("syn11681849")$path, header = T)
+db.names <- readRDS(synGet("syn11712154")$path)
 
 db$internal_id <- as.character(db$internal_id)
 

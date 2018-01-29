@@ -380,10 +380,17 @@ write.table(full.db, "NoGit/drug_target_associations_v1.txt", row.names = F)
 synStore(File("NoGit/drug_target_associations_v1.txt", parentId = "syn11678675"), executed = this.file, 
          used = c("syn11672909", "syn11672978", "syn11673549", "syn11678713"))
 
+saveRDS(full.db, "NoGit/drug_target_associations_v1.rds")
+synStore(File("NoGit/drug_target_associations_v1.rds", parentId = "syn11678675"), executed = this.file, 
+         used = c("syn11672909", "syn11672978", "syn11673549", "syn11678713"))
+
 write.table(all.names, "NoGit/compound_names.txt", sep = '\t', row.names = F)
 synStore(File("NoGit/compound_names.txt", parentId = "syn11678675"), executed = this.file, 
          used = c("syn11673040", "syn11681825", "syn11672978"))
 
+saveRDS(all.names, "NoGit/compound_names.rds")
+synStore(File("NoGit/compound_names.rds", parentId = "syn11678675"), executed = this.file, 
+         used = c("syn11673040", "syn11681825", "syn11672978"))
 
 
 
@@ -410,7 +417,7 @@ parseInputFingerprint <- function(input) {
   print("identifying isotopes")
   pblapply(input.mol, do.isotopes)
   print("generating fingerprints")
-  pblapply(input.mol, get.fingerprint, type = "circular")
+  pblapply(input.mol, get.fingerprint, type = "extended")
 }
 
 foo <- list()

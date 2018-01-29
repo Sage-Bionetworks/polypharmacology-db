@@ -3,11 +3,14 @@ source("global.R")
 shinyServer(function(input, output, session) {
   loading()
   
- session$sendCustomMessage(type="readCookie", message=list(name='org.sagebionetworks.security.user.login.token'))
- 
- foo <- observeEvent(input$cookie, {
- synLogin(sessionToken=input$cookie)
+ session$sendCustomMessage(type="readCookie",
+                           message=list(name="org.sagebionetworks.security.user.login.token'"))
 
+foo <- observeEvent(input$cookie, {
+ synLogin(sessionToken=input$cookie)
+# 
+#   synLogin()
+   
   source("helpers.R")
   
   simmols <- reactive({
@@ -16,6 +19,10 @@ shinyServer(function(input, output, session) {
     )
     getSimMols(input$smiles, input$sim.thres, input$snappy)
     })
+  
+  output$title <- renderText({
+    sprintf("Welcome, %s", synGetUserProfile()$displayName)
+  })
   
   output$sims <- renderUI({
     mols <- simmols()
