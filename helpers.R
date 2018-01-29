@@ -33,5 +33,3 @@ drug.resp.sang<-readRDS("Data/drugresp_sang.rds")
 sang.structures<-readRDS("Data/sangstructures.rds")
 fp.sang<-readRDS("Data/fpsang.rds")
 
-loading()
-

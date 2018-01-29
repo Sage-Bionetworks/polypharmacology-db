@@ -1,13 +1,20 @@
 source("global.R")
+options(shiny.reactlog=TRUE)
 
 shinyServer(function(input, output, session) {
   loading()
   
  session$sendCustomMessage(type="readCookie",
                            message=list(name="org.sagebionetworks.security.user.login.token'"))
-
+  
 foo <- observeEvent(input$cookie, {
- synLogin(sessionToken=input$cookie)
+  synLogin(sessionToken=input$cookie)
+ 
+  output$title <- renderText({
+    print("Welcome,")
+    print(synGetUserProfile()$displayName)
+  })
+  
 # 
 #   synLogin()
    
@@ -19,10 +26,6 @@ foo <- observeEvent(input$cookie, {
     )
     getSimMols(input$smiles, input$sim.thres, input$snappy)
     })
-  
-  output$title <- renderText({
-    sprintf("Welcome, %s", synGetUserProfile()$displayName)
-  })
   
   output$sims <- renderUI({
     mols <- simmols()
