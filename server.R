@@ -1,24 +1,22 @@
 source("global.R")
-options(shiny.reactlog=TRUE)
 
 shinyServer(function(input, output, session) {
-  loading()
   
  session$sendCustomMessage(type="readCookie",
                            message=list(name="org.sagebionetworks.security.user.login.token'"))
   
 foo <- observeEvent(input$cookie, {
+  
   synLogin(sessionToken=input$cookie)
- 
   output$title <- renderText({
     print("Welcome,")
     print(synGetUserProfile()$displayName)
   })
-  
-# 
-#   synLogin()
-   
+
   source("helpers.R")
+  
+  loading()
+  
   
   simmols <- reactive({
     validate(
