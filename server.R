@@ -8,8 +8,7 @@ shinyServer(function(input, output, session) {
 foo <- observeEvent(input$cookie, {
   synLogin(sessionToken=input$cookie)
   output$title <- renderText({
-    print("Welcome,")
-    print(synGetUserProfile()$displayName)
+    paste0("Welcome, ", synGetUserProfile()$displayName)
   })
 
   source("helpers.R")
