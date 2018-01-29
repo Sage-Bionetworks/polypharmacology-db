@@ -6,7 +6,6 @@ shinyServer(function(input, output, session) {
                            message=list(name="org.sagebionetworks.security.user.login.token'"))
   
 foo <- observeEvent(input$cookie, {
-  
   synLogin(sessionToken=input$cookie)
   output$title <- renderText({
     print("Welcome,")
@@ -16,7 +15,6 @@ foo <- observeEvent(input$cookie, {
   source("helpers.R")
   
   loading()
-  
   
   simmols <- reactive({
     validate(
