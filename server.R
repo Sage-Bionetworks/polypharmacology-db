@@ -2,11 +2,12 @@ source("global.R")
 
 shinyServer(function(input, output, session) {
   
- session$sendCustomMessage(type="readCookie",
-                           message=list(name="org.sagebionetworks.security.user.login.token'"))
-  
-foo <- observeEvent(input$cookie, {
-  synLogin(sessionToken=input$cookie)
+#  session$sendCustomMessage(type="readCookie",
+#                            message=list(name="org.sagebionetworks.security.user.login.token'"))
+#   
+# foo <- observeEvent(input$cookie, {
+#   synLogin(sessionToken=input$cookie)
+  synLogin()
   output$title <- renderText({
     paste0("Welcome, ", synGetUserProfile()$displayName)
   })
@@ -15,11 +16,16 @@ foo <- observeEvent(input$cookie, {
   
   loading()
   
-  simmols <- reactive({
+  similarity <- reactive({
     validate(
       need(is.smiles(input$smiles)==TRUE, "")
     )
-    getSimMols(input$smiles, input$sim.thres, input$snappy)
+    similarityFunction(input$smiles, input$snappy)
+  })
+  
+  simmols <- reactive({
+    sims<-similarity()
+    getSimMols(sims, input$sim.thres)
     })
   
   output$sims <- renderUI({
@@ -287,4 +293,4 @@ foo <- observeEvent(input$cookie, {
       visLayout(randomSeed = 123) %>% visIgraphLayout()
 })
 })
-})
+# })
