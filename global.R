@@ -73,7 +73,7 @@ getTargetList <- function(selectdrugs) {
   }
 }
 
-getSimMols <- function(input, sim.thres, snappy) {
+similarityFunction <- function(input, snappy) {
   input <- input
   fp.inp <- parseInputFingerprint(input)
   
@@ -99,6 +99,9 @@ getSimMols <- function(input, sim.thres, snappy) {
     })
   }
   sims <- ldply(sims)
+}
+
+getSimMols <- function(sims, sim.thres) {
   sims2 <- sims %>% dplyr::filter(similarity >= sim.thres) %>% arrange(-similarity)
   sims2$internal_id <- as.character(sims2$match)
   sims2$`Tanimoto Similarity` <- signif(sims2$similarity, 3)
