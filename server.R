@@ -91,7 +91,7 @@ shinyServer(function(input, output, session) {
     edges <- getNetwork(drugsfound, input$selectdrugs)
     nodes <- distinct(data.frame(id = as.character(c("input", edges$to)), 
                                  label = c("INPUT", edges$to)))
-    visNetwork(nodes = nodes, edges = edges, height = "2000px") #%>% visIgraphLayout()
+    visNetwork(nodes = nodes, edges = edges, height = "100%") #%>% visIgraphLayout()
   })
   
   output$targetnet <- renderVisNetwork({
@@ -102,7 +102,7 @@ shinyServer(function(input, output, session) {
     nodes <- distinct(data.frame(id = c(as.character(edges$from),  as.character(edges$to)), 
                                  label = c(as.character(edges$from),  as.character(edges$to)), color = c(rep("blue", length(edges$from)), 
                                                                             rep("green", length(edges$to)))))
-    visNetwork(nodes = nodes, edges = edges) %>% visEdges(smooth = FALSE) %>% 
+    visNetwork(nodes = nodes, edges = edges, height = "100%") %>% visEdges(smooth = FALSE) %>% 
       visPhysics(stabilization = FALSE) %>% visLayout(randomSeed = 123) %>% 
       visIgraphLayout()
   })
