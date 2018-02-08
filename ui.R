@@ -8,8 +8,8 @@ shinyUI(
         includeScript("www/readCookie.js")
       )
     ),
-    # tags$head(includeScript("https://www.googletagmanager.com/gtag/js?id=UA-109127366-1"),
-    #           includeScript("www/google_analytics.js")),
+    tags$head(includeScript("https://www.googletagmanager.com/gtag/js?id=UA-109127366-1"),
+              includeScript("www/google_analytics.js")),
     useShinyjs(),
     div(id = "loading_page",
       img(src = "Ellipsis.svg"),
@@ -162,13 +162,13 @@ shinyUI(
   tabPanel("Genes",
            sidebarLayout(
              sidebarPanel("Gene Input:",
-                          fluidRow(textInput("inp.gene",
-                                             "input text", 
-                                             label = NULL, 
-                                             value = "HDAC6",
-                                             width = "90%"
+                          fluidRow(selectizeInput(
+                            'inp.gene', 
+                            label = NULL,
+                            choices = unique(db$hugo_gene), 
+                            multiple = TRUE
                           ),
-                          bsTooltip(id = "inp.gene", title = "Input 1 HUGO gene symbol, or multiple comma separated symbols.", placement = "right", trigger = "hover"),
+                          bsTooltip(id = "inp.gene", title = "Input 1 or more HUGO gene symbols.", placement = "right", trigger = "hover"),
                           actionButton("genebutton", "Search", align = "center"), align = "center")
                           ),
              mainPanel(

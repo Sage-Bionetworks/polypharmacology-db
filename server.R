@@ -2,12 +2,12 @@ source("global.R")
 
 shinyServer(function(input, output, session) {
   
-#  session$sendCustomMessage(type="readCookie",
-#                            message=list(name="org.sagebionetworks.security.user.login.token'"))
-#   
-# foo <- observeEvent(input$cookie, {
-#   synLogin(sessionToken=input$cookie)
-  synLogin()
+  session$sendCustomMessage(type="readCookie",
+                           message=list(name="org.sagebionetworks.security.user.login.token'"))
+  
+foo <- observeEvent(input$cookie, {
+  synLogin(sessionToken=input$cookie)
+  #synLogin()
   output$title <- renderText({
     paste0("Welcome, ", synGetUserProfile()$displayName)
   })
@@ -250,47 +250,48 @@ shinyServer(function(input, output, session) {
     
   
 ####### gene tab
-    
+  eventReactive(input$genebutton, {  print(input$inp.gene) })
+
   getMols <- eventReactive(input$genebutton, {
-    genes <- trimws(unlist(strsplit(input$inp.gene,",")))
+    genes <- input$inp.gene
     validate(
       need(genes %in% db.genes, "Please enter a valid gene.")
     )
     getMolsFromGenes(input$inp.gene)
   })
-  
+
   getMolNodes <- eventReactive(input$genebutton, {
-    genes <- trimws(unlist(strsplit(input$inp.gene,",")))
+    genes <- input$inp.gene
     validate(
       need(genes %in% db.genes, "Please enter a valid gene.")
     )
     getMolsFromGeneNetworks.nodes(input$inp.gene, getMols())
   })
-  
+
   getMolEdges <- eventReactive(input$genebutton, {
-    genes <- trimws(unlist(strsplit(input$inp.gene,",")))
+    genes <- input$inp.gene
     validate(
       need(genes %in% db.genes, "Please enter a valid gene.")
     )
     getMolsFromGeneNetworks.edges(input$inp.gene, getMols())
   })
-  
+
 
   output$genetargets <- DT::renderDataTable({
     mol<-getMols()
-      DT::datatable(mol, options = list(dom = "Bfrtip", 
-                                         buttons = c("copy","excel", "pdf", "print", "colvis")), 
+      DT::datatable(mol, options = list(dom = "Bfrtip",
+                                         buttons = c("copy","excel", "pdf", "print", "colvis")),
                     extensions = "Buttons")
   }, server = FALSE)
 
   output$genetargetnet <- renderVisNetwork({
-    
+
     nodes <- getMolNodes()
     edges <- getMolEdges()
-    
-    visNetwork(nodes = nodes, edges = edges, height = "2000px") %>% 
-      visEdges(smooth = FALSE) %>% visPhysics(stabilization = FALSE) %>% 
+
+    visNetwork(nodes = nodes, edges = edges, height = "2000px") %>%
+      visEdges(smooth = FALSE) %>% visPhysics(stabilization = FALSE) %>%
       visLayout(randomSeed = 123) %>% visIgraphLayout()
+    })
+  })
 })
-})
-# })
