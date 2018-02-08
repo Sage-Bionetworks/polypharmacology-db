@@ -25,7 +25,7 @@ foo <- observeEvent(input$cookie, {
   
   simmols <- reactive({
     sims<-similarity()
-    getSimMols(sims, input$sim.thres)
+    getSimMols(sims, input$sim.thres) %>% as.data.frame()
     })
   
   output$sims <- renderUI({
@@ -63,7 +63,7 @@ foo <- observeEvent(input$cookie, {
     validate(
       need(is.smiles(input$smiles)==TRUE, "Please enter a valid SMILES.")
     )
-    targ <- getTargetList(input$selectdrugs)
+    targ <- getTargetList(input$selectdrugs) %>% as.data.frame()
     DT::datatable(targ, options = list(dom = "Bfrtip", 
                                        buttons = c("copy", 
                                                    "excel", 
