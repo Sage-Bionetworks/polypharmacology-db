@@ -16,7 +16,6 @@ library(shinythemes)
 library(visNetwork)
 library(igraph)
 library(shinyjs)
-library(plotly)
 library(shinycssloaders)
 
 loading <- function() {

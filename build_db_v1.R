@@ -377,7 +377,7 @@ syns <- all.names %>%
   mutate(count = n()) %>% slice(1) %>% 
   select(internal_id, common_name)
 
-full.db <- left_join(full.db, syns)
+full.db <- left_join(full.db, syns) %>% filter(!is.na(internal_id), !is.na(hugo_gene))
 
 write.table(full.db, "NoGit/drug_target_associations_v1.txt", row.names = F)
 synStore(File("NoGit/drug_target_associations_v1.txt", parentId = "syn11678675"), executed = this.file, 
@@ -445,3 +445,31 @@ names(foo) <- structures.distinct$internal_id
 
 saveRDS(foo, "NoGit/db_fingerprints.rds")
 synStore(File("NoGit/db_fingerprints.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
+
+
+#### create igraph object from db
+library(igraph)
+db <- readRDS(synGet("syn11712148")$path) %>% 
+  filter(!is.na(hugo_gene)) %>% 
+  select(internal_id, hugo_gene, mean_pchembl, n_quantitative, n_qualitative) %>% 
+  group_by(internal_id, hugo_gene) %>% 
+  mutate(total_n = sum(n_quantitative, n_qualitative, na.rm = T)) %>% 
+  ungroup() 
+
+db.names <- readRDS(synGet("syn11712148")$path) %>% 
+  filter(!is.na(hugo_gene)) %>% 
+  select(internal_id, common_name) %>% 
+  distinct()
+
+db.igraph <- graph.data.frame(db)
+
+saveRDS(db.igraph, "drug-target_explorer_igraph.rds")
+saveRDS(db.names, "drug-target_explorer_igraph_name_map.rds")
+
+synStore(File("drug-target_explorer_igraph.rds", parentId = "syn11802193"),
+         used = "syn11712148",
+         executed = this.file)
+
+synStore(File("drug-target_explorer_igraph_name_map.rds", parentId = "syn11802193"),
+         used = "syn11712148",
+         executed = this.file)
