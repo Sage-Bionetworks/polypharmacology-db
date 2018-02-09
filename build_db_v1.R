@@ -204,6 +204,7 @@ dgidb.targets <- read.table(synGet("syn11672978")$path, sep = "\t", quote = "",h
   ungroup() %>% 
   distinct()
 
+
 ##CP Jan 2018 Targets
 
 cp.targets <- read.table(synGet("syn11685574")$path, sep = "\t", quote = "", header = T, strip.white = TRUE) %>% 
@@ -215,8 +216,9 @@ cp.targets <- read.table(synGet("syn11685574")$path, sep = "\t", quote = "", hea
   gather(key = "key", value = "hugo_gene", -external_id) %>%
   select(-key) %>% 
   filter(!is.na(hugo_gene)) %>% 
+  mutate(hugo_gene = trimws(hugo_gene)) %>% 
   group_by(external_id, hugo_gene) %>% 
-  dplyr::add_tally() %>% 
+  add_tally() %>% 
   ungroup() %>% 
   distinct()
 
@@ -301,9 +303,9 @@ chembl.assaytype.summary <- chembl.targets %>% ##add in klaeger_quant data too
               "EC50_nM", "C50_nM", "Potency_nM", "Ki_nM", "Kd_nM", 
               "GI50_nM"))
 
-quant.targets <- full_join(pchembl.summary, chembl.assaytype.summary)
+quant.targets <- full_join(pchembl.summary, chembl.assaytype.summary) 
 
-full.db <- full_join(quant.targets, qual.targets)
+full.db <- full_join(quant.targets, qual.targets, by = c("hugo_gene", "internal_id"))
 
 
 
@@ -473,3 +475,4 @@ synStore(File("drug-target_explorer_igraph.rds", parentId = "syn11802193"),
 synStore(File("drug-target_explorer_igraph_name_map.rds", parentId = "syn11802193"),
          used = "syn11712148",
          executed = this.file)
+

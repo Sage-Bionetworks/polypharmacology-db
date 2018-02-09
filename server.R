@@ -95,7 +95,10 @@ shinyServer(function(input, output, session) {
     edges <- getNetwork(drugsfound, input$selectdrugs)
     nodes <- distinct(data.frame(id = as.character(c("input", edges$to)), 
                                  label = c("INPUT", edges$to)))
-    visNetwork(nodes = nodes, edges = edges, height = "100%") #%>% visIgraphLayout()
+    visNetwork(nodes = nodes, edges = edges, height = "100%") %>% 
+      visExport(type = "pdf", name = "exported-network", 
+                float = "right", label = "Export PDF", background = "white", style= "")
+    
   })
   
   output$targetnet <- renderVisNetwork({
@@ -108,7 +111,9 @@ shinyServer(function(input, output, session) {
                                                                             rep("green", length(edges$to)))))
     visNetwork(nodes = nodes, edges = edges, height = "100%") %>% visEdges(smooth = FALSE) %>% 
       visPhysics(stabilization = FALSE) %>% visLayout(randomSeed = 123) %>% 
-      visIgraphLayout()
+      visIgraphLayout() %>% 
+      visExport(type = "pdf", name = "exported-network", 
+                float = "right", label = "Export PDF", background = "white", style= "")
   })
 
   
@@ -297,7 +302,9 @@ shinyServer(function(input, output, session) {
 
     visNetwork(nodes = nodes, edges = edges, height = "2000px") %>%
       visEdges(smooth = FALSE) %>% visPhysics(stabilization = FALSE) %>%
-      visLayout(randomSeed = 123) %>% visIgraphLayout()
+      visLayout(randomSeed = 123) %>% visIgraphLayout() %>% 
+      visExport(type = "pdf", name = "exported-network", 
+                float = "right", label = "Export PDF", background = "white", style= "")
     })
   })
 # })
