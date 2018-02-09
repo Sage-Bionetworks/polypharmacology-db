@@ -96,7 +96,7 @@ shinyUI(
         bsCollapsePanel("Direct Structure Input", fluidRow(textInput("smiles",
                                      "SMILES string", 
                                      label = "", 
-                                     value = "O=C1N=C(N)C=CN1[C@@H]2O[C@H](CO)[C@@H](O)[C@@H]2O.[H]Cl ",
+                                     value = "",
                                      width = "90%"
                                      ),
                  bsTooltip("smiles", "Input the structural string (SMILES) here.",
@@ -165,7 +165,7 @@ shinyUI(
                           fluidRow(selectizeInput(
                             'inp.gene', 
                             label = NULL,
-                            choices = unique(db$hugo_gene), 
+                            choices = NULL, 
                             multiple = TRUE
                           ),
                           bsTooltip(id = "inp.gene", title = "Input 1 or more HUGO gene symbols.", placement = "right", trigger = "hover"),

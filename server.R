@@ -5,9 +5,9 @@ shinyServer(function(input, output, session) {
   session$sendCustomMessage(type="readCookie",
                            message=list(name="org.sagebionetworks.security.user.login.token'"))
   
-foo <- observeEvent(input$cookie, {
-  synLogin(sessionToken=input$cookie)
-  #synLogin()
+# foo <- observeEvent(input$cookie, {
+  # synLogin(sessionToken=input$cookie)
+  synLogin()
   output$title <- renderText({
     paste0("Welcome, ", synGetUserProfile()$displayName)
   })
@@ -17,6 +17,9 @@ foo <- observeEvent(input$cookie, {
   loading()
   
   similarity <- reactive({
+    validate(
+      need(input$smiles!="", "Please select a molecule.")
+    )
     validate(
       need(is.smiles(input$smiles)==TRUE, "")
     )
@@ -57,6 +60,7 @@ foo <- observeEvent(input$cookie, {
     pp.smiles<-as.character(convertDrugToSmiles(input$drugnames)[1,1])
     updateTextInput(session, "smiles", value = pp.smiles)
   })
+  
   
   ## molecule tab
   output$value <- DT::renderDataTable({
@@ -250,6 +254,8 @@ foo <- observeEvent(input$cookie, {
     
   
 ####### gene tab
+
+  updateSelectizeInput(session, "inp.gene", choices = unique(db$hugo_gene), server = TRUE)
   eventReactive(input$genebutton, {  print(input$inp.gene) })
 
   getMols <- eventReactive(input$genebutton, {
@@ -294,4 +300,4 @@ foo <- observeEvent(input$cookie, {
       visLayout(randomSeed = 123) %>% visIgraphLayout()
     })
   })
-})
+# })
