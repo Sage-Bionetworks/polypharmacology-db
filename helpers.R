@@ -1,7 +1,7 @@
 
 db <- readRDS(synGet("syn11712148")$path) %>% 
   filter(!is.na(hugo_gene)) %>% 
-  select(internal_id, common_name, hugo_gene, mean_pchembl, n_quantitative, n_qualitative)
+  select(internal_id, common_name, hugo_gene, mean_pchembl, n_quantitative, n_qualitative, known_selectivity_index, confidence)
 
 mini.db <- db %>% group_by(internal_id) %>% 
   mutate(n = sum(n_qualitative, n_quantitative, na.rm = T)) %>% 

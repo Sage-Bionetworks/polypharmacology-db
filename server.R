@@ -74,7 +74,7 @@ shinyServer(function(input, output, session) {
                                                    "pdf", 
                                                    "print", 
                                                    "colvis")), extensions = "Buttons",
-                  colnames =  c("Molecule Name", "HGNC Symbol", "Mean pChEMBL", "n Quantitative", "n Qualitative"))
+                  colnames =  c("Molecule Name", "HGNC Symbol", "Mean pChEMBL", "n Quantitative", "n Qualitative", "KSI", "Confidence"))
   }, server = FALSE)
   
   

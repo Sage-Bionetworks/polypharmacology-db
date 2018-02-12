@@ -457,6 +457,41 @@ names(foo) <- structures.distinct$internal_id
 saveRDS(foo, "NoGit/db_fingerprints.rds")
 synStore(File("NoGit/db_fingerprints.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
 
+parseInputFingerprint <- function(input) {
+  print("parsing smiles")
+  input.mol <- parse.smiles(as.character(input))
+  print("typing smiles")
+  pblapply(input.mol, do.typing)
+  print("imprinting aromaticity")
+  pblapply(input.mol, do.aromaticity)
+  print("identifying isotopes")
+  pblapply(input.mol, do.isotopes)
+  print("generating fingerprints")
+  pblapply(input.mol, get.fingerprint, type = "circular")
+}
+
+foo <- list()
+ct <- 1
+
+for(i in 1:ceiling(length(valid)/5000)){
+  if((length(valid)-(i*5000))>=0){
+    print(ct)
+    print(i*5000)
+    print(paste0("batch ", i," of ", ceiling(length(valid)/5000)))
+    foo <- append(foo, parseInputFingerprint(valid[ct:(i*5000)]))
+    ct<-ct+5000
+  }else{
+    print(ct)
+    print(length(valid))
+    print(paste0("batch ", i," of ", ceiling(length(valid)/5000)))
+    foo <- append(foo, parseInputFingerprint(valid[ct:length(valid)]))
+  }
+}
+
+names(foo) <- structures.distinct$internal_id
+
+saveRDS(foo, "NoGit/db_fingerprints_circular.rds")
+synStore(File("NoGit/db_fingerprints_circular.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
 
 #### create igraph object from db
 library(igraph)
