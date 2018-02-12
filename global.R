@@ -106,7 +106,8 @@ getSimMols <- function(sims, sim.thres) {
   sims2$`Tanimoto Similarity` <- signif(sims2$similarity, 3)
   targets <- left_join(sims2, db) %>% 
     dplyr::select(common_name, `Tanimoto Similarity`) %>% 
-    distinct()
+    distinct() %>% 
+    as.data.frame()
 }
 
 getMolImage <- function(input) {
@@ -161,16 +162,14 @@ getMolsFromGenes <- function(inp.gene) {
     filter(keep == TRUE, count >= length(genes)) %>% 
     ungroup() %>% 
     distinct() %>% 
+    top_n(10, mean_pchembl) %>% 
     select(-keep, -count)
 }
 
 getMolsFromGeneNetworks.edges <- function(inp.gene, genenetmols) {
-  mols <- genenetmols %>% 
-    group_by(common_name) %>% 
-    top_n(5, n_quantitative) %>%
-    ungroup()
+  mols <- genenetmols
   
-  net <- filter(db, common_name %in% mols$common_name & n_quantitative >1)
+  net <- filter(db, common_name %in% mols$common_name)
   
   net$from <- as.character(net$common_name)
   net$to <- as.character(net$hugo_gene)
@@ -181,12 +180,9 @@ getMolsFromGeneNetworks.edges <- function(inp.gene, genenetmols) {
 }
 
 getMolsFromGeneNetworks.nodes <- function(inp.gene, genenetmols) {
-  mols <- genenetmols %>% 
-    group_by(common_name) %>% 
-    top_n(5, n_quantitative) %>%
-    ungroup()
+  mols <- genenetmols
   
-  net <- filter(db, common_name %in% mols$common_name & n_quantitative >1) 
+  net <- filter(db, common_name %in% mols$common_name) 
   
   id <- c(unique(as.character(net$common_name)), unique(as.character(net$hugo_gene)))
   label <- c(unique(as.character(net$common_name)), unique(as.character(net$hugo_gene)))

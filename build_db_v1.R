@@ -381,6 +381,15 @@ syns <- all.names %>%
 
 full.db <- left_join(full.db, syns) %>% filter(!is.na(internal_id), !is.na(hugo_gene))
 
+##add confidence metrics
+full.db2 <- full.db %>% 
+  group_by(internal_id) %>% 
+  add_tally() %>% 
+  ungroup() %>% 
+  group_by(internal_id, hugo_gene) %>% 
+  mutate(known_selectivity_index = 1/n) %>% 
+  mutate(confidence = (sum(n_qualitative*(mean_pchembl/10),n_quantitative, na.rm = T)*known_selectivity_index))
+
 write.table(full.db, "NoGit/drug_target_associations_v1.txt", row.names = F)
 synStore(File("NoGit/drug_target_associations_v1.txt", parentId = "syn11678675"), executed = this.file, 
          used = c("syn11672909", "syn11672978", "syn11673549", "syn11678713"))
