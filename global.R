@@ -163,7 +163,6 @@ getMolsFromGenes <- function(inp.gene) {
     filter(keep == TRUE, count >= length(genes)) %>% 
     ungroup() %>% 
     distinct() %>% 
-    top_n(10, mean_pchembl) %>% 
     select(-keep, -count)
   }
   if(length(genes)==1){
@@ -172,7 +171,7 @@ getMolsFromGenes <- function(inp.gene) {
 }
 
 getMolsFromGeneNetworks.edges <- function(inp.gene, genenetmols) {
-  mols <- genenetmols
+  mols <- genenetmols %>% top_n(10, confidence)
   
   net <- filter(db, common_name %in% mols$common_name)
   
@@ -185,7 +184,7 @@ getMolsFromGeneNetworks.edges <- function(inp.gene, genenetmols) {
 }
 
 getMolsFromGeneNetworks.nodes <- function(inp.gene, genenetmols) {
-  mols <- genenetmols
+  mols <- genenetmols %>% top_n(10, confidence)
   
   net <- filter(db, common_name %in% mols$common_name) 
   
