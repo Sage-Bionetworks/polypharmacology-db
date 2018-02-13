@@ -61,10 +61,12 @@ convertDrugToSmiles <- function(input) {
 }
 
 getTargetList <- function(selectdrugs) {
-  targets <- filter(db, common_name %in% selectdrugs) %>% 
-    arrange(-n_quantitative) %>%
-    select(common_name, hugo_gene, mean_pchembl, n_quantitative, n_qualitative, known_selectivity_index, confidence)
   
+  targets <- db %>% 
+    filter(db, common_name %in% selectdrugs) %>% 
+    dplyr::select(common_name, hugo_gene, mean_pchembl, n_quantitative, n_qualitative, known_selectivity_index, confidence) %>% 
+    arrange(-n_quantitative)
+
   if (nrow(targets) > 1) {
     targets
   } else {
@@ -122,7 +124,7 @@ getNetwork <- function(drugsfound, selectdrugs) {
   targets$to <- as.character(targets$common_name)
   targets$width <- ((targets$`Tanimoto Similarity`)^2) * 10
   targets$color <- "red"
-  targets <- select(targets, from, to, width, color)
+  targets <- dplyr::select(targets, from, to, width, color)
 }
 
 getTargetNetwork <- function(selectdrugs) {
@@ -132,7 +134,7 @@ getTargetNetwork <- function(selectdrugs) {
   targets$to <- as.character(targets$hugo_gene)
   targets$width <- 5
   targets$color <- "green"
-  targets <- select(targets, from, to, width, color) %>% 
+  targets <- dplyr::selecttargets, from, to, width, color) %>% 
     filter(from !="NA" & to != "NA")
 }
 
@@ -163,7 +165,7 @@ getMolsFromGenes <- function(inp.gene) {
     filter(keep == TRUE, count >= length(genes)) %>% 
     ungroup() %>% 
     distinct() %>% 
-    select(-keep, -count) %>% 
+    dplyr::select-keep, -count) %>% 
     top_n(10, confidence)
   }
   if(length(genes)==1){
@@ -180,7 +182,7 @@ getMolsFromGeneNetworks.edges <- function(inp.gene, genenetmols) {
   net$to <- as.character(net$hugo_gene)
   net$width <- net$n_quantitative/10
   net$color <- "black"
-  net <- net %>% select(from, to, width, color)
+  net <- net %>% dplyr::selectfrom, to, width, color)
   as.data.frame(net)
 }
 

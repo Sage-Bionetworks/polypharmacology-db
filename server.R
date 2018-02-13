@@ -4,7 +4,11 @@ shinyServer(function(input, output, session) {
   
   session$sendCustomMessage(type="readCookie",
                            message=list(name="org.sagebionetworks.security.user.login.token'"))
-  
+  #reactive({
+  # validate(
+  #   need(input$cookie != NULL, "Please login to Synapse.org.")
+  # )
+  # })
 # foo <- observeEvent(input$cookie, {
   # synLogin(sessionToken=input$cookie)
   synLogin()
@@ -126,7 +130,7 @@ shinyServer(function(input, output, session) {
   
   output$GOMF.mol <- DT::renderDataTable({
     foo <- gene.ont.mol()[["GO_Molecular_Function_2017"]] %>% 
-      select(Term, Overlap, Adjusted.P.value, Z.score) %>%
+      dplyr::select(Term, Overlap, Adjusted.P.value, Z.score) %>%
       filter(Adjusted.P.value < 0.05) %>%
       arrange(Adjusted.P.value)
     
@@ -134,7 +138,7 @@ shinyServer(function(input, output, session) {
   }, server = FALSE)
   
   output$GOCC.mol <- DT::renderDataTable({
-    foo <- gene.ont.mol()[["GO_Cellular_Component_2017"]] %>% select(Term, 
+    foo <- gene.ont.mol()[["GO_Cellular_Component_2017"]] %>% dplyr::select(Term, 
                                                                      Overlap, Adjusted.P.value, Z.score) %>% filter(Adjusted.P.value < 
                                                                                                                       0.05) %>% arrange(Adjusted.P.value)
     
@@ -143,7 +147,7 @@ shinyServer(function(input, output, session) {
   }, server = FALSE)
   
   output$GOBP.mol <- DT::renderDataTable({
-    foo <- gene.ont.mol()[["GO_Biological_Process_2017"]] %>% select(Term, 
+    foo <- gene.ont.mol()[["GO_Biological_Process_2017"]] %>% dplyr::select(Term, 
                                                                      Overlap, Adjusted.P.value, Z.score) %>% filter(Adjusted.P.value < 
                                                                                                                       0.05) %>% arrange(Adjusted.P.value)
     
@@ -151,7 +155,7 @@ shinyServer(function(input, output, session) {
   }, server = FALSE)
   
   output$kegg <- DT::renderDataTable({
-    foo <- gene.ont.mol()[["KEGG_2016"]] %>% select(Term, Overlap, Adjusted.P.value, Z.score) %>% 
+    foo <- gene.ont.mol()[["KEGG_2016"]] %>% dplyr::select(Term, Overlap, Adjusted.P.value, Z.score) %>% 
       filter(Adjusted.P.value <0.05) %>% 
       arrange(Adjusted.P.value)
     
