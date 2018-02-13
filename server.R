@@ -67,7 +67,7 @@ shinyServer(function(input, output, session) {
     validate(
       need(is.smiles(input$smiles)==TRUE, "Please enter a valid SMILES.")
     )
-    targ <- getTargetList(input$selectdrugs) %>% as.data.frame()
+    targ <- getTargetList(input$selectdrugs)
     DT::datatable(targ, options = list(dom = "Bfrtip", 
                                        buttons = c("copy", 
                                                    "excel", 
