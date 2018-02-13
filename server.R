@@ -27,7 +27,7 @@ shinyServer(function(input, output, session) {
     validate(
       need(is.smiles(input$smiles)==TRUE, "")
     )
-    similarityFunction(input$smiles, input$snappy)
+    similarityFunction(input$smiles)
   })
   
   simmols <- reactive({

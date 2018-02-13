@@ -63,7 +63,7 @@ convertDrugToSmiles <- function(input) {
 getTargetList <- function(selectdrugs) {
   
   targets <- db %>% 
-    filter(db, common_name %in% selectdrugs) %>% 
+    filter(common_name %in% selectdrugs) %>% 
     dplyr::select(common_name, hugo_gene, mean_pchembl, n_quantitative, n_qualitative, known_selectivity_index, confidence) %>% 
     arrange(-n_quantitative)
 
@@ -74,11 +74,10 @@ getTargetList <- function(selectdrugs) {
   }
 }
 
-similarityFunction <- function(input, snappy) {
+similarityFunction <- function(input) {
   input <- input
   fp.inp <- parseInputFingerprint(input)
   
-  if(snappy == FALSE){
     sims <- lapply(fp.inp, function(i) {
       sim <- lapply(fp.db, function(j) {
         distance(i, j)
@@ -87,18 +86,7 @@ similarityFunction <- function(input, snappy) {
       colnames(bar) <- c("match", "similarity")
       bar
     })
-  }
-  
-  if(snappy == TRUE){
-    sims <- lapply(fp.inp, function(i) {
-      sim <- lapply(fp.snappy, function(j) {
-        distance(i, j)
-      })
-      bar <- ldply(sim)
-      colnames(bar) <- c("match", "similarity")
-      bar
-    })
-  }
+      
   sims <- ldply(sims)
 }
 
