@@ -134,7 +134,7 @@ getTargetNetwork <- function(selectdrugs) {
   targets$to <- as.character(targets$hugo_gene)
   targets$width <- 5
   targets$color <- "green"
-  targets <- dplyr::selecttargets, from, to, width, color) %>% 
+  targets <- dplyr::select(targets, from, to, width, color) %>% 
     filter(from !="NA" & to != "NA")
 }
 
@@ -165,7 +165,7 @@ getMolsFromGenes <- function(inp.gene) {
     filter(keep == TRUE, count >= length(genes)) %>% 
     ungroup() %>% 
     distinct() %>% 
-    dplyr::select-keep, -count) %>% 
+    dplyr::select(-keep, -count) %>% 
     top_n(10, confidence)
   }
   if(length(genes)==1){
@@ -182,7 +182,7 @@ getMolsFromGeneNetworks.edges <- function(inp.gene, genenetmols) {
   net$to <- as.character(net$hugo_gene)
   net$width <- net$n_quantitative/10
   net$color <- "black"
-  net <- net %>% dplyr::selectfrom, to, width, color)
+  net <- net %>% dplyr::select(from, to, width, color)
   as.data.frame(net)
 }
 
