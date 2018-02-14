@@ -101,7 +101,7 @@ shinyUI(
                  bsTooltip("smiles", "Input the structural string (SMILES) here.",
                            "right", options = list(container = "body")), align = "center"),
                  div(),
-                 p("Know your SMILES string already? Search by structure directly here."), style = "info"), open = "Quick Start Guide"),
+                 p("Know your SMILES string already? Search by structure directly here."), style = "info"), open = "Quick Start Guide")),
         bsCollapse(bsCollapsePanel("Similarity Threshold",  
       sliderInput("sim.thres", label = "", 
                              min=0.3, 
