@@ -17,8 +17,8 @@ library(visNetwork)
 library(igraph)
 library(shinyjs)
 library(shinycssloaders)
-library(future.apply)
-plan(multicore)
+# library(future.apply)
+# plan(multicore)
 
 loading <- function() {
   shinyjs::hide("loading_page")
@@ -81,7 +81,7 @@ similarityFunction <- function(input) {
   input <- input
   fp.inp <- parseInputFingerprint(input)
   
-  sim <- future_sapply(fp.db, function(j) {
+  sim <- sapply(fp.db, function(j) {
     distance(fp.inp[[1]], j)
   })
   
