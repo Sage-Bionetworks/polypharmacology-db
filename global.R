@@ -17,6 +17,8 @@ library(visNetwork)
 library(igraph)
 library(shinyjs)
 library(shinycssloaders)
+library(future.apply)
+plan(multicore)
 
 loading <- function() {
   shinyjs::hide("loading_page")
@@ -74,21 +76,20 @@ getTargetList <- function(selectdrugs) {
   }
 }
 
+
 similarityFunction <- function(input) {
   input <- input
   fp.inp <- parseInputFingerprint(input)
   
-    sims <- lapply(fp.inp, function(i) {
-      sim <- lapply(fp.db, function(j) {
-        distance(i, j)
-      })
-      bar <- ldply(sim)
-      colnames(bar) <- c("match", "similarity")
-      bar
-    })
-      
-  sims <- ldply(sims)
+  sim <- future_sapply(fp.db, function(j) {
+    distance(fp.inp[[1]], j)
+  })
+  
+  bar <- as.data.frame(sim) %>% 
+    rownames_to_column("match") %>% 
+    set_names(c("match", "similarity"))
 }
+
 
 getSimMols <- function(sims, sim.thres) {
   sims2 <- sims %>% dplyr::filter(similarity >= sim.thres) %>% arrange(-similarity)
