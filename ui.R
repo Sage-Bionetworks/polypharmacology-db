@@ -25,7 +25,7 @@ shinyUI(
            h5("The purpose of this app is to facilitate exploration of drug-target interaction databases.
              The underlying database for this app is a harmonized dataset which summarizes quantitative and qualitative 
              small molecule activity data for human targets from ChEMBL, the Drug-Gene Interaction Database, DrugBank, ChemicalProbes.org, and ProteomicsDB (Klaeger et al, Science, 2017).
-             The database contains summarizes evidence for >480,000 small-molecule-target interactions (>282,000 chemical entities and approximately 4000 human targets)."),
+             The database contains summarizes evidence for >480,000 small-molecule-target interactions (>280,000 chemical entities and approximately 4000 human targets)."),
            br(),
            h4(strong("How does this app work?")),
            h5("D-TEX leverages structural information of molecules and the associated target annotations to build a drug-target map 
@@ -44,6 +44,8 @@ shinyUI(
            h4(strong("How do I use the app to search by target?")),
            p("If you have a target in mind, please enter the HUGO Gene Symbol on the 'Genes' tab."), 
            br(),
+           fluidRow(a("Feedback? Click here.", href = "https://goo.gl/forms/EoyI3da7Y0X50jah2", target="_blank"), align = "center"),
+           br(),
            fluidRow(
            img(src='CTF_Logo.png'),
            img(src= "sage_logo.png"), align = "center"),
@@ -52,7 +54,6 @@ shinyUI(
            fluidRow(
            h5("shiny, shinyBS, shinythemes, rcdk, fingerprint, rJava"),
            h5("plyr, dplyr, DT, enrichR, webchem, visNetwork, igraph"), align = "center")), 
-  
   tabPanel("Molecules",
   sidebarLayout(
     sidebarPanel(
