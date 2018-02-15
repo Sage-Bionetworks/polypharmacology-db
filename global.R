@@ -142,29 +142,21 @@ getGeneOntologyfromTargets <- function(selectdrugs) {
   
 }
 
-
 getMolsFromGenes <- function(genes) {
- # genes <- trimws(unlist(strsplit(inp.gene,",")))
+
   if(length(genes)>1){
   mols <- db %>% 
-    mutate(hugo_gene = as.character(hugo_gene)) %>% 
-    mutate(keep = hugo_gene %in% genes) %>% 
-    group_by(internal_id, keep) %>% 
+    filter(hugo_gene %in% genes) %>% 
+    group_by(internal_id) %>% 
     mutate(count = n()) %>% 
-    filter(keep == TRUE, count >= length(genes)) %>% 
+    filter(count == length(genes)) %>% 
     ungroup() %>% 
     distinct() %>% 
-    dplyr::select(-keep, -count) %>% 
-    top_n(10, confidence)
-  }
-  if(length(genes)==1){
-    mols <- filter(db, hugo_gene == genes) %>% top_n(10, confidence)
-  }
-  if(nrow(mols)<1){
-    print("No molecules found")
+    dplyr::select(-count) 
   }else{
-    mols
+    mols <- filter(db, hugo_gene == genes)
   }
+  mols
 }
 
 getMolsFromGeneNetworks.edges <- function(inp.gene, genenetmols) {

@@ -294,6 +294,9 @@ shinyServer(function(input, output, session) {
 
   output$genetargets <- DT::renderDataTable({
     mol<-getMols()
+    validate(
+      need(isTRUE(nrow(mol)>0), "No molecules with this combination found.")
+    )
       DT::datatable(mol, options = list(dom = "Bfrtip",
                                          buttons = c("copy","excel", "pdf", "print", "colvis")),
                     extensions = "Buttons")
@@ -303,7 +306,11 @@ shinyServer(function(input, output, session) {
 
     nodes <- getMolNodes()
     edges <- getMolEdges()
-
+    
+    validate(
+      need(isTRUE(nrow(nodes)>0), "No molecules with this combination found.")
+    )
+    
     visNetwork(nodes = nodes, edges = edges, height = "2000px") %>%
       visEdges(smooth = FALSE) %>% visPhysics(stabilization = FALSE) %>%
       visLayout(randomSeed = 123) %>% visIgraphLayout() %>% 
