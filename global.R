@@ -156,13 +156,15 @@ getMolsFromGenes <- function(genes) {
   }else{
     mols <- filter(db, hugo_gene == genes)
   }
-  mols
+  
+  mols %>% 
+    select(common_name, hugo_gene, mean_pchembl, n_quantitative, n_qualitative, known_selectivity_index, confidence) 
 }
 
 getMolsFromGeneNetworks.edges <- function(inp.gene, genenetmols) {
   mols <- genenetmols %>% top_n(10, confidence)
   
-  net <- filter(db, common_name %in% mols$common_name)
+  net <- filter(db, common_name %in% mols$common_name) %>% distinct()
   
   net$from <- as.character(net$common_name)
   net$to <- as.character(net$hugo_gene)
@@ -172,18 +174,18 @@ getMolsFromGeneNetworks.edges <- function(inp.gene, genenetmols) {
   as.data.frame(net)
 }
 
+
 getMolsFromGeneNetworks.nodes <- function(inp.gene, genenetmols) {
   mols <- genenetmols %>% top_n(10, confidence)
   
-  net <- filter(db, common_name %in% mols$common_name) 
+  net <- filter(db, common_name %in% mols$common_name) %>% distinct()
   
   id <- c(unique(as.character(net$common_name)), 
-          setdiff(unique(as.character(net$hugo_gene)), as.character(inp.gene)),
-          inp.gene)
-  label <- c(unique(as.character(net$common_name)), unique(as.character(net$hugo_gene)))
+          unique(as.character(net$hugo_gene)))
+  label <- c(unique(as.character(net$common_name)), 
+             unique(as.character(net$hugo_gene)))
   color <- c(rep("blue", length(unique(as.character(net$common_name)))), 
-             rep("green", length(unique(as.character(net$hugo_gene)))),
-             rep("red", length(inp.gene)))
+             rep("green", length(unique(as.character(net$hugo_gene)))))
   
   net <- as.data.frame(cbind(id, label, color))
 }

@@ -306,9 +306,12 @@ shinyServer(function(input, output, session) {
 
     nodes <- getMolNodes()
     edges <- getMolEdges()
-    
+
     validate(
       need(isTRUE(nrow(nodes)>0), "No molecules with this combination found.")
+    )
+    validate(
+      need(isTRUE(nrow(edges)>0), "No molecules with this combination found.")
     )
     
     visNetwork(nodes = nodes, edges = edges, height = "2000px") %>%
