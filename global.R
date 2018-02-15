@@ -143,8 +143,8 @@ getGeneOntologyfromTargets <- function(selectdrugs) {
 }
 
 
-getMolsFromGenes <- function(inp.gene) {
-  genes <- trimws(unlist(strsplit(inp.gene,",")))
+getMolsFromGenes <- function(genes) {
+ # genes <- trimws(unlist(strsplit(inp.gene,",")))
   if(length(genes)>1){
   mols <- db %>% 
     mutate(hugo_gene = as.character(hugo_gene)) %>% 
@@ -158,7 +158,12 @@ getMolsFromGenes <- function(inp.gene) {
     top_n(10, confidence)
   }
   if(length(genes)==1){
-    mols <- filter(db, hugo_gene == inp.gene) %>% top_n(10, confidence)
+    mols <- filter(db, hugo_gene == genes) %>% top_n(10, confidence)
+  }
+  if(nrow(mols)<1){
+    print("No molecules found")
+  }else{
+    mols
   }
 }
 
