@@ -66,14 +66,10 @@ getTargetList <- function(selectdrugs) {
   
   targets <- db %>% 
     filter(common_name %in% selectdrugs) %>% 
+    as.data.frame() %>% 
     dplyr::select(common_name, hugo_gene, mean_pchembl, n_quantitative, n_qualitative, known_selectivity_index, confidence) %>% 
-    arrange(-n_quantitative)
-
-  if (nrow(targets) > 1) {
-    targets
-  } else {
-    print("none found")
-  }
+    arrange(-n_quantitative) 
+  
 }
 
 
@@ -132,10 +128,11 @@ dbs <- c("GO_Molecular_Function_2017", "GO_Cellular_Component_2017", "GO_Biologi
 
 getGeneOntologyfromTargets <- function(selectdrugs) {
   selectdrugs <- selectdrugs
-  targets <- getTargetList(selectdrugs)
+  targets <- getTargetList(selectdrugs) %>% as.data.frame()
+  target.list <- targets$hugo_gene
   
-  if (nrow(targets) > 1) {
-    enriched <- enrichr(as.vector(targets$hugo_gene), dbs)
+  if (length(target.list) > 0) {
+    enriched <- enrichr(target.list, dbs)
   } else {
     print("no targets")
   }

@@ -64,20 +64,12 @@ chembl_struct$external_id <- as.factor(chembl_struct$external_id)
 chembl_struct$database <- "chembl"
 
 ##import DGIDB 3.0
-dgidb_struct <- read.table(synGet("syn11673095")$path, 
+dgidb_struct <- read.table(synGet("syn11832827")$path, 
                            sep = "\t",
-                           quote = "",
-                           header = F, 
+                           header = T, 
                            comment.char = "",
                            na.strings = NA,
-                           allowEscapes = FALSE)
-dgidb_struct$count <- c(1:nrow(dgidb_struct))
-dgidb_struct <- dgidb_struct %>% 
-  group_by(V1) %>% 
-  top_n(1, -count) %>% 
-  select(1:2) %>% 
-  filter(V2 != "") %>% 
-  ungroup() %>% 
+                           allowEscapes = FALSE) %>% 
   set_names(c("external_id", "smiles"))
 
 dgidb_struct$database <- "dgidb"
@@ -194,8 +186,15 @@ drugbank.targets <- read.table(synGet("syn11673549")$path, strip.white = TRUE) %
   distinct()
 
 ##DGIDB 3.0 ##this currently contains some likely redundant information from Chembl, remove
+types <- c("inhibitor",  "antagonist", "agonist", "binder",  "modulator", "blocker", "channel blocker", 
+           "positive allosteric modulator", "allosteric modulator", "activator", "inverse agonist", "partial agonist",
+           "activator,channel blocker", "gating inhibitor", "agonist,antagonist", "agonist,allosteric modulator", "activator,antagonist",
+           "stimulator", "negative modulator", "allosteric modulator,antagonist",  "channel blocker,gating inhibitor antagonist,inhibitor",            
+           "inhibitory allosteric modulator")  
+
 dgidb.targets <- read.table(synGet("syn11672978")$path, sep = "\t", quote = "",header = T, strip.white = TRUE) %>%
   filter(interaction_claim_source != "ChemblInteractions") %>% 
+  filter(interaction_types %in% types) %>% 
   dplyr::select(drug_claim_primary_name, gene_name) %>% 
   filter(drug_claim_primary_name != "", gene_name != "") %>% 
   set_names(c("external_id", "hugo_gene")) %>% 
@@ -529,3 +528,17 @@ synStore(File("drug-target_explorer_igraph_name_map.rds", parentId = "syn1180219
          used = "syn11712148",
          executed = this.file)
 
+names <- readRDS(synapser::synGet("syn11802195")$path)
+write.table(names, "NoGit/drug-target_explorer_igraph_name_map.txt", sep = "\t", row.names = F)
+
+results <- synapser::synTableQuery(sprintf("select * from %s", "syn11831632"))
+x <- nrow(results$asDataFrame())/10000
+for(i in 1:ceiling(x)){
+  print(i)
+  results <- synapser::synTableQuery(sprintf("select * from %s limit 10000", "syn11831632"))
+  deleted <- synDelete(results$asRowSet())
+}
+
+results <- synapser::synGet("syn11831632")
+tableToAppend <- Table(results, names)
+table <- synStore(tableToAppend)

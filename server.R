@@ -71,7 +71,10 @@ shinyServer(function(input, output, session) {
     validate(
       need(is.smiles(input$smiles)==TRUE, "Please enter a valid SMILES.")
     )
-    targ <- getTargetList(input$selectdrugs)
+    validate(
+      need(nrow(getTargetList(input$selectdrugs) %>% as.data.frame())>=1, "No targets found.")
+    )
+    targ <- getTargetList(input$selectdrugs) %>% as.data.frame()
     DT::datatable(targ, options = list(dom = "Bfrtip", 
                                        buttons = c("copy", 
                                                    "excel", 
@@ -95,6 +98,9 @@ shinyServer(function(input, output, session) {
 
 
   output$net <- renderVisNetwork({
+    validate(
+      need(nrow(getTargetList(input$selectdrugs))>=1, "No molecules found for plotting.")
+    )
     drugsfound <- simmols()
     edges <- getNetwork(drugsfound, input$selectdrugs)
     nodes <- distinct(data.frame(id = as.character(c("input", edges$to)), 
@@ -108,6 +114,9 @@ shinyServer(function(input, output, session) {
   output$targetnet <- renderVisNetwork({
     validate(
       need(is.smiles(input$smiles)==TRUE, "Please enter a valid SMILES.")
+    )
+    validate(
+      need(nrow(getTargetList(input$selectdrugs))>=1, "No targets found for plotting.")
     )
     edges <- getTargetNetwork(input$selectdrugs)
     nodes <- distinct(data.frame(id = c(as.character(edges$from),  as.character(edges$to)), 
@@ -124,6 +133,9 @@ shinyServer(function(input, output, session) {
   gene.ont.mol <- reactive({
     validate(
       need(is.smiles(input$smiles)==TRUE, "Please enter a valid SMILES.")
+    )
+    validate(
+      need(nrow(getTargetList(input$selectdrugs))>=1, "No targets found for enrichment.")
     )
     getGeneOntologyfromTargets(input$selectdrugs)
   })
@@ -173,6 +185,9 @@ shinyServer(function(input, output, session) {
     
     output$ccle_mol <- renderText({
       validate(
+        need(is.smiles(input$smiles)==TRUE, "")
+      )
+      validate(
         need(((nrow(as.matrix(ccleoutput()))>0)+(ncol(as.matrix(ccleoutput()))>0)==2), "No drugs found!")
       )
       
@@ -182,6 +197,10 @@ shinyServer(function(input, output, session) {
     })
     
     output$ccle_1 <- renderPlotly({
+      validate(
+        need(is.smiles(input$smiles)==TRUE, "Please enter a valid SMILES.")
+      )
+      
       validate(
         need(((nrow(as.matrix(ccleoutput()))>0)+(ncol(as.matrix(ccleoutput()))>0)==2),"") 
       )

@@ -17,3 +17,4 @@ NoGit/*
 *.xml
 .Rproj.user
 polypharmacology-db.Rproj
+dgidb_curated.xlsx
