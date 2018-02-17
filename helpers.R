@@ -5,7 +5,7 @@ db <- readRDS(synGet("syn11712148")$path) %>%
 db.names <- readRDS(synGet("syn11712154")$path)
 db$internal_id <- as.character(db$internal_id)
 
-fp.db <- readRDS(synGet("syn11693143")$path)
+fp.db <- readRDS(synGet("syn11683261")$path)
 fp.db <- fp.db[names(fp.db) %in% unique(db$internal_id)]
 
 db.genes <- unique(db$hugo_gene)
