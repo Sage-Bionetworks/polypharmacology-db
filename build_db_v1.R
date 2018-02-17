@@ -387,7 +387,7 @@ full.db2 <- full.db %>%
   ungroup() %>% 
   group_by(internal_id, hugo_gene) %>% 
   mutate(known_selectivity_index = 1/n) %>% 
-  mutate(confidence = (sum(prod(n_qualitative,mean_pchembl,na.rm = T), n_quantitative, na.rm = T)*known_selectivity_index)) %>% 
+  mutate(confidence = (sum(prod(n_qualitative,mean_pchembl,na.rm = T), n_quantitative, na.rm = T))) %>% 
   ungroup()
 
 write.table(full.db2, "NoGit/drug_target_associations_v1.txt", row.names = F)
