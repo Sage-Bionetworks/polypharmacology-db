@@ -386,8 +386,9 @@ full.db2 <- full.db %>%
   add_tally() %>% 
   ungroup() %>% 
   group_by(internal_id, hugo_gene) %>% 
-  mutate(known_selectivity_index = 1/n) %>% 
-  mutate(confidence = (sum(prod(n_qualitative,mean_pchembl,na.rm = T), n_quantitative, na.rm = T))) %>% 
+  mutate(mean_pchembl = signif(mean_pchembl,3)) %>% 
+  mutate(known_selectivity_index = signif(1/n, 3)) %>% 
+  mutate(confidence = signif((sum(prod(n_qualitative,mean_pchembl,na.rm = T), n_quantitative, na.rm = T)),digits = 3)) %>% 
   ungroup()
 
 write.table(full.db2, "NoGit/drug_target_associations_v1.txt", row.names = F)
@@ -411,10 +412,10 @@ saveRDS(all.names, "NoGit/compound_names.rds")
 synStore(File("NoGit/compound_names.rds", parentId = "syn11678675"), executed = this.file, 
          used = c("syn11673040", "syn11681825", "syn11672978"))
 
-saveRDS(all.names, "NoGit/compound_names.fst")
-synStore(File("NoGit/compound_names.fst", parentId = "syn11678675"), executed = this.file, 
-         used = c("syn11673040", "syn11681825", "syn11672978"))
-
+# saveRDS(all.names, "NoGit/compound_names.fst")
+# synStore(File("NoGit/compound_names.fst", parentId = "syn11678675"), executed = this.file, 
+#          used = c("syn11673040", "syn11681825", "syn11672978"))
+# 
 
 ####Generate fingerprints for database.
 
@@ -465,6 +466,7 @@ names(foo) <- structures.distinct$internal_id
 saveRDS(foo, "NoGit/db_fingerprints.rds")
 synStore(File("NoGit/db_fingerprints.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
 
+ 
 parseInputFingerprint <- function(input) {
   print("parsing smiles")
   input.mol <- parse.smiles(as.character(input))

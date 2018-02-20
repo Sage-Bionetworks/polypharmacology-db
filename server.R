@@ -4,14 +4,10 @@ shinyServer(function(input, output, session) {
   
   session$sendCustomMessage(type="readCookie",
                            message=list(name="org.sagebionetworks.security.user.login.token'"))
-  #reactive({
-  # validate(
-  #   need(input$cookie != NULL, "Please login to Synapse.org.")
-  # )
-  # })
-# foo <- observeEvent(input$cookie, {
-  # synLogin(sessionToken=input$cookie)
-  synLogin()
+
+  foo <- observeEvent(input$cookie, {
+synLogin(sessionToken=input$cookie)
+  #synLogin()
   output$title <- renderText({
     paste0("Welcome, ", synGetUserProfile()$displayName)
   })
@@ -77,10 +73,7 @@ shinyServer(function(input, output, session) {
     targ <- getTargetList(input$selectdrugs) %>% as.data.frame()
     DT::datatable(targ, options = list(dom = "Bfrtip", 
                                        buttons = c("copy", 
-                                                   "excel", 
-                                                   "pdf", 
-                                                   "print", 
-                                                   "colvis")), extensions = "Buttons",
+                                                   "excel")), extensions = "Buttons",
                   colnames =  c("Molecule Name", "HGNC Symbol", "Mean pChEMBL", "n Quantitative", "n Qualitative", "KSI", "Confidence"))
   }, server = FALSE)
   
@@ -106,8 +99,8 @@ shinyServer(function(input, output, session) {
     nodes <- distinct(data.frame(id = as.character(c("input", edges$to)), 
                                  label = c("INPUT", edges$to)))
     visNetwork(nodes = nodes, edges = edges, height = "100%") %>% 
-      visExport(type = "pdf", name = "exported-network", 
-                float = "right", label = "Export PDF", background = "white", style= "")
+      visExport(type = "png", name = "exported-network", 
+                float = "right", label = "Export PNG", background = "white", style= "")
     
   })
   
@@ -125,8 +118,8 @@ shinyServer(function(input, output, session) {
     visNetwork(nodes = nodes, edges = edges, height = "100%") %>% visEdges(smooth = FALSE) %>% 
       visPhysics(stabilization = FALSE) %>% visLayout(randomSeed = 123) %>% 
       visIgraphLayout() %>% 
-      visExport(type = "pdf", name = "exported-network", 
-                float = "right", label = "Export PDF", background = "white", style= "")
+      visExport(type = "png", name = "exported-network", 
+                float = "right", label = "Export PNG", background = "white", style= "")
   })
 
   
@@ -146,7 +139,7 @@ shinyServer(function(input, output, session) {
       filter(Adjusted.P.value < 0.05) %>%
       arrange(Adjusted.P.value)
     
-    DT::datatable(foo, options = list(dom = "Bfrtip", buttons = c("copy", "excel", "pdf", "print", "colvis")), extensions = "Buttons")
+    DT::datatable(foo, options = list(dom = "Bfrtip", buttons = c("copy", "excel")), extensions = "Buttons")
   }, server = FALSE)
   
   output$GOCC.mol <- DT::renderDataTable({
@@ -155,7 +148,7 @@ shinyServer(function(input, output, session) {
                                                                                                                       0.05) %>% arrange(Adjusted.P.value)
     
     DT::datatable(foo, options = list(dom = "Bfrtip", buttons = c("copy", 
-                                                                  "excel", "pdf", "print", "colvis")), extensions = "Buttons")
+                                                                  "excel")), extensions = "Buttons")
   }, server = FALSE)
   
   output$GOBP.mol <- DT::renderDataTable({
@@ -163,7 +156,7 @@ shinyServer(function(input, output, session) {
                                                                      Overlap, Adjusted.P.value, Z.score) %>% filter(Adjusted.P.value < 
                                                                                                                       0.05) %>% arrange(Adjusted.P.value)
     
-    DT::datatable(foo, options = list(dom = "Bfrtip", buttons = c("copy","excel", "pdf", "print", "colvis")), extensions = "Buttons")
+    DT::datatable(foo, options = list(dom = "Bfrtip", buttons = c("copy","excel")), extensions = "Buttons")
   }, server = FALSE)
   
   output$kegg <- DT::renderDataTable({
@@ -172,7 +165,7 @@ shinyServer(function(input, output, session) {
       arrange(Adjusted.P.value)
     
     DT::datatable(foo, options = list(dom = "Bfrtip", buttons = c("copy", 
-                                                                  "excel", "pdf", "print", "colvis")), extensions = "Buttons")
+                                                                  "excel",)), extensions = "Buttons")
   }, server = FALSE)
   
     ccleoutput <- reactive({
@@ -317,7 +310,7 @@ shinyServer(function(input, output, session) {
       need(isTRUE(nrow(mol)>0), "No molecules with this combination found.")
     )
       DT::datatable(mol, options = list(dom = "Bfrtip",
-                                         buttons = c("copy","excel", "pdf", "print", "colvis")),
+                                         buttons = c("copy","excel")),
                     extensions = "Buttons")
   }, server = FALSE)
 
@@ -336,8 +329,8 @@ shinyServer(function(input, output, session) {
     visNetwork(nodes = nodes, edges = edges, height = "2000px") %>%
       visEdges(smooth = FALSE) %>% visPhysics(stabilization = FALSE) %>%
       visLayout(randomSeed = 123) %>% visIgraphLayout() %>% 
-      visExport(type = "pdf", name = "exported-network", 
-                float = "right", label = "Export PDF", background = "white", style= "")
+      visExport(type = "png", name = "exported-network", 
+                float = "right", label = "Export PNG", background = "white", style= "")
     })
   })
-# })
+ })
