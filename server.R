@@ -2,12 +2,12 @@ source("global.R")
 
 shinyServer(function(input, output, session) {
   
-  session$sendCustomMessage(type="readCookie",
-                           message=list(name="org.sagebionetworks.security.user.login.token'"))
-
-  foo <- observeEvent(input$cookie, {
-synLogin(sessionToken=input$cookie)
-  #synLogin()
+#   session$sendCustomMessage(type="readCookie",
+#                            message=list(name="org.sagebionetworks.security.user.login.token'"))
+# 
+#   foo <- observeEvent(input$cookie, {
+# synLogin(sessionToken=input$cookie)
+  synLogin()
   output$title <- renderText({
     paste0("Welcome, ", synGetUserProfile()$displayName)
   })
@@ -165,7 +165,7 @@ synLogin(sessionToken=input$cookie)
       arrange(Adjusted.P.value)
     
     DT::datatable(foo, options = list(dom = "Bfrtip", buttons = c("copy", 
-                                                                  "excel",)), extensions = "Buttons")
+                                                                  "excel")), extensions = "Buttons")
   }, server = FALSE)
   
     ccleoutput <- reactive({
@@ -333,4 +333,4 @@ synLogin(sessionToken=input$cookie)
                 float = "right", label = "Export PNG", background = "white", style= "")
     })
   })
- })
+# })
