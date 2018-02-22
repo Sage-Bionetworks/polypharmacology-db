@@ -1,15 +1,14 @@
-# polypharmacology-db
-This app is a wrapper for the Children's Tumor Foundation drug interaction database. 
+# Drug-Target Explorer and Companion Database
 
-The purpose of this app is to facilitate exploration of drug-target interaction databases. This app currently contains the Children's Tumor Foundation Drug-Target Database, licensed from Evotec, which summarizes activity data deposited in ChEMBL and inactivity data deposited in Pubchem.
+This repo contains the code for an interactive web interface that was developed using the R Shiny platform and cheminformatics R packages. The app enables the end user with a specific query molecule to search a database of experimentally-derived drug-target interactions. The database can be queried using drug names or structures. A similarity parameter allows the user to expand their search to other structurally related molecules. The structure of the query molecule is compared to every database molecule, and structurally similar molecules and targets are presented in interactive tabular and network-based forms for in-depth exploration.
 
+The app also performs enrichment analysis on the target lists, and allows the user to evaluate structure-activity relationships for drug response data using publicly-available in vitro datasets. If a user has a target of interest, they can search for molecules that bind that target and explore the resulting data interactively. 
 
-How does PPDB work?
-
-PPDB leverages structural information of molecules and the associated target annotations to build a drug-target map based on chemical similarity between molecules. PPDB includes drug-target interactions collated by Evotec, as well as a subset of those available in the DGIdb app. Examples of use-cases for this include:
-
+Potential use cases include:
 - prediction of molecular targets for novel molecules based on structural similarity
 
 - identification of off targets for molecules of interest
 
 - facilitating polypharmacologic drug discovery
+
+To learn more about this project and access the underlying database, please go to www.synapse.org/dtexplorer. 

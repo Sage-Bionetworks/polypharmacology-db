@@ -113,36 +113,37 @@ valid.smiles <- as.data.frame(valid.smiles)
 valid.smiles$smiles <- smiles
 valid <- valid.smiles$smiles[valid.smiles==TRUE]
 
-parseInputFingerprint <- function(input) {
+parseInputFingerprint <- function(input, type) {
   print("parsing smiles")
   input.mol <- parse.smiles(as.character(input))
-  print("typing smiles")
+  print("doing typing")
   pblapply(input.mol, do.typing)
-  print("imprinting aromaticity")
+  print("doing aromaticity")
   pblapply(input.mol, do.aromaticity)
-  print("identifying isotopes")
+  print("doing isotopes")
   pblapply(input.mol, do.isotopes)
   print("generating fingerprints")
-  pblapply(input.mol, get.fingerprint, type = "circular")
+  pblapply(input.mol, get.fingerprint, type = type)
 }
 
 ##takes a while
 mat <- matrix(ncol = 2)
 ct <- 1
 
-for(i in 1:ceiling(length(valid)/5000)){
+##this loop parses fingerprints and converts them to strings to facilitate sorting later
+for(i in 1:ceiling(length(valid)/5000)){ 
   if((length(valid)-(i*5000))>=0){
     print(ct)
     print(i*5000)
     print(paste0("batch ", i," of ", ceiling(length(valid)/5000)))
-    foo <- parseInputFingerprint(valid[ct:(i*5000)])
+    foo <- parseInputFingerprint(valid[ct:(i*5000)], type = "circular")
     mat <- rbind(mat, fp.to.simple.matrix(foo))
     ct<-ct+5000
   }else{
     print(ct)
     print(length(valid))
     print(paste0("batch ", i," of ", ceiling(length(valid)/5000)))
-    foo <- parseInputFingerprint(valid[ct:length(valid)])
+    foo <- parseInputFingerprint(valid[ct:length(valid)], type = "circular")
     mat <- rbind(mat, fp.to.simple.matrix(foo))
   }
 }
@@ -386,9 +387,8 @@ full.db2 <- full.db %>%
   add_tally() %>% 
   ungroup() %>% 
   group_by(internal_id, hugo_gene) %>% 
-  mutate(mean_pchembl = signif(mean_pchembl,3)) %>% 
-  mutate(known_selectivity_index = signif(1/n, 3)) %>% 
-  mutate(confidence = signif((sum(prod(n_qualitative,mean_pchembl,na.rm = T), n_quantitative, na.rm = T)),digits = 3)) %>% 
+  mutate(known_selectivity_index = 1/n) %>% 
+  mutate(confidence = (sum(prod(n_qualitative,mean_pchembl,na.rm = T), n_quantitative, na.rm = T))) %>% 
   ungroup()
 
 write.table(full.db2, "NoGit/drug_target_associations_v1.txt", row.names = F)
@@ -412,10 +412,10 @@ saveRDS(all.names, "NoGit/compound_names.rds")
 synStore(File("NoGit/compound_names.rds", parentId = "syn11678675"), executed = this.file, 
          used = c("syn11673040", "syn11681825", "syn11672978"))
 
-# saveRDS(all.names, "NoGit/compound_names.fst")
-# synStore(File("NoGit/compound_names.fst", parentId = "syn11678675"), executed = this.file, 
-#          used = c("syn11673040", "syn11681825", "syn11672978"))
-# 
+saveRDS(all.names, "NoGit/compound_names.fst")
+synStore(File("NoGit/compound_names.fst", parentId = "syn11678675"), executed = this.file, 
+         used = c("syn11673040", "syn11681825", "syn11672978"))
+
 
 ####Generate fingerprints for database.
 
@@ -430,19 +430,6 @@ structures.distinct <- structures %>%
 
 valid <- as.character(structures.distinct$smiles)
 
-parseInputFingerprint.extended <- function(input) {
-  print("parsing smiles")
-  input.mol <- parse.smiles(as.character(input))
-  print("typing smiles")
-  pblapply(input.mol, do.typing)
-  print("imprinting aromaticity")
-  pblapply(input.mol, do.aromaticity)
-  print("identifying isotopes")
-  pblapply(input.mol, do.isotopes)
-  print("generating fingerprints")
-  pblapply(input.mol, get.fingerprint, type = "extended")
-}
-
 foo <- list()
 ct <- 1
 
@@ -451,13 +438,13 @@ for(i in 1:ceiling(length(valid)/5000)){
     print(ct)
     print(i*5000)
     print(paste0("batch ", i," of ", ceiling(length(valid)/5000)))
-    foo <- append(foo, parseInputFingerprint.extended(valid[ct:(i*5000)]))
+    foo <- append(foo, parseInputFingerprint(valid[ct:(i*5000)], type = "extended"))
     ct<-ct+5000
   }else{
     print(ct)
     print(length(valid))
     print(paste0("batch ", i," of ", ceiling(length(valid)/5000)))
-    foo <- append(foo, parseInputFingerprint.extended(valid[ct:length(valid)]))
+    foo <- append(foo, parseInputFingerprint(valid[ct:length(valid), type = "extended"]))
   }
 }
 
@@ -466,20 +453,6 @@ names(foo) <- structures.distinct$internal_id
 saveRDS(foo, "NoGit/db_fingerprints_extended.rds")
 synStore(File("NoGit/db_fingerprints_extended.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
 
- 
-parseInputFingerprint.circular <- function(input) {
-  print("parsing smiles")
-  input.mol <- parse.smiles(as.character(input))
-  print("typing smiles")
-  pblapply(input.mol, do.typing)
-  print("imprinting aromaticity")
-  pblapply(input.mol, do.aromaticity)
-  print("identifying isotopes")
-  pblapply(input.mol, do.isotopes)
-  print("generating fingerprints")
-  pblapply(input.mol, get.fingerprint, type = "circular")
-}
-
 foo <- list()
 ct <- 1
 
@@ -488,13 +461,13 @@ for(i in 1:ceiling(length(valid)/5000)){
     print(ct)
     print(i*5000)
     print(paste0("batch ", i," of ", ceiling(length(valid)/5000)))
-    foo <- append(foo, parseInputFingerprint.circular(valid[ct:(i*5000)]))
+    foo <- append(foo, parseInputFingerprint(valid[ct:(i*5000)], type = "circular"))
     ct<-ct+5000
   }else{
     print(ct)
     print(length(valid))
     print(paste0("batch ", i," of ", ceiling(length(valid)/5000)))
-    foo <- append(foo, parseInputFingerprint.circular(valid[ct:length(valid)]))
+    foo <- append(foo, parseInputFingerprint(valid[ct:length(valid), type = "circular"]))
   }
 }
 
@@ -503,20 +476,6 @@ names(foo) <- structures.distinct$internal_id
 saveRDS(foo, "NoGit/db_fingerprints_circular.rds")
 synStore(File("NoGit/db_fingerprints_circular.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
 
-
-parseInputFingerprint.pubchem <- function(input) {
-  print("parsing smiles")
-  input.mol <- parse.smiles(as.character(input))
-  print("typing smiles")
-  pblapply(input.mol, do.typing)
-  print("imprinting aromaticity")
-  pblapply(input.mol, do.aromaticity)
-  print("identifying isotopes")
-  pblapply(input.mol, do.isotopes)
-  print("generating fingerprints")
-  pblapply(input.mol, get.fingerprint, type = "pubchem")
-}
-
 foo <- list()
 ct <- 1
 
@@ -525,34 +484,20 @@ for(i in 1:ceiling(length(valid)/5000)){
     print(ct)
     print(i*5000)
     print(paste0("batch ", i," of ", ceiling(length(valid)/5000)))
-    foo <- append(foo, parseInputFingerprint.pubchem(valid[ct:(i*5000)]))
+    foo <- append(foo, parseInputFingerprint(valid[ct:(i*5000)], type = "kr"))
     ct<-ct+5000
   }else{
     print(ct)
     print(length(valid))
     print(paste0("batch ", i," of ", ceiling(length(valid)/5000)))
-    foo <- append(foo, parseInputFingerprint.pubchem(valid[ct:length(valid)]))
+    foo <- append(foo, parseInputFingerprint(valid[ct:length(valid), type = "kr"]))
   }
 }
 
 names(foo) <- structures.distinct$internal_id
 
-saveRDS(foo, "NoGit/db_fingerprints_pubchem.rds")
-synStore(File("NoGit/db_fingerprints_pubchem.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
-
-
-parseInputFingerprint.maccs <- function(input) {
-  print("parsing smiles")
-  input.mol <- parse.smiles(as.character(input))
-  print("typing smiles")
-  pblapply(input.mol, do.typing)
-  print("imprinting aromaticity")
-  pblapply(input.mol, do.aromaticity)
-  print("identifying isotopes")
-  pblapply(input.mol, do.isotopes)
-  print("generating fingerprints")
-  pblapply(input.mol, get.fingerprint, type = "maccs")
-}
+saveRDS(foo, "NoGit/db_fingerprints_kr.rds")
+synStore(File("NoGit/db_fingerprints_kr.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
 
 foo <- list()
 ct <- 1
@@ -562,13 +507,13 @@ for(i in 1:ceiling(length(valid)/5000)){
     print(ct)
     print(i*5000)
     print(paste0("batch ", i," of ", ceiling(length(valid)/5000)))
-    foo <- append(foo, parseInputFingerprint.maccs(valid[ct:(i*5000)]))
+    foo <- append(foo, parseInputFingerprint(valid[ct:(i*5000)], type = "maccs"))
     ct<-ct+5000
   }else{
     print(ct)
     print(length(valid))
     print(paste0("batch ", i," of ", ceiling(length(valid)/5000)))
-    foo <- append(foo, parseInputFingerprint.maccs(valid[ct:length(valid)]))
+    foo <- append(foo, parseInputFingerprint(valid[ct:length(valid), type = "maccs"]))
   }
 }
 
@@ -577,20 +522,6 @@ names(foo) <- structures.distinct$internal_id
 saveRDS(foo, "NoGit/db_fingerprints_maccs.rds")
 synStore(File("NoGit/db_fingerprints_maccs.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
 
-
-parseInputFingerprint.kr <- function(input) {
-  print("parsing smiles")
-  input.mol <- parse.smiles(as.character(input))
-  print("typing smiles")
-  pblapply(input.mol, do.typing)
-  print("imprinting aromaticity")
-  pblapply(input.mol, do.aromaticity)
-  print("identifying isotopes")
-  pblapply(input.mol, do.isotopes)
-  print("generating fingerprints")
-  pblapply(input.mol, get.fingerprint, type = "kr")
-}
-
 foo <- list()
 ct <- 1
 
@@ -599,20 +530,20 @@ for(i in 1:ceiling(length(valid)/5000)){
     print(ct)
     print(i*5000)
     print(paste0("batch ", i," of ", ceiling(length(valid)/5000)))
-    foo <- append(foo, parseInputFingerprint.kr(valid[ct:(i*5000)]))
+    foo <- append(foo, parseInputFingerprint(valid[ct:(i*5000)], type = "pubchem"))
     ct<-ct+5000
   }else{
     print(ct)
     print(length(valid))
     print(paste0("batch ", i," of ", ceiling(length(valid)/5000)))
-    foo <- append(foo, parseInputFingerprint.kr(valid[ct:length(valid)]))
+    foo <- append(foo, parseInputFingerprint(valid[ct:length(valid), type = "pubchem"]))
   }
 }
 
 names(foo) <- structures.distinct$internal_id
 
-saveRDS(foo, "NoGit/db_fingerprints_circular.rds")
-synStore(File("NoGit/db_fingerprints_circular.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
+saveRDS(foo, "NoGit/db_fingerprints_pubchem.rds")
+synStore(File("NoGit/db_fingerprints_pubchem.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
 
 
 #### create igraph object from db

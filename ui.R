@@ -195,12 +195,11 @@ shinyUI(
                                        "Klekota and Roth" = "kr"))),
                fluidRow(p("The molecules were grouped for this database using circular fingerprints. Therefore, any other selection may result in multiple compounds having a Tanimoto similarity of 1. 
                           Also, Tanimoto similarity is greatly impacted by fingerprint choice. For example, circular fingerprints will generally have a lower Tanimoto similarity than extended fingerprints for a given chemical pair.
-                          We chose extended as the default for here as it seemed to work best for commonly-used Tanimoto thresholds for similarity (e.g. >0.85 indicating highly similar.")))
+                          We chose extended as the default for here as it seemed to work best for commonly-used Tanimoto thresholds for similarity (e.g. >0.85 indicating highly similar."))),
+             mainPanel()
              )
            ))
   )
   )
-  )
-  )
-  )
-     
+  )  
+)
