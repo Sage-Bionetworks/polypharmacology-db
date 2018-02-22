@@ -23,7 +23,7 @@ shinyServer(function(input, output, session) {
     validate(
       need(is.smiles(input$smiles)==TRUE, "")
     )
-    similarityFunction(input$smiles)
+    similarityFunction(input$smiles, input$fp.type)
   })
   
   simmols <- reactive({
@@ -43,11 +43,11 @@ shinyServer(function(input, output, session) {
   
   ##molecule (SMILES) input
   
-  observeEvent(input$pubchembutton, {
+  observeEvent(input$cirbutton, {
     pc.smiles <- getSmiles(input$input.name)
     updateTextInput(session, "smiles", value = pc.smiles)
     if(is.na(pc.smiles)){ 
-      output$pubchemsearchNA <- renderText({
+      output$cirsearchNA <- renderText({
       "No Pubchem Molecule Found"
       })
     }

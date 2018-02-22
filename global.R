@@ -43,19 +43,37 @@ is.smiles <- function(x, verbose = TRUE) { ##corrected version from webchem
   }
 }
 
-parseInputFingerprint <- function(input) {
+parseInputFingerprint <- function(input, fp.type) {
   test_smiles <- is.smiles(input)
   if(is.smiles(input==TRUE)){
     input.mol <- parse.smiles(as.character(input))
     lapply(input.mol, do.typing)
     lapply(input.mol, do.aromaticity)
     lapply(input.mol, do.isotopes)
-    fp.inp <- lapply(input.mol, get.fingerprint, type = "extended")
+    fp.inp <- lapply(input.mol, get.fingerprint, type = fp.type)
   }else{
     print('Please input a valid SMILES string.')
   }
 }
 
+pickFingerprintDb <- function(input){
+  if(input=="extended"){
+    foo <- fp.extended
+  }
+  if(input=="circular"){
+    foo <- fp.circular
+  }
+  if(input=="maccs"){
+    foo <- fp.extended
+  }
+  if(input=="kr"){
+    foo <- fp.extended
+  }
+  if(input=="pubchem"){
+    foo = fp.pubchem
+  }
+    
+}
 
 convertDrugToSmiles <- function(input) {
   filt <- filter(db.names, common_name == input) %>% dplyr::select(smiles)
@@ -73,9 +91,10 @@ getTargetList <- function(selectdrugs) {
 }
 
 
-similarityFunction <- function(input) {
+similarityFunction <- function(input, fp.type) {
   input <- input
-  fp.inp <- parseInputFingerprint(input)
+  fp.type <- fp.type
+  fp.inp <- parseInputFingerprint(input, fp.type)
   
   sim <- sapply(fp.db, function(j) {
     distance(fp.inp[[1]], j)

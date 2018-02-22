@@ -39,7 +39,7 @@ shinyUI(
            h4(strong("How do I use the app to search by chemical entity?")),
            p("Click on the 'Molecules' tab to find targets associated with your molecule of interest. 
              Search for the drug using the 'Molecule Lookup' panel on the left. 
-             Alternatively, use the 'Pubchem Search' panel to search Pubchem, or directly enter the SMILES structural string in the 'Direct Structure Input' panel.
+             Alternatively, use the 'CIR Search' panel to use the NCI CACTUS Chemical Identifier Resolver, or directly enter the SMILES structural string in the 'Direct Structure Input' panel.
              Set the Tanimoto similarity threshold using the slider, where 1 represents an identical molecular fingerprint."),
            h4(strong("How do I use the app to search by target?")),
            p("If you have a target in mind, please enter the HUGO Gene Symbol on the 'Genes' tab."), 
@@ -64,7 +64,7 @@ shinyUI(
                           div(),
                           p("1) look up by molecule name in our database,"),
                           div(),
-                          p("2) search Pubchem for structures associated with your molecule name, or"),
+                          p("2) search CIR for structures associated with your molecule name, or"),
                           div(),
                           p("3) directly enter the structure as represented by a SMILES string."),
                           div(),
@@ -81,8 +81,8 @@ shinyUI(
                                            "right", options = list(container = "body")), align = "center"),
                         fluidRow(actionButton("ppdbsearchbutton", "Find PPDB Mols", align = "center"), align = "center"),
                         br(),
-                        p("Search this database for structures by compound name. Can't find what you're looking for? Move to the next panel to search Pubchem."), style = "info"),
-        bsCollapsePanel("Pubchem Search",
+                        p("Search this database for structures by compound name. Can't find what you're looking for? Move to the next panel to search CIR."), style = "info"),
+        bsCollapsePanel("CIR Search",
                  fluidRow(textInput("input.name",
                                     "input text", 
                                     label = NULL, 
@@ -90,9 +90,10 @@ shinyUI(
                                     width = "90%"),
                                  bsTooltip("input.name", "Type molecule name here to search this database for SMILES strings.",
                                            "right", options = list(container = "body")), align = "center"),
-                 fluidRow(actionButton("pubchembutton", "Find Pubchem Mols"), align = "center"), 
+                 fluidRow(actionButton("cirbutton", "Find CIR Mols"), align = "center"), 
                  br(),
-                 p("Input a compound name in this box to search PubChem's structure database."), style = "info"),
+                 p("Input a compound name in this box to search CIR for the structure."),
+                 textOutput("cirsearchNA"), style = "info"),
         bsCollapsePanel("Direct Structure Input", fluidRow(textInput("smiles",
                                      "SMILES string", 
                                      label = "", 
@@ -113,7 +114,6 @@ shinyUI(
                  bsTooltip("sim.thres", "Set the Tanimoto similarity (1 being identical) here.",
                            "right", options = list(container = "body")), style = "warning"), open = "Similarity Threshold"),
                  uiOutput("sims"),
-                 textOutput("pubchemsearchNA"),
       bsCollapse(
       bsCollapsePanel("2D Structure (input)", fluidRow(imageOutput("structureimage"), align = "center"), style = "danger"), open = "2D Structure (input)")
       ),
@@ -182,7 +182,22 @@ shinyUI(
                )
              )
            )
-           )
+           ),
+  tabPanel("Settings",
+           sidebarLayout(
+             sidebarPanel(
+               fluidRow(
+                 radioButtons("fp.type", "Fingerprint type:",
+                                     c("Extended (default)" = "extended",
+                                       "Circular (ECFP/FCFP-like)" = "circular",
+                                       "Pubchem" = "pubchem",
+                                       "MACCS" = "maccs",
+                                       "Klekota and Roth" = "kr"))),
+               fluidRow(p("The molecules were grouped for this database using circular fingerprints. Therefore, any other selection may result in multiple compounds having a Tanimoto similarity of 1. 
+                          Also, Tanimoto similarity is greatly impacted by fingerprint choice. For example, circular fingerprints will generally have a lower Tanimoto similarity than extended fingerprints for a given chemical pair.
+                          We chose extended as the default for here as it seemed to work best for commonly-used Tanimoto thresholds for similarity (e.g. >0.85 indicating highly similar.")))
+             )
+           ))
   )
   )
   )
