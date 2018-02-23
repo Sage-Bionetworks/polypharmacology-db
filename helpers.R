@@ -6,8 +6,20 @@ db <- readRDS(synGet("syn11712148")$path) %>%
 db.names <- readRDS(synGet("syn11712154")$path)
 db$internal_id <- as.character(db$internal_id)
 
-fp.db <- readRDS(synGet("syn11683261")$path)
-fp.db <- fp.db[names(fp.db) %in% unique(db$internal_id)]
+fp.extended <- readRDS(synGet("syn11889426")$path)
+fp.extended <- fp.extended[names(fp.extended) %in% unique(db$internal_id)]
+
+fp.circular <- readRDS(synGet("syn11808628")$path)
+fp.circular <- fp.circular[names(fp.circular) %in% unique(db$internal_id)]
+
+fp.kr <- readRDS(synGet("syn11898431")$path)
+fp.kr <- fp.kr[names(fp.kr) %in% unique(db$internal_id)]
+
+fp.maccs <- readRDS(synGet("syn11899073")$path)
+fp.maccs <- fp.maccs[names(fp.maccs) %in% unique(db$internal_id)]
+
+fp.pubchem <- readRDS(synGet("syn11683261")$path)
+fp.pubchem <- fp.pubchem[names(fp.pubchem) %in% unique(db$internal_id)]
 
 db.genes <- unique(db$hugo_gene)
 

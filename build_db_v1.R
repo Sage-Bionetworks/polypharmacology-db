@@ -1,4 +1,4 @@
-options(java.parameters = "-Xmx12g" ) 
+options(java.parameters = "-Xmx14g" ) 
 ##set above parameter before loading rJavaif generating fingerprints
 ##should be on c4.8xlarge or equiv
 library(plyr)
@@ -479,7 +479,7 @@ synStore(File("NoGit/db_fingerprints_circular.rds", parentId = "syn11678675"), u
 foo <- list()
 ct <- 1
 
-for(i in 1:ceiling(length(valid)/5000)){
+for(i in 1:ceiling(length(valid)/5000)){ ##note - kr fingerprints take a while to generate (nearly 24hr on laptop for 282k mol)
   if((length(valid)-(i*5000))>=0){
     print(ct)
     print(i*5000)

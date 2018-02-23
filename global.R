@@ -56,25 +56,6 @@ parseInputFingerprint <- function(input, fp.type) {
   }
 }
 
-pickFingerprintDb <- function(input){
-  if(input=="extended"){
-    foo <- fp.extended
-  }
-  if(input=="circular"){
-    foo <- fp.circular
-  }
-  if(input=="maccs"){
-    foo <- fp.extended
-  }
-  if(input=="kr"){
-    foo <- fp.extended
-  }
-  if(input=="pubchem"){
-    foo = fp.pubchem
-  }
-    
-}
-
 convertDrugToSmiles <- function(input) {
   filt <- filter(db.names, common_name == input) %>% dplyr::select(smiles)
   filt
@@ -96,10 +77,32 @@ similarityFunction <- function(input, fp.type) {
   fp.type <- fp.type
   fp.inp <- parseInputFingerprint(input, fp.type)
   
-  sim <- sapply(fp.db, function(j) {
-    distance(fp.inp[[1]], j)
-  })
-  
+  if(fp.type=="extended"){
+    sim <- sapply(fp.extended, function(j) {
+      distance(fp.inp[[1]], j)
+    })
+  }
+  if(fp.type=="circular"){
+    sim <- sapply(fp.circular, function(j) {
+      distance(fp.inp[[1]], j)
+    })
+  }
+  if(fp.type=="maccs"){
+    sim <- sapply(fp.maccs, function(j) {
+      distance(fp.inp[[1]], j)
+    })
+  }
+  if(fp.type=="kr"){
+    sim <- sapply(fp.kr, function(j) {
+      distance(fp.inp[[1]], j)
+    })
+  }
+  if(fp.type=="pubchem"){
+    sim <- sapply(fp.pubchem, function(j) {
+      distance(fp.inp[[1]], j)
+    })
+  }
+
   bar <- as.data.frame(sim) %>% 
     rownames_to_column("match") %>% 
     set_names(c("match", "similarity"))
