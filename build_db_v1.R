@@ -653,12 +653,12 @@ drugbank.links <- db.names %>%
   distinct()
 
 db.links <- bind_rows(chembl.links, drugbank.links, dgidb.links)
-db.links$database <- gsub("chembl", "ChEMBL", db.links$database)
-db.links$database <- gsub("dgidb", "DGIdb", db.links$database)
-db.links$database <- gsub("drugbank", "DrugBank", db.links$database)
+db.links$link <- gsub(">chembl<", ">ChEMBL<", db.links$link)
+db.links$link <- gsub(">dgidb<", ">DGIdb<", db.links$link)
+db.links$link <- gsub(">drugbank<", ">DrugBank<", db.links$link)
 
 write.table(db.links, "NoGit/db_external_links.txt", sep = "\t", row.names = F)
-synStore(File("NoGit/db_external_links.txt", parentId = "syn11678675"), used = c("syn11681825","syn11681825","syn11673040"), executed = this.file)
+synStore(File("NoGit/db_external_links.txt", parentId = "syn11678675"), used = c("syn11712154","syn11681825","syn11672978"), executed = this.file)
 
 ### gene links
 db <- readRDS(synGet("syn11712148")$path)
