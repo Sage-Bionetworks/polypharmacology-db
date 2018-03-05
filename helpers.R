@@ -21,7 +21,10 @@ fp.maccs <- fp.maccs[names(fp.maccs) %in% unique(db$internal_id)]
 fp.pubchem <- readRDS(synGet("syn11683261")$path)
 fp.pubchem <- fp.pubchem[names(fp.pubchem) %in% unique(db$internal_id)]
 
-db.genes <- unique(db$hugo_gene)
+
+db.links <- read.table(synGet("syn11932224")$path, sep = "\t", header = T)
+db.gene.links <- read.table(synGet("syn11941368")$path, sep = "\t", header = T)
+db.genes <- db.gene.links$hugo_gene
 
 ##get CTRP data for heatmap
 

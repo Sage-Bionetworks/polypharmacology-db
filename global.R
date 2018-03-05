@@ -17,8 +17,6 @@ library(visNetwork)
 library(igraph)
 library(shinyjs)
 library(shinycssloaders)
-# library(future.apply)
-# plan(multicore)
 
 loading <- function() {
   shinyjs::hide("loading_page")
@@ -71,7 +69,6 @@ getTargetList <- function(selectdrugs) {
   
 }
 
-
 similarityFunction <- function(input, fp.type) {
   input <- input
   fp.type <- fp.type
@@ -108,7 +105,6 @@ similarityFunction <- function(input, fp.type) {
     set_names(c("match", "similarity"))
 }
 
-
 getSimMols <- function(sims, sim.thres) {
   sims2 <- sims %>% dplyr::filter(similarity >= sim.thres) %>% arrange(-similarity)
   sims2$internal_id <- as.character(sims2$match)
@@ -124,6 +120,23 @@ getMolImage <- function(input) {
   view.image.2d(smi[[1]])
 }
 
+
+getInternalId <- function(input) { ##this is specifically for getting internal ids for use in network to external links
+  ids <- filter(db.names, common_name==input)
+  unique(ids$internal_id)
+}
+
+getExternalDrugLinks <- function(internal.id) {
+  links <- filter(db.links, internal_id %in% internal.id)
+  links <- as.character(links$link)
+  links <- paste(links, collapse = ",")
+}
+
+getExternalGeneLinks <- function(gene) {
+  links <- filter(db.gene.links, hugo_gene %in% gene)
+  links <- as.character(links$link)
+}
+
 getNetwork <- function(drugsfound, selectdrugs) {
   targets <- drugsfound %>% 
     distinct() %>% filter(common_name %in% selectdrugs)
@@ -131,7 +144,12 @@ getNetwork <- function(drugsfound, selectdrugs) {
   targets$to <- as.character(targets$common_name)
   targets$width <- ((targets$`Tanimoto Similarity`)^2) * 10
   targets$color <- "red"
-  targets <- dplyr::select(targets, from, to, width, color)
+  links <- sapply(selectdrugs, function(x){
+    id<-getInternalId(x)
+    links <- getExternalDrugLinks(id)
+  })
+  targets$title <- links
+  targets <- dplyr::select(targets, from, to, width, color, title)
 }
 
 getTargetNetwork <- function(selectdrugs) {
@@ -141,6 +159,7 @@ getTargetNetwork <- function(selectdrugs) {
   targets$to <- as.character(targets$hugo_gene)
   targets$width <- 5
   targets$color <- "green"
+
   targets <- dplyr::select(targets, from, to, width, color) %>% 
     filter(from !="NA" & to != "NA")
 }
@@ -196,9 +215,13 @@ getMolsFromGeneNetworks.edges <- function(inp.gene, genenetmols) {
 
 getMolsFromGeneNetworks.nodes <- function(inp.gene, genenetmols) {
   mols <- genenetmols %>% top_n(10, confidence)
-  
-  net <- filter(db, common_name %in% mols$common_name) %>% distinct()
-  
+
+  net <- filter(db, common_name %in% mols$common_name) %>% 
+      distinct() # %>% 
+    # group_by(common_name) %>% 
+    # top_n(20, confidence) %>% 
+    # ungroup()
+   
   id <- c(unique(as.character(net$common_name)), 
           unique(as.character(net$hugo_gene)))
   label <- c(unique(as.character(net$common_name)), 
@@ -206,7 +229,19 @@ getMolsFromGeneNetworks.nodes <- function(inp.gene, genenetmols) {
   color <- c(rep("blue", length(unique(as.character(net$common_name)))), 
              rep("green", length(unique(as.character(net$hugo_gene)))))
   
-  net <- as.data.frame(cbind(id, label, color))
+  druglinks <- sapply(unique(as.character(net$common_name)), function(x){
+    internalids<-getInternalId(x)
+    druglinks <- getExternalDrugLinks(internalids)
+  })
+
+  genelinks <- sapply(unique(as.character(net$hugo_gene)), function(x){
+    getExternalGeneLinks(x)
+  })
+
+  title <- c(druglinks, genelinks)
+
+  net <- as.data.frame(cbind(id, label, color, title))
+  
 }
 
 getSmiles <- function(input.name) {
@@ -218,7 +253,7 @@ getSmiles <- function(input.name) {
 
 plotSimCTRPDrugs <- function(input) {
   input <- input
-  fp.inp <- parseInputFingerprint(input)
+  fp.inp <- parseInputFingerprint(input, fp.type = "extended")
   
   sims <- lapply(fp.inp, function(i) {
     sim <- sapply(fp.ctrp, function(j) {
@@ -264,7 +299,7 @@ plotSimCTRPDrugs <- function(input) {
 
 plotSimSangDrugs <- function(input) {
   input <- input
-  fp.inp <- parseInputFingerprint(input)
+  fp.inp <- parseInputFingerprint(input, fp.type = "extended")
   
   sims <- lapply(fp.inp, function(i) {
     sim <- sapply(fp.sang, function(j) {

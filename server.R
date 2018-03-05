@@ -95,12 +95,15 @@ shinyServer(function(input, output, session) {
       need(nrow(getTargetList(input$selectdrugs))>=1, "No molecules found for plotting.")
     )
     drugsfound <- simmols()
-    edges <- getNetwork(drugsfound, input$selectdrugs)
-    nodes <- distinct(data.frame(id = as.character(c("input", edges$to)), 
-                                 label = c("INPUT", edges$to)))
+    net <- getNetwork(drugsfound, input$selectdrugs) 
+    edges <- net %>% select(-title)
+    nodes <- distinct(data.frame(id = as.character(c("input", net$to)), 
+                                 label = c("INPUT", net$to),
+                                 title = c("Input Molecule", net$title)))
     visNetwork(nodes = nodes, edges = edges, height = "100%") %>% 
       visExport(type = "png", name = "exported-network", 
                 float = "right", label = "Export PNG", background = "white", style= "")
+      
     
   })
   
@@ -112,14 +115,27 @@ shinyServer(function(input, output, session) {
       need(nrow(getTargetList(input$selectdrugs))>=1, "No targets found for plotting.")
     )
     edges <- getTargetNetwork(input$selectdrugs)
+    
+    druglinks <- sapply(edges$from, function(x){
+      id<-getInternalId(x)
+      druglinks <- getExternalDrugLinks(id)
+    })
+    genelinks <- sapply(edges$to, function(x){
+      getExternalGeneLinks(x)
+    })
+    
     nodes <- distinct(data.frame(id = c(as.character(edges$from),  as.character(edges$to)), 
-                                 label = c(as.character(edges$from),  as.character(edges$to)), color = c(rep("blue", length(edges$from)), 
-                                                                            rep("green", length(edges$to)))))
+                                 label = c(as.character(edges$from),  as.character(edges$to)), 
+                                 color = c(rep("blue", length(edges$from)), rep("green", length(edges$to))),
+                                 title = c(druglinks, genelinks)
+                              ))
     visNetwork(nodes = nodes, edges = edges, height = "100%") %>% visEdges(smooth = FALSE) %>% 
       visPhysics(stabilization = FALSE) %>% visLayout(randomSeed = 123) %>% 
       visIgraphLayout() %>% 
       visExport(type = "png", name = "exported-network", 
-                float = "right", label = "Export PNG", background = "white", style= "")
+                float = "right", label = "Export PNG", background = "white", style= "") %>% 
+      visOptions(highlightNearest = T)
+    
   })
 
   
@@ -326,6 +342,7 @@ shinyServer(function(input, output, session) {
       need(isTRUE(nrow(edges)>0), "No molecules with this combination found.")
     )
     
+      
     visNetwork(nodes = nodes, edges = edges, height = "2000px") %>%
       visEdges(smooth = FALSE) %>% visPhysics(stabilization = FALSE) %>%
       visLayout(randomSeed = 123) %>% visIgraphLayout() %>% 

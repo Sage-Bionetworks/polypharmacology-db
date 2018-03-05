@@ -416,6 +416,27 @@ saveRDS(all.names, "NoGit/compound_names.fst")
 synStore(File("NoGit/compound_names.fst", parentId = "syn11678675"), executed = this.file, 
          used = c("syn11673040", "syn11681825", "syn11672978"))
 
+####Mapping to external databases for webapp
+
+external.links <- db.names %>%
+  select(external_id, internal_id, database) %>% 
+  distinct() %>%  
+  distinct() %>% 
+  filter(database == "drugbank") %>% 
+  mutate(external_id = paste0("<a href='https://www.drugbank.ca/drugs/", external_id, "'>DrugBank</a>")) %>% 
+  spread(database, external_id, fill = NA) 
+
+  # mutate(chembl = paste0("https://www.ebi.ac.uk/chembldb/compound/inspect/", chembl)) %>% 
+  mutate(dgidb = paste0("<a href='www.dgidb.org/drugs/", dgidb,"'>DGIdb</a>")) %>% 
+  # mutate(chemicalprobes = gsub("_cp", "", paste0("http://www.chemicalprobes.org/", chemicalprobes))) %>% 
+  unite(drugbank, dgidb, sep = ",")
+
+# mutate(chembl = paste0("https://www.ebi.ac.uk/chembldb/compound/inspect/", chembl)) %>% 
+mutate(drugbank = paste0("<a href='https://www.drugbank.ca/drugs/", drugbank, "'>DrugBank</a>")) %>% 
+  mutate(dgidb = paste0("<a href='www.dgidb.org/drugs/", dgidb,"'>DGIdb</a>")) %>% 
+  # mutate(chemicalprobes = gsub("_cp", "", paste0("http://www.chemicalprobes.org/", chemicalprobes))) %>% 
+  unite(drugbank, dgidb, sep = ",")
+
 
 ####Generate fingerprints for database.
 
@@ -588,3 +609,64 @@ synStore(File("NoGit/db_fingerprints_pubchem.rds", parentId = "syn11678675"), us
 # results <- synapser::synGet("syn11831632")
 # tableToAppend <- Table(results, names)
 # table <- synStore(tableToAppend)
+
+
+###external links file
+db.names <- readRDS(synGet("syn11712154")$path)
+
+chembl.internal.ids <- db.names %>% 
+  filter(database == "chembl") %>%
+  select(external_id, internal_id, database) %>% 
+  distinct()
+
+chembl.links <- read.table(synGet("syn11681825")$path, sep = "\t", quote = "", comment.char = "", header = T) %>% 
+  select(molregno, chembl_id) %>% 
+  distinct() %>% 
+  set_names(c("external_id", "link")) %>% 
+  mutate(external_id = as.character(external_id)) %>% 
+  right_join(chembl.internal.ids) %>% 
+  mutate(link = paste0("<a href='https://www.ebi.ac.uk/chembl/compound/inspect/",link,"', target = '_blank'>",database,"</a>")) %>% 
+  select(internal_id, link, external_id, database) %>% 
+  distinct()
+
+dgidb.links <- read.table(synGet("syn11672978")$path, sep = "\t", quote = "", header = T) %>% 
+  select(drug_claim_primary_name, drug_claim_name, drug_name, drug_chembl_id) %>% 
+  distinct() %>% 
+  mutate(drug_claim_primary_name2 = drug_claim_primary_name) %>% 
+  gather("namesource", "name", -drug_claim_primary_name) %>% 
+  select(-namesource) %>% 
+  filter(!grepl("^\\d+$", name) & name != "") %>% 
+  set_names(c("external_id", "common_name")) %>% 
+  distinct() %>% 
+  left_join(db.names) %>% 
+  mutate(link = sapply(external_id, function(x) URLencode(x))) %>%
+  mutate(link = paste0("<a href='http://www.dgidb.org/interaction_search_results/",link,"', target = '_blank'>",database,"</a>")) %>% 
+  filter(!is.na(internal_id)) %>% 
+  select(internal_id, link, external_id, database) %>% 
+  distinct()
+
+drugbank.links <- db.names %>% 
+  filter(database == "drugbank") %>% 
+  mutate(link = sapply(external_id, function(x) URLencode(x))) %>%
+  mutate(link = paste0("<a href='https://www.drugbank.ca/drugs/",link,"', target = '_blank'>",database,"</a>")) %>% 
+  select(internal_id, link, external_id, database) %>% 
+  distinct()
+
+db.links <- bind_rows(chembl.links, drugbank.links, dgidb.links)
+db.links$database <- gsub("chembl", "ChEMBL", db.links$database)
+db.links$database <- gsub("dgidb", "DGIdb", db.links$database)
+db.links$database <- gsub("drugbank", "DrugBank", db.links$database)
+
+write.table(db.links, "NoGit/db_external_links.txt", sep = "\t", row.names = F)
+synStore(File("NoGit/db_external_links.txt", parentId = "syn11678675"), used = c("syn11681825","syn11681825","syn11673040"), executed = this.file)
+
+### gene links
+db <- readRDS(synGet("syn11712148")$path)
+genes <- unique(db$hugo_gene)
+link <- sapply(genes, function(x){
+  paste0("<a href = 'http://www.genecards.org/cgi-bin/carddisp.pl?gene=",x,"', target = '_blank'>GeneCards</a>")
+})
+
+link <- as.data.frame(link) %>% rownames_to_column("hugo_gene")
+write.table(link, "NoGit/gene_external_links.txt", sep = "\t", row.names = F)
+synStore(File("NoGit/gene_external_links.txt", parentId = "syn11678675"), used = c("syn11681825","syn11681825","syn11673040"), executed = this.file)
