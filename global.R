@@ -142,7 +142,7 @@ getNetwork <- function(drugsfound, selectdrugs) {
   targets$from <- "input"
   targets$to <- as.character(targets$common_name)
   targets$width <- ((targets$`Tanimoto Similarity`)^2) * 10
-  targets$color <- "red"
+  targets$color <- "tomato"
   links <- sapply(selectdrugs, function(x){
     id<-getInternalId(x)
     links <- getExternalDrugLinks(id)
@@ -157,8 +157,7 @@ getTargetNetwork <- function(selectdrugs) {
   targets$from <- targets$common_name
   targets$to <- as.character(targets$hugo_gene)
   targets$width <- targets$confidence
-  print(targets$width)
-  targets$color <- "green"
+  targets$color <- "tomato"
 
   targets <- dplyr::select(targets, from, to, width, color) %>% 
     filter(from !="NA" & to != "NA")
@@ -206,8 +205,8 @@ getMolsFromGeneNetworks.edges <- function(inp.gene, genenetmols) {
   
   net$from <- as.character(net$common_name)
   net$to <- as.character(net$hugo_gene)
-  net$width <- net$n_quantitative/10
-  net$color <- "black"
+  net$width <- net$confidence
+  net$color <- "tomato"
   net <- net %>% dplyr::select(from, to, width, color)
   as.data.frame(net)
 }
