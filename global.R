@@ -42,8 +42,7 @@ is.smiles <- function(x, verbose = TRUE) { ##corrected version from webchem
 }
 
 parseInputFingerprint <- function(input, fp.type) {
-  test_smiles <- is.smiles(input)
-  if(is.smiles(input==TRUE)){
+  if(is.smiles(input)==TRUE){
     input.mol <- parse.smiles(as.character(input))
     lapply(input.mol, do.typing)
     lapply(input.mol, do.aromaticity)
@@ -157,7 +156,8 @@ getTargetNetwork <- function(selectdrugs) {
   targets <- getTargetList(selectdrugs) %>% distinct() %>% filter(common_name %in% selectdrugs)
   targets$from <- targets$common_name
   targets$to <- as.character(targets$hugo_gene)
-  targets$width <- 5
+  targets$width <- targets$confidence
+  print(targets$width)
   targets$color <- "green"
 
   targets <- dplyr::select(targets, from, to, width, color) %>% 

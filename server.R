@@ -1,13 +1,11 @@
 source("global.R")
 
 shinyServer(function(input, output, session) {
-  
-#   session$sendCustomMessage(type="readCookie",
-#                            message=list(name="org.sagebionetworks.security.user.login.token'"))
-# 
-#   foo <- observeEvent(input$cookie, {
-# synLogin(sessionToken=input$cookie)
-  synLogin()
+ session$sendCustomMessage(type="readCookie",
+                            message=list(name="org.sagebionetworks.security.user.login.token'"))
+   foo <- observeEvent(input$cookie, {
+ synLogin(sessionToken=input$cookie)
+ #synLogin()
   output$title <- renderText({
     paste0("Welcome, ", synGetUserProfile()$displayName)
   })
@@ -132,8 +130,8 @@ shinyServer(function(input, output, session) {
     visNetwork(nodes = nodes, edges = edges, height = "100%") %>% visEdges(smooth = FALSE) %>% 
       visPhysics(stabilization = FALSE) %>% visLayout(randomSeed = 123) %>% 
       visIgraphLayout() %>% 
-      visExport(type = "png", name = "exported-network", 
-                float = "right", label = "Export PNG", background = "white", style= "") %>% 
+      visExport(type = "pdf", name = "exported-network", 
+                float = "right", label = "Export PDF", background = "white", style= "") %>% 
       visOptions(highlightNearest = T)
     
   })
@@ -343,11 +341,12 @@ shinyServer(function(input, output, session) {
     )
     
       
-    visNetwork(nodes = nodes, edges = edges, height = "2000px") %>%
+    visNetwork(nodes = nodes, edges = edges, height = "100%") %>%
       visEdges(smooth = FALSE) %>% visPhysics(stabilization = FALSE) %>%
       visLayout(randomSeed = 123) %>% visIgraphLayout() %>% 
-      visExport(type = "png", name = "exported-network", 
-                float = "right", label = "Export PNG", background = "white", style= "")
+      visExport(type = "pdf", name = "exported-network", 
+                float = "right", label = "Export PDF", background = "white", style= "") %>% 
+      visOptions(highlightNearest = T)
     })
   })
-# })
+})

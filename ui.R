@@ -131,7 +131,7 @@ shinyUI(
           DT::dataTableOutput("value") %>% withSpinner()),
         tabPanel(title = img("Target Net  ", id = "targetnettab", src = "help.png", align = "right"),
                  bsTooltip(id = "targetnettab", title = "This a network of all similar molecules (blue) and their targets (green).", placement = "bottom", trigger = "hover"),
-          visNetworkOutput("targetnet", height = "1000px", width = "100%") %>% withSpinner()),
+          visNetworkOutput("targetnet", height = "800px", width = "100%") %>% withSpinner()),
         tabPanel(title = img("Enrichr  ", id = "enrichrtab", src = "help.png", align = "right"),
                  bsTooltip(id = "enrichrtab", title = "This tab interactively queries Enrichr for enriched gene ontology and KEGG terms using your target list. May take a few seconds, please be patient!", placement = "bottom", trigger = "hover"),
             tabsetPanel(
@@ -179,7 +179,7 @@ shinyUI(
                           DT::dataTableOutput("genetargets") %>% withSpinner()),
                  tabPanel(title = img("Target Network  ", id = "targnetworktab", src = "help.png", align = "right"),
                             bsTooltip(id = "targnetworktab", title = "This tab graphically displays the input gene, associated drugs, and the other targets associated with those drugs.", placement = "right", trigger = "hover"),
-                            visNetworkOutput("genetargetnet") %>% withSpinner())
+                            visNetworkOutput("genetargetnet",  height = "800px", width = "100%") %>% withSpinner())
                )
              )
            )
