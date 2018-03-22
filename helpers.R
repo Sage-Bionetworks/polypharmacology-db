@@ -18,7 +18,7 @@ fp.kr <- fp.kr[names(fp.kr) %in% unique(db$internal_id)]
 fp.maccs <- readRDS(synGet("syn11899073")$path)
 fp.maccs <- fp.maccs[names(fp.maccs) %in% unique(db$internal_id)]
 
-fp.pubchem <- readRDS(synGet("syn11683261")$path)
+fp.pubchem <- readRDS(synGet("syn12031332")$path)
 fp.pubchem <- fp.pubchem[names(fp.pubchem) %in% unique(db$internal_id)]
 
 

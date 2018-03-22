@@ -442,6 +442,7 @@ mutate(drugbank = paste0("<a href='https://www.drugbank.ca/drugs/", drugbank, "'
 
 structures <- read.table(synGet("syn11678713")$path, header = T) 
 
+
 structures.distinct <- structures %>% 
   group_by(internal_id) %>% 
   top_n(1) %>% 
@@ -451,6 +452,20 @@ structures.distinct <- structures %>%
 
 valid <- as.character(structures.distinct$smiles)
 
+parseInputFingerprint <- function(input, type) {
+  print("parsing smiles")
+  input.mol <- parse.smiles(as.character(input))
+  print("doing typing")
+  pblapply(input.mol, do.typing)
+  print("doing aromaticity")
+  pblapply(input.mol, do.aromaticity)
+  print("doing isotopes")
+  pblapply(input.mol, do.isotopes)
+  print("generating fingerprints")
+  pblapply(input.mol, get.fingerprint, type = type)
+}
+
+parser <- get.smiles.parser()
 foo <- list()
 ct <- 1
 
