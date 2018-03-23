@@ -103,9 +103,9 @@ klaeger_struct <- read.table(synGet("syn11685586")$path,
   mutate(database = "klaeger", source = "klaeger") %>% 
   unite(external_id, c("external_id", "source"), sep = "_")
 
-
 structures <- bind_rows(chembl_struct, db_struct, dgidb_struct, cp_struct, klaeger_struct)
 
+parser <- get.smiles.parser()
 valid.smiles<-pbsapply(structures$smiles, is.smiles)
 
 smiles <- names(valid.smiles)
@@ -129,6 +129,7 @@ parseInputFingerprint <- function(input, type) {
 ##takes a while
 mat <- matrix(ncol = 2)
 ct <- 1
+parser <- get.smiles.parser()
 
 ##this loop parses fingerprints and converts them to strings to facilitate sorting later
 for(i in 1:ceiling(length(valid)/5000)){ 
@@ -412,37 +413,17 @@ saveRDS(all.names, "NoGit/compound_names.rds")
 synStore(File("NoGit/compound_names.rds", parentId = "syn11678675"), executed = this.file, 
          used = c("syn11673040", "syn11681825", "syn11672978"))
 
-saveRDS(all.names, "NoGit/compound_names.fst")
-synStore(File("NoGit/compound_names.fst", parentId = "syn11678675"), executed = this.file, 
-         used = c("syn11673040", "syn11681825", "syn11672978"))
-
-####Mapping to external databases for webapp
-
-external.links <- db.names %>%
-  select(external_id, internal_id, database) %>% 
-  distinct() %>%  
-  distinct() %>% 
-  filter(database == "drugbank") %>% 
-  mutate(external_id = paste0("<a href='https://www.drugbank.ca/drugs/", external_id, "'>DrugBank</a>")) %>% 
-  spread(database, external_id, fill = NA) 
-
-  # mutate(chembl = paste0("https://www.ebi.ac.uk/chembldb/compound/inspect/", chembl)) %>% 
-  mutate(dgidb = paste0("<a href='www.dgidb.org/drugs/", dgidb,"'>DGIdb</a>")) %>% 
-  # mutate(chemicalprobes = gsub("_cp", "", paste0("http://www.chemicalprobes.org/", chemicalprobes))) %>% 
-  unite(drugbank, dgidb, sep = ",")
-
-# mutate(chembl = paste0("https://www.ebi.ac.uk/chembldb/compound/inspect/", chembl)) %>% 
-mutate(drugbank = paste0("<a href='https://www.drugbank.ca/drugs/", drugbank, "'>DrugBank</a>")) %>% 
-  mutate(dgidb = paste0("<a href='www.dgidb.org/drugs/", dgidb,"'>DGIdb</a>")) %>% 
-  # mutate(chemicalprobes = gsub("_cp", "", paste0("http://www.chemicalprobes.org/", chemicalprobes))) %>% 
-  unite(drugbank, dgidb, sep = ",")
-
+# saveRDS(all.names, "NoGit/compound_names.fst")
+# synStore(File("NoGit/compound_names.fst", parentId = "syn11678675"), executed = this.file, 
+#          used = c("syn11673040", "syn11681825", "syn11672978"))
 
 ####Generate fingerprints for database.
 
+full.db2 <- readRDS(synGet("syn11712148")$path)
 structures <- read.table(synGet("syn11678713")$path, header = T) 
 
 structures.distinct <- structures %>% 
+  filter(internal_id %in% full.db2$internal_id) %>% 
   group_by(internal_id) %>% 
   top_n(1) %>% 
   mutate(count = n()) %>% 
@@ -451,6 +432,20 @@ structures.distinct <- structures %>%
 
 valid <- as.character(structures.distinct$smiles)
 
+parseInputFingerprint <- function(input, type) {
+  print("parsing smiles")
+  input.mol <- parse.smiles(as.character(input))
+  print("doing typing")
+  pblapply(input.mol, do.typing)
+  print("doing aromaticity")
+  pblapply(input.mol, do.aromaticity)
+  print("doing isotopes")
+  pblapply(input.mol, do.isotopes)
+  print("generating fingerprints")
+  pblapply(input.mol, get.fingerprint, type = type)
+}
+
+parser <- get.smiles.parser()
 foo <- list()
 ct <- 1
 
@@ -497,29 +492,29 @@ names(foo) <- structures.distinct$internal_id
 saveRDS(foo, "NoGit/db_fingerprints_circular.rds")
 synStore(File("NoGit/db_fingerprints_circular.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
 
-foo <- list()
-ct <- 1
+# foo <- list()
+# ct <- 1
 
-for(i in 1:ceiling(length(valid)/5000)){ ##note - kr fingerprints take a while to generate (nearly 24hr on laptop for 282k mol)
-  if((length(valid)-(i*5000))>=0){
-    print(ct)
-    print(i*5000)
-    print(paste0("batch ", i," of ", ceiling(length(valid)/5000)))
-    foo <- append(foo, parseInputFingerprint(valid[ct:(i*5000)], type = "kr"))
-    ct<-ct+5000
-  }else{
-    print(ct)
-    print(length(valid))
-    print(paste0("batch ", i," of ", ceiling(length(valid)/5000)))
-    foo <- append(foo, parseInputFingerprint(valid[ct:length(valid)], type = "kr"))
-  }
-}
-
-names(foo) <- structures.distinct$internal_id
-
-saveRDS(foo, "NoGit/db_fingerprints_kr.rds")
-synStore(File("NoGit/db_fingerprints_kr.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
-
+# for(i in 1:ceiling(length(valid)/5000)){ ##note - kr fingerprints take a while to generate (nearly 24hr on laptop for 282k mol)
+#   if((length(valid)-(i*5000))>=0){
+#     print(ct)
+#     print(i*5000)
+#     print(paste0("batch ", i," of ", ceiling(length(valid)/5000)))
+#     foo <- append(foo, parseInputFingerprint(valid[ct:(i*5000)], type = "kr"))
+#     ct<-ct+5000
+#   }else{
+#     print(ct)
+#     print(length(valid))
+#     print(paste0("batch ", i," of ", ceiling(length(valid)/5000)))
+#     foo <- append(foo, parseInputFingerprint(valid[ct:length(valid)], type = "kr"))
+#   }
+# }
+# 
+# names(foo) <- structures.distinct$internal_id
+# 
+# saveRDS(foo, "NoGit/db_fingerprints_kr.rds")
+# synStore(File("NoGit/db_fingerprints_kr.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
+# 
 foo <- list()
 ct <- 1
 
@@ -543,28 +538,28 @@ names(foo) <- structures.distinct$internal_id
 saveRDS(foo, "NoGit/db_fingerprints_maccs.rds")
 synStore(File("NoGit/db_fingerprints_maccs.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
 
-foo <- list()
-ct <- 1
-
-for(i in 1:ceiling(length(valid)/5000)){
-  if((length(valid)-(i*5000))>=0){
-    print(ct)
-    print(i*5000)
-    print(paste0("batch ", i," of ", ceiling(length(valid)/5000)))
-    foo <- append(foo, parseInputFingerprint(valid[ct:(i*5000)], type = "pubchem"))
-    ct<-ct+5000
-  }else{
-    print(ct)
-    print(length(valid))
-    print(paste0("batch ", i," of ", ceiling(length(valid)/5000)))
-    foo <- append(foo, parseInputFingerprint(valid[ct:length(valid)], type = "pubchem"))
-  }
-}
-
-names(foo) <- structures.distinct$internal_id
-
-saveRDS(foo, "NoGit/db_fingerprints_pubchem.rds")
-synStore(File("NoGit/db_fingerprints_pubchem.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
+# foo <- list()
+# ct <- 1
+# 
+# for(i in 1:ceiling(length(valid)/5000)){
+#   if((length(valid)-(i*5000))>=0){
+#     print(ct)
+#     print(i*5000)
+#     print(paste0("batch ", i," of ", ceiling(length(valid)/5000)))
+#     foo <- append(foo, parseInputFingerprint(valid[ct:(i*5000)], type = "pubchem"))
+#     ct<-ct+5000
+#   }else{
+#     print(ct)
+#     print(length(valid))
+#     print(paste0("batch ", i," of ", ceiling(length(valid)/5000)))
+#     foo <- append(foo, parseInputFingerprint(valid[ct:length(valid)], type = "pubchem"))
+#   }
+# }
+# 
+# names(foo) <- structures.distinct$internal_id
+# 
+# saveRDS(foo, "NoGit/db_fingerprints_pubchem.rds")
+# synStore(File("NoGit/db_fingerprints_pubchem.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
 
 
 #### create igraph object from db 

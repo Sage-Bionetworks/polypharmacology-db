@@ -12,14 +12,14 @@ fp.extended <- fp.extended[names(fp.extended) %in% unique(db$internal_id)]
 fp.circular <- readRDS(synGet("syn11808628")$path)
 fp.circular <- fp.circular[names(fp.circular) %in% unique(db$internal_id)]
 
-fp.kr <- readRDS(synGet("syn11898431")$path)
-fp.kr <- fp.kr[names(fp.kr) %in% unique(db$internal_id)]
+# fp.kr <- readRDS(synGet("syn11898431")$path)
+# fp.kr <- fp.kr[names(fp.kr) %in% unique(db$internal_id)]
 
 fp.maccs <- readRDS(synGet("syn11899073")$path)
 fp.maccs <- fp.maccs[names(fp.maccs) %in% unique(db$internal_id)]
 
-fp.pubchem <- readRDS(synGet("syn11683261")$path)
-fp.pubchem <- fp.pubchem[names(fp.pubchem) %in% unique(db$internal_id)]
+# fp.pubchem <- readRDS(synGet("syn12031332")$path)
+# fp.pubchem <- fp.pubchem[names(fp.pubchem) %in% unique(db$internal_id)]
 
 
 db.links <- read.table(synGet("syn11932224")$path, sep = "\t", header = T)

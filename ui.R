@@ -47,8 +47,8 @@ shinyUI(
            fluidRow(a("Feedback? Click here.", href = "https://goo.gl/forms/EoyI3da7Y0X50jah2", target="_blank"), align = "center"),
            br(),
            fluidRow(
-           img(src='CTF_Logo.png'),
-           img(src= "sage_logo.png"), align = "center"),
+           img(src= "sage_logo.png"),
+           img(src='CTF_Logo.png'), align = "center"),
            br(),
            h4(strong("This app relies on the following excellent R packages:")),
            fluidRow(
@@ -186,21 +186,28 @@ shinyUI(
            ),
   tabPanel("Settings",
            sidebarLayout(
-             sidebarPanel(
+             sidebarPanel(),
+             mainPanel(
                fluidRow(
                  radioButtons("fp.type", "Fingerprint type:",
                                      c("Extended (default)" = "extended",
                                        "Circular (ECFP/FCFP-like)" = "circular",
-                                       "Pubchem" = "pubchem",
-                                       "MACCS" = "maccs",
-                                       "Klekota and Roth" = "kr"))),
+                                       # "Pubchem" = "pubchem",
+                                       "MACCS" = "maccs"
+                                       # ,"Klekota and Roth" = "kr"
+                                       ))),
                fluidRow(p("The molecules were grouped for this database using circular fingerprints. Therefore, any other selection may result in multiple compounds having a Tanimoto similarity of 1. 
                           Also, Tanimoto similarity is greatly impacted by fingerprint choice. For example, circular fingerprints will generally have a lower Tanimoto similarity than extended fingerprints for a given chemical pair.
-                          We chose extended as the default for here as it seemed to work best for commonly-used Tanimoto thresholds for similarity (e.g. >0.85 indicating highly similar."))),
-             mainPanel()
+                          We chose extended as the default for here as it seemed to work best for commonly-used Tanimoto thresholds for similarity (e.g. >0.85 indicating highly similar.")),
+               fluidRow(
+                 radioButtons("edge.size", "Render edges with confidence score?",
+                              c("Yes" = TRUE,
+                                "No" = FALSE))))
+             
              )
            ))
   )
   )
   )  
 )
+

@@ -112,7 +112,7 @@ shinyServer(function(input, output, session) {
     validate(
       need(nrow(getTargetList(input$selectdrugs))>=1, "No targets found for plotting.")
     )
-    edges <- getTargetNetwork(input$selectdrugs)
+    edges <- getTargetNetwork(input$selectdrugs, input$edge.size)
     
     druglinks <- sapply(edges$from, function(x){
       id<-getInternalId(x)
@@ -130,8 +130,8 @@ shinyServer(function(input, output, session) {
     visNetwork(nodes = nodes, edges = edges, height = "100%") %>% visEdges(smooth = FALSE) %>% 
       visPhysics(stabilization = FALSE) %>% visLayout(randomSeed = 123) %>% 
       visIgraphLayout() %>% 
-      visExport(type = "pdf", name = "exported-network", 
-                float = "right", label = "Export PDF", background = "white", style= "") %>% 
+      visExport(type = "png", name = "exported-network", 
+                float = "right", label = "Export PNG", background = "white", style= "") %>% 
       visOptions(highlightNearest = T)
     
   })
@@ -314,7 +314,7 @@ shinyServer(function(input, output, session) {
     validate(
       need(genes %in% db.genes, "Please enter a valid gene.")
     )
-    getMolsFromGeneNetworks.edges(input$inp.gene, getMols())
+    getMolsFromGeneNetworks.edges(input$inp.gene, getMols(), input$edge.size)
   })
 
 
@@ -344,8 +344,8 @@ shinyServer(function(input, output, session) {
     visNetwork(nodes = nodes, edges = edges, height = "100%") %>%
       visEdges(smooth = FALSE) %>% visPhysics(stabilization = FALSE) %>%
       visLayout(randomSeed = 123) %>% visIgraphLayout() %>% 
-      visExport(type = "pdf", name = "exported-network", 
-                float = "right", label = "Export PDF", background = "white", style= "") %>% 
+      visExport(type = "png", name = "exported-network", 
+                float = "right", label = "Export PNG", background = "white", style= "") %>% 
       visOptions(highlightNearest = T)
     })
   })
