@@ -151,12 +151,17 @@ getNetwork <- function(drugsfound, selectdrugs) {
   targets <- dplyr::select(targets, from, to, width, color, title)
 }
 
-getTargetNetwork <- function(selectdrugs) {
+getTargetNetwork <- function(selectdrugs, edge.size) {
   selectdrugs <- selectdrugs
   targets <- getTargetList(selectdrugs) %>% distinct() %>% filter(common_name %in% selectdrugs)
   targets$from <- targets$common_name
   targets$to <- as.character(targets$hugo_gene)
-  targets$width <- targets$confidence
+  if(edge.size==TRUE){
+    targets$width <- (targets$confidence)/10
+  }
+  if(edge.size==FALSE){
+    targets$width <- 5
+  }
   targets$color <- "tomato"
 
   targets <- dplyr::select(targets, from, to, width, color) %>% 
@@ -198,14 +203,19 @@ getMolsFromGenes <- function(genes) {
     select(common_name, hugo_gene, mean_pchembl, n_quantitative, n_qualitative, known_selectivity_index, confidence) 
 }
 
-getMolsFromGeneNetworks.edges <- function(inp.gene, genenetmols) {
+getMolsFromGeneNetworks.edges <- function(inp.gene, genenetmols, edge.size) {
   mols <- genenetmols %>% top_n(10, confidence)
   
   net <- filter(db, common_name %in% mols$common_name) %>% distinct()
   
   net$from <- as.character(net$common_name)
   net$to <- as.character(net$hugo_gene)
-  net$width <- net$confidence
+  if(edge.size==TRUE){
+    net$width <- (net$confidence)/10
+  }
+  if(edge.size==FALSE){
+    net$width <- 5
+  }
   net$color <- "tomato"
   net <- net %>% dplyr::select(from, to, width, color)
   as.data.frame(net)
