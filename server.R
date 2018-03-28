@@ -13,8 +13,8 @@ shinyServer(function(input, output, session) {
   source("helpers.R")
   
   loading()
-  
-  similarity <- reactive({
+
+    similarity <- reactive({
     validate(
       need(input$smiles!="", "Please select a molecule.")
     )
