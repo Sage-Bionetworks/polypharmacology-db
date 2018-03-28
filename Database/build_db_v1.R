@@ -292,17 +292,16 @@ chembl.assaytype.summary <- chembl.targets %>% ##add in klaeger_quant data too
   left_join(x=grouped_structures, y = .) %>% 
   dplyr::select(internal_id, component_synonym, standard_value, standard_type) %>% 
   set_names("internal_id", "hugo_gene", "standard_value", "standard_type") %>% 
-  filter(standard_type %in% c("IC50", "AC50", "EC50", "C50", "Potency", "Ki", "Kd", "GI50")) %>% 
+  filter(standard_type %in% c("IC50", "AC50", "EC50", "C50", "Potency", "Ki", "Kd")) %>% 
   filter(!is.na(standard_type)) %>% 
   rbind(klaeger_assaytype_summary) %>% 
   group_by(internal_id, hugo_gene, standard_type) %>% 
   summarize(mean_value = mean(standard_value)) %>% 
   ungroup() %>% 
   spread(standard_type, mean_value) %>% 
-  select(internal_id, hugo_gene, IC50, AC50, EC50, C50, Potency, Ki, Kd, GI50) %>% 
+  select(internal_id, hugo_gene, IC50, AC50, EC50, C50, Potency, Ki, Kd) %>% 
   set_names(c("internal_id", "hugo_gene", "IC50_nM","AC50_nM",
-              "EC50_nM", "C50_nM", "Potency_nM", "Ki_nM", "Kd_nM", 
-              "GI50_nM"))
+              "EC50_nM", "C50_nM", "Potency_nM", "Ki_nM", "Kd_nM"))
 
 quant.targets <- full_join(pchembl.summary, chembl.assaytype.summary) 
 
@@ -382,14 +381,17 @@ syns <- all.names %>%
 
 full.db <- left_join(full.db, syns) %>% filter(!is.na(internal_id), !is.na(hugo_gene))
 
-##add confidence metrics
+##add confidence metrics, round off data to make table much smaller
 full.db2 <- full.db %>% 
   group_by(internal_id) %>% 
   add_tally() %>% 
   ungroup() %>% 
   group_by(internal_id, hugo_gene) %>% 
   mutate(known_selectivity_index = 1/n) %>% 
-  mutate(confidence = (sum(prod(n_qualitative,mean_pchembl,na.rm = T), n_quantitative, na.rm = T))) %>% 
+  mutate(confidence = (sum(prod(n_qualitative,mean_pchembl,na.rm = T), n_quantitative, na.rm = T))) %>%
+  mutate(confidence = signif(confidence,3)) %>% 
+  mutate(mean_pchembl = signif(mean_pchembl,3)) %>% 
+  mutate(known_selectivity_index = signif(known_selectivity_index,3)) %>% 
   ungroup()
 
 write.table(full.db2, "NoGit/drug_target_associations_v1.txt", row.names = F)
@@ -665,3 +667,4 @@ link <- sapply(genes, function(x){
 link <- as.data.frame(link) %>% rownames_to_column("hugo_gene")
 write.table(link, "NoGit/gene_external_links.txt", sep = "\t", row.names = F)
 synStore(File("NoGit/gene_external_links.txt", parentId = "syn11678675"), used = c("syn11681825","syn11681825","syn11673040"), executed = this.file)
+

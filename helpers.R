@@ -1,7 +1,6 @@
 
 db <- readRDS(synGet("syn11712148")$path) %>% 
-  filter(!is.na(hugo_gene)) %>% 
-  select(-GI50_nM, n)
+  filter(!is.na(hugo_gene))
 
 db.names <- readRDS(synGet("syn11712154")$path)
 db$internal_id <- as.character(db$internal_id)
