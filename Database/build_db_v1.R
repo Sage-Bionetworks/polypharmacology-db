@@ -343,12 +343,9 @@ db.names <- read.csv(synGet("syn11673040")$path, header = T) %>%
   select(-namesource) %>% 
   set_names(c("external_id", "common_name"))
 
-db.names$common_name[db.names$common_name=="CAS_NA"] <- NA
-db.names$common_name[db.names$common_name=="PubChemCID_NA"] <- NA
-db.names$common_name[db.names$common_name=="ChEBI_NA"] <- NA
-db.names$common_name[db.names$common_name=="ChemSpider_NA"] <- NA
-
-db.names <- filter(db.names, !is.na(common_name)) %>% distinct()
+db.names <- db.names %>%
+  filter(!grepl("_$",db.names$common_name) | !grepl("_NA$",db.names$common_name)) %>% 
+  distinct()
 
 chembl.names <- read.table(synGet("syn11681825")$path, 
                            header = T, 
