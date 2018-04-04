@@ -53,6 +53,23 @@ parseInputFingerprint <- function(input, fp.type) {
   }
 }
 
+distance.minified <- function(fp1,fp.list){
+  n <- length(fp1)
+  f1 <- numeric(n)
+  f2 <- numeric(n)
+  f1[fp1@bits] <- 1
+  
+  sapply(fp.list, function(x){
+    f2[x@bits] <- 1
+    sim <- 0.0
+    ret <- .C("fpdistance", as.double(f1), as.double(f2),
+               as.integer(n), as.integer(1),
+               as.double(sim),
+               PACKAGE="fingerprint")
+    return (ret[[5]])
+  })
+}
+
 convertDrugToSmiles <- function(input) {
   filt <- filter(db.names, common_name == input) %>% dplyr::select(smiles)
   filt
@@ -73,31 +90,11 @@ similarityFunction <- function(input, fp.type) {
   fp.type <- fp.type
   fp.inp <- parseInputFingerprint(input, fp.type)
   
-  if(fp.type=="extended"){
-    sim <- sapply(fp.extended, function(j) {
-      distance(fp.inp[[1]], j)
-    })
-  }
-  if(fp.type=="circular"){
-    sim <- sapply(fp.circular, function(j) {
-      distance(fp.inp[[1]], j)
-    })
-  }
-  if(fp.type=="maccs"){
-    sim <- sapply(fp.maccs, function(j) {
-      distance(fp.inp[[1]], j)
-    })
-  }
-  if(fp.type=="kr"){
-    sim <- sapply(fp.kr, function(j) {
-      distance(fp.inp[[1]], j)
-    })
-  }
-  if(fp.type=="pubchem"){
-    sim <- sapply(fp.pubchem, function(j) {
-      distance(fp.inp[[1]], j)
-    })
-  }
+  if(fp.type=="extended"){ sim <- distance.minified(fp.inp[[1]], fp.extended) }
+  if(fp.type=="circular"){ sim <- distance.minified(fp.inp[[1]], fp.circular) }
+  if(fp.type=="maccs"){ sim <- distance.minified(fp.inp[[1]], fp.maccs) }
+  # if(fp.type=="kr"){ sim <- distance.minified(fp.inp[[1]], fp.kr) }
+  # if(fp.type=="pubchem"){ sim <- distance.minified(fp.inp[[1]], fp.pubchem) 
 
   bar <- as.data.frame(sim) %>% 
     rownames_to_column("match") %>% 

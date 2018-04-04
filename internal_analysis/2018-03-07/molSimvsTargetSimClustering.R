@@ -23,6 +23,7 @@ sim.mat.tidy <- sim.mat.reduced %>% rownames_to_column("a") %>% gather("b", "sim
 dissim.mat <- 1-sim.mat.reduced
 
 
+
 # agnes <- agnes(dissim.mat, diss = TRUE)
 # names.sort <- names[order(names$internal_id, agnes$order.lab),]
 # agnes$order.lab <- names$common_name
