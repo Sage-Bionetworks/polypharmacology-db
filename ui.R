@@ -79,7 +79,7 @@ shinyUI(
                                                 width = "90%"),
                                  bsTooltip("drugnames", "Type molecule name here to search this database for SMILES strings.",
                                            "right", options = list(container = "body")), align = "center"),
-                        fluidRow(actionButton("ppdbsearchbutton", "Find PPDB Mols", align = "center"), align = "center"),
+                        fluidRow(actionButton("ppdbsearchbutton", "Find Molecules", align = "center"), align = "center"),
                         br(),
                         p("Search this database for structures by compound name. Can't find what you're looking for? Move to the next panel to search CIR."), style = "info"),
         bsCollapsePanel("CIR Search",
