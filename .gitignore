@@ -1,10 +1,6 @@
-*.txt
 .Rhistory
 .RData
 *.tsv
-*.rds
-*.RDS
-Data/*
 NoGit/*
 .DS_Store
 *.sdf
