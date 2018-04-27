@@ -20,7 +20,6 @@ shinyUI(
       div(id = "main_content",
   navbarPage("Drug-Target EXplorer", theme = shinytheme("flatly"),
   tabPanel("About",
-           h4(strong(textOutput("title"))),
            h4(strong("Welcome to the Drug-Target Explorer, powered by Sage Bionetworks.")),
            h5("The purpose of this app is to facilitate exploration of drug-target interaction databases.
              The underlying database for this app is a harmonized dataset which summarizes quantitative and qualitative 

@@ -9,7 +9,7 @@ db$internal_id <- as.character(db$internal_id)
 fp.extended <- readRDS("Data/db_fingerprints_extended.rds")
 fp.extended <- fp.extended[names(fp.extended) %in% unique(db$internal_id)]
 
-fp.circular <- readRDS(synGet("Data/db_fingerprints_circular.rds")$path)
+fp.circular <- readRDS("Data/db_fingerprints_circular.rds")
 fp.circular <- fp.circular[names(fp.circular) %in% unique(db$internal_id)]
 
 # fp.kr <- readRDS(synGet("syn11898431")$path)
