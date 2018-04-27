@@ -1,11 +1,11 @@
 source("global.R")
 
 shinyServer(function(input, output, session) {
- #session$sendCustomMessage(type="readCookie",
-  #                          message=list(name="org.sagebionetworks.security.user.login.token'"))
- #  foo <- observeEvent(input$cookie, {
+#session$sendCustomMessage(type="readCookie",
+#                          message=list(name="org.sagebionetworks.security.user.login.token'"))
+#  foo <- observeEvent(input$cookie, {
 # synLogin(sessionToken=input$cookie)
- synLogin()
+# synLogin()
   output$title <- renderText({
     paste0("Welcome, ", synGetUserProfile()$displayName)
   })

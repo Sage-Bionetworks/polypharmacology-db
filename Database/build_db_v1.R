@@ -158,8 +158,8 @@ mat.df2 <- mat.df %>%
 
 mat.df2$internal_id <- group_indices(mat.df2, fp)  
 
-write.table(mat.df2, "NoGit/grouped_structures.txt", sep = "\t", row.names = F)
-synStore(File("NoGit/grouped_structures.txt", parentId = "syn11678675"), ####"syn11678675"), change this to parentId for current build
+write.table(mat.df2, "Data/grouped_structures.txt", sep = "\t", row.names = F)
+synStore(File("Data/grouped_structures.txt", parentId = "syn11678675"), ####"syn11678675"), change this to parentId for current build
          used = c("syn11672894","syn11673040","syn11673095","syn11685572","syn11685586"), executed = this.file)
 
 
@@ -389,29 +389,29 @@ full.db2 <- full.db %>%
   mutate(confidence = (sum(prod(n_qualitative,mean_pchembl,na.rm = T), n_quantitative, na.rm = T))) %>% 
   ungroup()
 
-write.table(full.db2, "NoGit/drug_target_associations_v1.txt", row.names = F)
-synStore(File("NoGit/drug_target_associations_v1.txt", parentId = "syn11678675"), executed = this.file, 
+write.table(full.db2, "Data/drug_target_associations_v1.txt", row.names = F)
+synStore(File("Data/drug_target_associations_v1.txt", parentId = "syn11678675"), executed = this.file, 
          used = c("syn11672909", "syn11672978", "syn11673549", "syn11678713"))
 
-saveRDS(full.db2, "NoGit/drug_target_associations_v1.rds")
-synStore(File("NoGit/drug_target_associations_v1.rds", parentId = "syn11678675"), executed = this.file, 
+saveRDS(full.db2, "Data/drug_target_associations_v1.rds")
+synStore(File("Data/drug_target_associations_v1.rds", parentId = "syn11678675"), executed = this.file, 
          used = c("syn11672909", "syn11672978", "syn11673549", "syn11678713"))
 
 # library(fst)
-# write_fst(full.db2,"NoGit/drug_target_associations_v1.fst")
-# synStore(File("NoGit/drug_target_associations_v1.fst", parentId = "syn11678675"), executed = this.file, 
+# write_fst(full.db2,"Data/drug_target_associations_v1.fst")
+# synStore(File("Data/drug_target_associations_v1.fst", parentId = "syn11678675"), executed = this.file, 
 #          used = c("syn11672909", "syn11672978", "syn11673549", "syn11678713"))
 
-write.table(all.names, "NoGit/compound_names.txt", sep = '\t', row.names = F)
-synStore(File("NoGit/compound_names.txt", parentId = "syn11678675"), executed = this.file, 
+write.table(all.names, "Data/compound_names.txt", sep = '\t', row.names = F)
+synStore(File("Data/compound_names.txt", parentId = "syn11678675"), executed = this.file, 
          used = c("syn11673040", "syn11681825", "syn11672978"))
 
-saveRDS(all.names, "NoGit/compound_names.rds")
-synStore(File("NoGit/compound_names.rds", parentId = "syn11678675"), executed = this.file, 
+saveRDS(all.names, "Data/compound_names.rds")
+synStore(File("Data/compound_names.rds", parentId = "syn11678675"), executed = this.file, 
          used = c("syn11673040", "syn11681825", "syn11672978"))
 
-# saveRDS(all.names, "NoGit/compound_names.fst")
-# synStore(File("NoGit/compound_names.fst", parentId = "syn11678675"), executed = this.file, 
+# saveRDS(all.names, "Data/compound_names.fst")
+# synStore(File("Data/compound_names.fst", parentId = "syn11678675"), executed = this.file, 
 #          used = c("syn11673040", "syn11681825", "syn11672978"))
 
 ####Generate fingerprints for database.
@@ -463,8 +463,8 @@ for(i in 1:ceiling(length(valid)/5000)){
 
 names(foo) <- structures.distinct$internal_id
 
-saveRDS(foo, "NoGit/db_fingerprints_extended.rds")
-synStore(File("NoGit/db_fingerprints_extended.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
+saveRDS(foo, "Data/db_fingerprints_extended.rds")
+synStore(File("Data/db_fingerprints_extended.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
 
 foo <- list()
 ct <- 1
@@ -486,8 +486,8 @@ for(i in 1:ceiling(length(valid)/5000)){
 
 names(foo) <- structures.distinct$internal_id
 
-saveRDS(foo, "NoGit/db_fingerprints_circular.rds")
-synStore(File("NoGit/db_fingerprints_circular.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
+saveRDS(foo, "Data/db_fingerprints_circular.rds")
+synStore(File("Data/db_fingerprints_circular.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
 
 # foo <- list()
 # ct <- 1
@@ -509,8 +509,8 @@ synStore(File("NoGit/db_fingerprints_circular.rds", parentId = "syn11678675"), u
 # 
 # names(foo) <- structures.distinct$internal_id
 # 
-# saveRDS(foo, "NoGit/db_fingerprints_kr.rds")
-# synStore(File("NoGit/db_fingerprints_kr.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
+# saveRDS(foo, "Data/db_fingerprints_kr.rds")
+# synStore(File("Data/db_fingerprints_kr.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
 # 
 foo <- list()
 ct <- 1
@@ -532,8 +532,8 @@ for(i in 1:ceiling(length(valid)/5000)){
 
 names(foo) <- structures.distinct$internal_id
 
-saveRDS(foo, "NoGit/db_fingerprints_maccs.rds")
-synStore(File("NoGit/db_fingerprints_maccs.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
+saveRDS(foo, "Data/db_fingerprints_maccs.rds")
+synStore(File("Data/db_fingerprints_maccs.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
 
 # foo <- list()
 # ct <- 1
@@ -555,8 +555,8 @@ synStore(File("NoGit/db_fingerprints_maccs.rds", parentId = "syn11678675"), used
 # 
 # names(foo) <- structures.distinct$internal_id
 # 
-# saveRDS(foo, "NoGit/db_fingerprints_pubchem.rds")
-# synStore(File("NoGit/db_fingerprints_pubchem.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
+# saveRDS(foo, "Data/db_fingerprints_pubchem.rds")
+# synStore(File("Data/db_fingerprints_pubchem.rds", parentId = "syn11678675"), used = c("syn11678713"), executed = this.file)
 
 
 #### create igraph object from db 
@@ -588,7 +588,7 @@ synStore(File("NoGit/db_fingerprints_maccs.rds", parentId = "syn11678675"), used
 #          executed = this.file)
 # 
 # names <- readRDS(synapser::synGet("syn11802195")$path)
-# write.table(names, "NoGit/drug-target_explorer_igraph_name_map.txt", sep = "\t", row.names = F)
+# write.table(names, "Data/drug-target_explorer_igraph_name_map.txt", sep = "\t", row.names = F)
 # 
 # results <- synapser::synTableQuery(sprintf("select * from %s", "syn11831632"))
 # x <- nrow(results$asDataFrame())/10000
@@ -649,8 +649,8 @@ db.links$link <- gsub(">chembl<", ">ChEMBL<", db.links$link)
 db.links$link <- gsub(">dgidb<", ">DGIdb<", db.links$link)
 db.links$link <- gsub(">drugbank<", ">DrugBank<", db.links$link)
 
-write.table(db.links, "NoGit/db_external_links.txt", sep = "\t", row.names = F)
-synStore(File("NoGit/db_external_links.txt", parentId = "syn11678675"), used = c("syn11712154","syn11681825","syn11672978"), executed = this.file)
+write.table(db.links, "Data/db_external_links.txt", sep = "\t", row.names = F)
+synStore(File("Data/db_external_links.txt", parentId = "syn11678675"), used = c("syn11712154","syn11681825","syn11672978"), executed = this.file)
 
 ### gene links
 db <- readRDS(synGet("syn11712148")$path)
@@ -660,5 +660,5 @@ link <- sapply(genes, function(x){
 })
 
 link <- as.data.frame(link) %>% rownames_to_column("hugo_gene")
-write.table(link, "NoGit/gene_external_links.txt", sep = "\t", row.names = F)
-synStore(File("NoGit/gene_external_links.txt", parentId = "syn11678675"), used = c("syn11681825","syn11681825","syn11673040"), executed = this.file)
+write.table(link, "Data/gene_external_links.txt", sep = "\t", row.names = F)
+synStore(File("Data/gene_external_links.txt", parentId = "syn11678675"), used = c("syn11681825","syn11681825","syn11673040"), executed = this.file)
