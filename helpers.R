@@ -1,7 +1,9 @@
 
+
 db <- readRDS("Data/drug_target_associations_v1.rds") %>% 
   filter(!is.na(hugo_gene)) %>% 
   select(-n)
+
 
 db.names <- readRDS("Data/compound_names.rds")
 db$internal_id <- as.character(db$internal_id)
