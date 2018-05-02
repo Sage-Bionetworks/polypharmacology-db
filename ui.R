@@ -20,7 +20,6 @@ shinyUI(
       div(id = "main_content",
   navbarPage("Drug-Target EXplorer", theme = shinytheme("flatly"),
   tabPanel("About",
-           h4(strong(textOutput("title"))),
            h4(strong("Welcome to the Drug-Target Explorer, powered by Sage Bionetworks.")),
            h5("The purpose of this app is to facilitate exploration of drug-target interaction databases.
              The underlying database for this app is a harmonized dataset which summarizes quantitative and qualitative 
@@ -79,7 +78,7 @@ shinyUI(
                                                 width = "90%"),
                                  bsTooltip("drugnames", "Type molecule name here to search this database for SMILES strings.",
                                            "right", options = list(container = "body")), align = "center"),
-                        fluidRow(actionButton("ppdbsearchbutton", "Find PPDB Mols", align = "center"), align = "center"),
+                        fluidRow(actionButton("ppdbsearchbutton", "Find Molecules", align = "center"), align = "center"),
                         br(),
                         p("Search this database for structures by compound name. Can't find what you're looking for? Move to the next panel to search CIR."), style = "info"),
         bsCollapsePanel("CIR Search",
@@ -201,7 +200,7 @@ shinyUI(
                           We chose extended as the default for here as it seemed to work best for commonly-used Tanimoto thresholds for similarity (e.g. >0.85 indicating highly similar.")),
                fluidRow(
                  radioButtons("edge.size", "Render edges with confidence score?",
-                              c("Yes" = TRUE,
+                              c("Yes (default)" = TRUE,
                                 "No" = FALSE))))
              
              )

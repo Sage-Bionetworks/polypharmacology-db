@@ -1,20 +1,17 @@
 source("global.R")
 
 shinyServer(function(input, output, session) {
- #session$sendCustomMessage(type="readCookie",
-  #                          message=list(name="org.sagebionetworks.security.user.login.token'"))
- #  foo <- observeEvent(input$cookie, {
+#session$sendCustomMessage(type="readCookie",
+#                          message=list(name="org.sagebionetworks.security.user.login.token'"))
+#  foo <- observeEvent(input$cookie, {
 # synLogin(sessionToken=input$cookie)
- synLogin()
-  output$title <- renderText({
-    paste0("Welcome, ", synGetUserProfile()$displayName)
-  })
-
+# synLogin()
+  
   source("helpers.R")
   
   loading()
-  
-  similarity <- reactive({
+
+    similarity <- reactive({
     validate(
       need(input$smiles!="", "Please select a molecule.")
     )
