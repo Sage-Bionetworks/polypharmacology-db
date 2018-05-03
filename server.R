@@ -23,17 +23,23 @@ shinyServer(function(input, output, session) {
   
   simmols <- reactive({
     sims<-similarity()
-    getSimMols(sims, input$sim.thres) %>% as.data.frame()
+    getSimMols(sims, input$sim.thres) %>% as.data.frame() %>% print()
     })
   
   output$sims <- renderUI({
     mols <- simmols()
-    choices <- mols$common_name
-    checkboxGroupInput(inputId = "selectdrugs", "Molecules (similarity)", choices = choices, selected = choices)
+    choice.names <- mols$common_name
+    choice.vals <- mols$internal_id
+    checkboxGroupInput(inputId = "selectdrugs", 
+                       label = "Molecules (similarity)",  
+                       selected = choice.vals,
+                       choiceNames = choice.names,
+                       choiceValues = choice.vals)
   })
   
   output$simmoltab <- renderDataTable({
-    DT::datatable(simmols(), colnames = c("Molecule Name", "Tanimoto Similarity"))
+    dat <- simmols() %>% select(-internal_id)
+    DT::datatable(dat, colnames = c("Molecule Name", "Tanimoto Similarity"))
   })
   
   ##molecule (SMILES) input
@@ -65,7 +71,7 @@ shinyServer(function(input, output, session) {
     validate(
       need(nrow(getTargetList(input$selectdrugs) %>% as.data.frame())>=1, "No targets found.")
     )
-    targ <- getTargetList(input$selectdrugs) %>% as.data.frame()
+    targ <- getTargetList(input$selectdrugs) %>% as.data.frame() %>% select(-internal_id)
     DT::datatable(targ, options = list(dom = "Bfrtip", 
                                        buttons = c("copy", 
                                                    "excel")), extensions = "Buttons",
@@ -110,10 +116,10 @@ shinyServer(function(input, output, session) {
       need(nrow(getTargetList(input$selectdrugs))>=1, "No targets found for plotting.")
     )
     edges <- getTargetNetwork(input$selectdrugs, input$edge.size)
-    
-    druglinks <- sapply(edges$from, function(x){
-      id<-getInternalId(x)
-      druglinks <- getExternalDrugLinks(id)
+
+    druglinks <- sapply(edges$internal_id, function(x){
+      # id<-getInternalId(x)
+      druglinks <- getExternalDrugLinks(x)
     })
     genelinks <- sapply(edges$to, function(x){
       getExternalGeneLinks(x)

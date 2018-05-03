@@ -77,9 +77,9 @@ convertDrugToSmiles <- function(input) {
 getTargetList <- function(selectdrugs) {
   
   targets <- db %>% 
-    filter(common_name %in% selectdrugs) %>% 
+    filter(internal_id %in% selectdrugs) %>% 
     as.data.frame() %>% 
-    dplyr::select(common_name, hugo_gene, mean_pchembl, n_quantitative, n_qualitative, known_selectivity_index, confidence) %>% 
+    dplyr::select(common_name, hugo_gene, mean_pchembl, n_quantitative, n_qualitative, known_selectivity_index, confidence, internal_id) %>% 
     arrange(-n_quantitative) 
   
 }
@@ -105,7 +105,7 @@ getSimMols <- function(sims, sim.thres) {
   sims2$internal_id <- as.character(sims2$match)
   sims2$`Tanimoto Similarity` <- signif(sims2$similarity, 3)
   targets <- left_join(sims2, db) %>% 
-    dplyr::select(common_name, `Tanimoto Similarity`) %>% 
+    dplyr::select(internal_id, common_name, `Tanimoto Similarity`) %>% 
     distinct() %>% 
     as.data.frame()
 }
@@ -115,11 +115,11 @@ getMolImage <- function(input) {
   view.image.2d(smi[[1]])
 }
 
-
-getInternalId <- function(input) { ##this is specifically for getting internal ids for use in network to external links
-  ids <- filter(db.names, common_name==input)
-  unique(ids$internal_id)
-}
+#This should no longer be required as app now works entirely with internal_id under the hood to avoid switching 
+ # getInternalId <- function(input) { ##this is specifically for getting internal ids for use in network to external links
+ #   ids <- filter(db.names, internal_id==input)
+ #   unique(ids$internal_id)
+ # }
 
 getExternalDrugLinks <- function(internal.id) {
   links <- filter(db.links, internal_id %in% internal.id)
@@ -134,22 +134,24 @@ getExternalGeneLinks <- function(gene) {
 
 getNetwork <- function(drugsfound, selectdrugs) {
   targets <- drugsfound %>% 
-    distinct() %>% filter(common_name %in% selectdrugs)
+    distinct() %>% filter(internal_id %in% selectdrugs)
+  
   targets$from <- "input"
   targets$to <- as.character(targets$common_name)
   targets$width <- ((targets$`Tanimoto Similarity`)^2) * 10
   targets$color <- "tomato"
+  
   links <- sapply(selectdrugs, function(x){
-    id<-getInternalId(x)
-    links <- getExternalDrugLinks(id)
+    links <- getExternalDrugLinks(x)
   })
+  
   targets$title <- links
   targets <- dplyr::select(targets, from, to, width, color, title)
 }
 
 getTargetNetwork <- function(selectdrugs, edge.size) {
-  selectdrugs <- selectdrugs
-  targets <- getTargetList(selectdrugs) %>% distinct() %>% filter(common_name %in% selectdrugs)
+  targets <- getTargetList(selectdrugs)
+  print(targets)
   targets$from <- targets$common_name
   targets$to <- as.character(targets$hugo_gene)
   if(edge.size==TRUE){
@@ -160,7 +162,7 @@ getTargetNetwork <- function(selectdrugs, edge.size) {
   }
   targets$color <- "tomato"
 
-  targets <- dplyr::select(targets, from, to, width, color) %>% 
+  targets <- dplyr::select(targets, from, to, width, color, internal_id) %>% 
     filter(from !="NA" & to != "NA")
 }
 
