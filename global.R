@@ -198,15 +198,14 @@ getMolsFromGenes <- function(genes) {
   }
   
   mols %>% 
-    select(common_name, hugo_gene, mean_pchembl, n_quantitative, n_qualitative, known_selectivity_index, confidence) 
+    select(internal_id, common_name, hugo_gene, mean_pchembl, n_quantitative, n_qualitative, known_selectivity_index, confidence) 
 }
 
 getMolsFromGeneNetworks.edges <- function(inp.gene, genenetmols, edge.size) {
   mols <- genenetmols %>% top_n(10, confidence)
+  net <- filter(db, internal_id %in% mols$internal_id) %>% distinct()
   
-  net <- filter(db, common_name %in% mols$common_name) %>% distinct()
-  
-  net$from <- as.character(net$common_name)
+  net$from <- as.character(net$internal_id)
   net$to <- as.character(net$hugo_gene)
   if(edge.size==TRUE){
     net$width <- (net$confidence)/10
@@ -222,23 +221,23 @@ getMolsFromGeneNetworks.edges <- function(inp.gene, genenetmols, edge.size) {
 
 getMolsFromGeneNetworks.nodes <- function(inp.gene, genenetmols) {
   mols <- genenetmols %>% top_n(10, confidence)
+  print(mols)
 
-  net <- filter(db, common_name %in% mols$common_name) %>% 
+  net <- filter(db, internal_id %in% mols$internal_id) %>% 
       distinct() # %>% 
     # group_by(common_name) %>% 
     # top_n(20, confidence) %>% 
     # ungroup()
    
-  id <- c(unique(as.character(net$common_name)), 
+  id <- c(unique(as.character(net$internal_id)), 
           unique(as.character(net$hugo_gene)))
   label <- c(unique(as.character(net$common_name)), 
              unique(as.character(net$hugo_gene)))
   color <- c(rep("blue", length(unique(as.character(net$common_name)))), 
              rep("green", length(unique(as.character(net$hugo_gene)))))
   
-  druglinks <- sapply(unique(as.character(net$common_name)), function(x){
-    internalids<-getInternalId(x)
-    druglinks <- getExternalDrugLinks(internalids)
+  druglinks <- sapply(unique(as.character(net$internal_id)), function(x){
+    druglinks <- getExternalDrugLinks(x)
   })
 
   genelinks <- sapply(unique(as.character(net$hugo_gene)), function(x){
