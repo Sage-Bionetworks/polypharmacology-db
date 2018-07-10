@@ -151,7 +151,6 @@ getNetwork <- function(drugsfound, selectdrugs) {
 
 getTargetNetwork <- function(selectdrugs, edge.size) {
   targets <- getTargetList(selectdrugs)
-  print(targets)
   targets$from <- targets$common_name
   targets$to <- as.character(targets$hugo_gene)
   if(edge.size==TRUE){
@@ -221,7 +220,6 @@ getMolsFromGeneNetworks.edges <- function(inp.gene, genenetmols, edge.size) {
 
 getMolsFromGeneNetworks.nodes <- function(inp.gene, genenetmols) {
   mols <- genenetmols %>% top_n(10, confidence)
-  print(mols)
 
   net <- filter(db, internal_id %in% mols$internal_id) %>% 
       distinct() # %>% 
