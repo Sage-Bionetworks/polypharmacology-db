@@ -1,6 +1,6 @@
 
 
-db <- readRDS("Data/drug_target_associations_v1.rds") %>% 
+db <- readRDS("Data/drug_target_associations_v2.rds") %>% 
   filter(!is.na(hugo_gene)) %>% 
   select(-n)
 

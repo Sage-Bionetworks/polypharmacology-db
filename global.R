@@ -1,4 +1,4 @@
-options(java.parameters = "-Xmx14g" ) 
+options(java.parameters = "-Xmx8g" ) 
 library(shiny)
 library(DT)
 library(png)
