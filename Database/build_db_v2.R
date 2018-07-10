@@ -686,14 +686,14 @@ syn$store(synapse$File("Data/db_fingerprints_maccs.rds", parentId = "syn12978846
 
 
 ###external links file
-db.names <- readRDS(syn$get("syn11712154")$path)
+db.names <- readRDS(syn$get("syn12978912")$path)
 
 chembl.internal.ids <- db.names %>% 
   filter(database == "chembl") %>%
   select(external_id, internal_id, database) %>% 
   distinct()
 
-chembl.links <- read.table(syn$get("syn11681825")$path, sep = "\t", quote = "", comment.char = "", header = T) %>% 
+chembl.links <- read.table(syn$get("syn12972665")$path, sep = "\t", quote = "", comment.char = "", header = T) %>% 
   select(molregno, chembl_id) %>% 
   distinct() %>% 
   set_names(c("external_id", "link")) %>% 
@@ -703,7 +703,7 @@ chembl.links <- read.table(syn$get("syn11681825")$path, sep = "\t", quote = "", 
   select(internal_id, link, external_id, database) %>% 
   distinct()
 
-dgidb.links <- read.table(syn$get("syn11672978")$path, sep = "\t", quote = "", header = T) %>% 
+dgidb.links <- read.table(syn$get("syn12684108")$path, sep = "\t", quote = "", header = T) %>% 
   select(drug_claim_primary_name, drug_claim_name, drug_name, drug_chembl_id) %>% 
   distinct() %>% 
   mutate(drug_claim_primary_name2 = drug_claim_primary_name) %>% 
@@ -732,10 +732,10 @@ db.links$link <- gsub(">dgidb<", ">DGIdb<", db.links$link)
 db.links$link <- gsub(">drugbank<", ">DrugBank<", db.links$link)
 
 write.table(db.links, "Data/db_external_links.txt", sep = "\t", row.names = F)
-syn$store(synapse$File("Data/db_external_links.txt", parentId = "syn11678675"), used = c("syn11712154","syn11681825","syn11672978"), executed = this.file)
+syn$store(synapse$File("Data/db_external_links.txt", parentId = "syn12978846"), used = c("syn12978912","syn12972665","syn12684108"), executed = this.file)
 
 ### gene links
-db <- readRDS(syn$get("syn11712148")$path)
+db <- readRDS(syn$get("syn12978910")$path)
 genes <- unique(db$hugo_gene)
 link <- sapply(genes, function(x){
   paste0("<a href = 'http://www.genecards.org/cgi-bin/carddisp.pl?gene=",x,"', target = '_blank'>GeneCards</a>")
@@ -744,5 +744,5 @@ link <- sapply(genes, function(x){
 link <- as.data.frame(link) %>% rownames_to_column("hugo_gene")
 
 write.table(link, "Data/gene_external_links.txt", sep = "\t", row.names = F)
-syn$store(synapse$File("Data/gene_external_links.txt", parentId = "syn11678675"), used = c("syn11681825","syn11681825","syn11673040"), executed = this.file)
+syn$store(synapse$File("Data/gene_external_links.txt", parentId = "syn12978846"), used = c("syn12978910"), executed = this.file)
 
