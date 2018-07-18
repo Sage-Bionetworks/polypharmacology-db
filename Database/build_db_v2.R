@@ -17,6 +17,7 @@ syn <- synapse$Synapse()
 syn$login()
 library(pbmcapply)
 
+
 this.file = "https://raw.githubusercontent.com/Sage-Bionetworks/polypharmacology-db/master/build_db_v1.R"
 
 fp.to.simple.matrix <- function( fplist ) {
@@ -53,7 +54,7 @@ is.smiles <- function(x, verbose = TRUE) { ##corrected version from webchem
 ###CODE for DB build using ChEMBLv24.1, Drugbank 5.1.0, DGIDB 3.0.2
 
 ##import drugbank 5.1.0 structure data 
-x <- read.csv(syn$get("syn12973257")$path, header = T, comment.char = "", sep = ",", allowEscapes = FALSE)
+x <- read.csv(syn$get("syn12973257")$path, header = T, comment.char = "", sep = ",")
 db_struct <- x %>% dplyr::select(DrugBank.ID, SMILES) %>% 
   set_names(c("external_id", "original_smiles")) %>% 
   filter(original_smiles != "")
@@ -64,7 +65,7 @@ db_struct$database <- "drugbank"
 chembl.targets <- read.table(syn$get("syn12973247")$path, sep = "\t",
                              header = T, comment.char = "", quote = "\"", strip.white = TRUE)
 
-chembl_struct <- read.table(syn$get("syn12973248")$path, sep = "\t", header = T, comment.char = "", allowEscapes = FALSE) %>% 
+chembl_struct <- read.table(syn$get("syn12973248")$path, sep = "\t", header = T, comment.char = "") %>% 
   select(1,4) %>% 
   distinct() %>% 
   filter(molregno %in% chembl.targets$molregno)
@@ -124,24 +125,8 @@ valid.smiles$original_smiles <- smiles
 valid.smiles <- distinct(valid.smiles)
 
 ##remove structures that molvs cannot handle in standardization
-valid <- valid.smiles$original_smiles[valid.smiles$valid.smiles==TRUE &
-                                        valid.smiles$original_smiles != "CN1C(=O)NC2=CN3(=C4NC=CC4=C12)CCCCC(C3)N5C(=O)Nc6cnc7[nH]ccc7c56" &
-                                        valid.smiles$original_smiles != "O=C1[O-][Gd+3]234567[O]=C(C[N]2(CC[N]3(CC([O-]4)=O)CC[N]5(CC(=[O]6)NC)CC(=O)[O-]7)C1)NC" &
-                                        valid.smiles$original_smiles != "[H][N]1([H])[C@@H]2CCCC[C@H]2[N]([H])([H])[Pt]11OC(=O)C(=O)O1" &
-                                        valid.smiles$original_smiles != "NC1=C(C2=C(N)N=C(N)N=C2C=C1)[Cl](=O)=O" &
-                                        valid.smiles$original_smiles != "CCC1=C2C=C3N4C(=CC5=[N+]6C(=CC7=[N]8(C)C(=CC(N2[Cu-]468)=C1C)C(CC)=C7C)C(C)=C5CCC(O)=O)C(CCC(O)=O)=C3C" & 
-                                        valid.smiles$original_smiles != "COC1=CC=C2N(C=NC2=C1)[C@H]1O[C@H](CO)[C@@H](O[P@]([OH-])(=O)O[C@H](C)CNC(=O)CC[C@]2(C)[C@@H](CC(N)=O)C3=[N+]4C2=C(C)C2=[N+]5C(=CC6=[N+]7C(=C(C)C8=[N+]([C@]3(C)[C@@](C)(CC(N)=O)[C@@H]8CCC(N)=O)[Co]457)[C@@](C)(CC(N)=O)[C@@H]6CCC(N)=O)C(C)(C)[C@@H]2CCC(N)=O)[C@H]1O" &
-                                        valid.smiles$original_smiles != "CC1=[O][Ga]2345ON1CCC[C@H]1NC(=O)CNC(=O)[C@H](CO)NC(=O)CNC(=O)[C@H](CCCN(O2)C(C)=[O]3)NC(=O)C(CCCN(O4)C(C)=[O]5)NC1=O" &
-                                        valid.smiles$original_smiles != "C1=CN(C=N1)[Os++]123[N]4=CC=CC=C4C4=[N]1C=CC=C4.C1=CC(C4=CC=CC=[N]24)=[N]3C=C1" &
-                                        valid.smiles$original_smiles != "CC1=C(CCC(O)=O)C2=CC3=[N]4C(=CC5=C(C)C(C=C)=C6C=C7C(C)=C(C=C)C8=[N]7[Zn]4(N2C1=C8)N56)C(C)=C3CCC(O)=O" &
-                                        valid.smiles$original_smiles != "[O]#C[Re+]1(C#[O])(C#[O])[N]2=CC=CC3=C2C2=C(C=CC=[N]12)C=C3" & 
-                                        valid.smiles$original_smiles != "N[C@@H](C[C@H](O)O[Be](F)(F)F)C(O)=O"&
-                                        valid.smiles$original_smiles != "[OH2+][Cu-4]([OH2+])([N]1=CNC=C1)([N+]1=CNC=C1)([N+]1=CNC=C1)[N+]1=CNC=C1" &
-                                        valid.smiles$original_smiles != "F[Al](F)(F)[F-]" &
-                                        valid.smiles$original_smiles != "CN(CCO[P@](O)(=O)O[P@@](O)(=O)O[Be-](F)(F)F)C1=CC=CC=C1[N+]([O-])=O"&
-                                        valid.smiles$original_smiles != "O=[Cl]=O" &
-                                        valid.smiles$original_smiles != "[H][N]([H])([H])[Pt]1(OCC(=O)O1)[N]([H])([H])[H]" &
-                                        valid.smiles$original_smiles != ""]
+##these were simply captured by running standardized_smiles iteratively with a print() inserted...
+##better solution for future. not sure what the common theme between these mols is? they are all parseable
 
 # write.molecules(list, "Data/db_prelim.sdf")
 # list2 <- load.molecules("Data/db_prelim.sdf")
@@ -171,10 +156,11 @@ valid <- valid.smiles$original_smiles[valid.smiles$valid.smiles==TRUE &
 #'mols <- load.molecules(molfiles="Data/db_standardized.sdf", aromaticity = TRUE, typing = TRUE, isotopes = TRUE,
 #'verbose=FALSE)
 #
+valid <- valid.smiles$original_smiles[valid.smiles$valid.smiles==TRUE]
 
 standardized_smiles <- pbmclapply(unique(valid), function(x){
   tryCatch({
-    molvs$standardize_smiles(x)
+    molvs$standardize_smiles(r_to_py(x))
   }, warning = function(w) {
     print(paste("structure",x,"has an issue"))
   }, error = function(e) {
@@ -185,56 +171,72 @@ standardized_smiles <- pbmclapply(unique(valid), function(x){
 names(standardized_smiles) <- unique(valid)
 
 valid.df <- standardized_smiles %>% 
-  ldply() %>% 
+  ldply() %>%
   set_names(c("original_smiles", "smiles"))
+
+valid.smiles.2<-pbsapply(valid.df$smiles, is.smiles)
+
+smiles <- names(valid.smiles.2)
+valid.smiles.2 <- as.data.frame(valid.smiles.2)
+valid.smiles.2$smiles <- smiles
+valid.smiles.2 <- distinct(valid.smiles.2)
+
+valid.df <- valid.df %>% 
+  filter(!grepl("structure .+ is invalid", smiles)) %>% 
+  filter(smiles %in% valid.smiles.2$smiles[valid.smiles.2$valid.smiles.2==TRUE]) %>% 
+  distinct()
 
 valid.df$internal_id <- group_indices(valid.df, smiles) 
 
-valid.std <- unique(valid.df$smiles)
+# valid.std <- unique(valid.df$smiles)
+# 
+# parseInputFingerprint <- function(input, type) {
+#   print("parsing smiles")
+#   input.mol <- parse.smiles(as.character(input))
+#   print("doing typing")
+#   pblapply(input.mol, do.typing)
+#   print("doing aromaticity")
+#   pblapply(input.mol, do.aromaticity)
+#   print("doing isotopes")
+#   pblapply(input.mol, do.isotopes)
+#   print("generating fingerprints")
+#   pblapply(input.mol, get.fingerprint, type = type)
+# }
+# 
+# ##takes a while
+# mat <- matrix(ncol = 2)
+# ct <- 1
+# parser <- get.smiles.parser()
+# 
+# ##this loop parses fingerprints and converts them to strings to facilitate sorting later
+# for(i in 1:ceiling(length(valid.std)/5000)){ 
+#   if((length(valid.std)-(i*5000))>=0){
+#     print(ct)
+#     print(i*5000)
+#     print(paste0("batch ", i," of ", ceiling(length(valid.std)/5000)))
+#     foo <- parseInputFingerprint(valid.std[ct:(i*5000)], type = "circular")
+#     mat <- rbind(mat, fp.to.simple.matrix(foo))
+#     ct<-ct+5000
+#   }else{
+#     print(ct)
+#     print(length(valid.std))
+#     print(paste0("batch ", i," of ", ceiling(length(valid.std)/5000)))
+#     foo <- parseInputFingerprint(valid.std[ct:length(valid.std)], type = "circular")
+#     mat <- rbind(mat, fp.to.simple.matrix(foo))
+#   }
+# } 
 
-parseInputFingerprint <- function(input, type) {
-  print("parsing smiles")
-  input.mol <- parse.smiles(as.character(input))
-  print("doing typing")
-  pblapply(input.mol, do.typing)
-  print("doing aromaticity")
-  pblapply(input.mol, do.aromaticity)
-  print("doing isotopes")
-  pblapply(input.mol, do.isotopes)
-  print("generating fingerprints")
-  pblapply(input.mol, get.fingerprint, type = type)
-}
+##the above fingerprint generation is now done later in this script - will make this file MUCH smaller! 
 
-##takes a while
-mat <- matrix(ncol = 2)
-ct <- 1
-parser <- get.smiles.parser()
+# mat.df <- as.data.frame(mat)
 
-##this loop parses fingerprints and converts them to strings to facilitate sorting later
-for(i in 1:ceiling(length(valid.std)/5000)){ 
-  if((length(valid.std)-(i*5000))>=0){
-    print(ct)
-    print(i*5000)
-    print(paste0("batch ", i," of ", ceiling(length(valid.std)/5000)))
-    foo <- parseInputFingerprint(valid.std[ct:(i*5000)], type = "circular")
-    mat <- rbind(mat, fp.to.simple.matrix(foo))
-    ct<-ct+5000
-  }else{
-    print(ct)
-    print(length(valid.std))
-    print(paste0("batch ", i," of ", ceiling(length(valid.std)/5000)))
-    foo <- parseInputFingerprint(valid.std[ct:length(valid.std)], type = "circular")
-    mat <- rbind(mat, fp.to.simple.matrix(foo))
-  }
-}
+# mat.df2 <- mat.df %>% 
+#   set_names(c("fp", "smiles")) %>% 
+#   distinct() %>% ##critical for mapping because there are repeated smiles
+#   inner_join(valid.df) %>% 
+#   inner_join(structures)
 
-mat.df <- as.data.frame(mat)
-
-mat.df2 <- mat.df %>% 
-  set_names(c("fp", "smiles")) %>% 
-  distinct() %>% ##critical for mapping because there are repeated smiles
-  inner_join(valid.df) %>% 
-  inner_join(structures)
+mat.df2 <- inner_join(valid.df, structures)
 
 write.table(mat.df2, "Data/grouped_structures.txt", sep = "\t", row.names = F)
 syn$store(synapse$File("Data/grouped_structures.txt", parentId = "syn12978846"), ####"syn11678675"), change this to parentId for current build
@@ -249,8 +251,8 @@ grouped_structures <- read.table(syn$get("syn12978848")$path,
                                  colClasses = c("character", 
                                                 "character",
                                                 "character",
-                                                "character")) %>% 
-  select(2:6) %>% 
+                                                 "character")) %>% 
+  # select(2:6) %>%
   filter(smiles != "")
 
 ##Targets
@@ -347,9 +349,10 @@ chembl.targets <- read.table(syn$get("syn12973247")$path, sep = "\t",
                              header = T, comment.char = "", quote = "\"", strip.white = TRUE)
 
 ##filter out non-hugo genes introduced by chembl synonyms
-hugo <- read.table(syn$get("syn11695142")$path, header = T, sep = "\t", quote = "", comment.char = "", colClasses = "character")
+hugo <- read.table(syn$get("syn11695142")$path, header = T, sep = "\t", quote = "", comment.char = "", colClasses = "character") 
 
-chembl.targets <- dplyr::filter(chembl.targets, component_synonym %in% as.character(hugo$symbol))
+chembl.targets <- dplyr::filter(chembl.targets, component_synonym %in% as.character(hugo$symbol))%>% 
+  filter(pchembl_value != "NULL") #remove null pchembl values (small percentage)
 
 pchembl.summary <- chembl.targets %>% 
   mutate(external_id = as.character(molregno)) %>% 
@@ -362,7 +365,9 @@ pchembl.summary <- chembl.targets %>%
   bind_rows(klaeger_pchembl) %>% 
   group_by(internal_id, hugo_gene) %>% 
   summarize("n_quantitative" = n(), 
-            "mean_pchembl" = mean(pchembl_value, na.rm = T)) %>% 
+            "mean_pchembl" = mean(pchembl_value, na.rm = T),
+            "cv" = raster::cv(pchembl_value),
+            "sd" = sd(pchembl_value)) %>% 
   ungroup()
 
 chembl.assaytype.summary <- chembl.targets %>% ##add in klaeger_quant data too
@@ -374,14 +379,15 @@ chembl.assaytype.summary <- chembl.targets %>% ##add in klaeger_quant data too
   filter(!is.na(standard_type)) %>% 
   rbind(klaeger_assaytype_summary) %>% 
   group_by(internal_id, hugo_gene, standard_type) %>% 
-  summarize(mean_value = mean(standard_value)) %>% 
+  summarize(mean_value = mean(standard_value)) %>%
   ungroup() %>% 
   spread(standard_type, mean_value) %>% 
-  select(internal_id, hugo_gene, IC50, AC50, EC50, C50, Potency, Ki, Kd) %>% 
+  select(internal_id, hugo_gene, IC50, AC50, EC50, Potency, Ki, Kd) %>% 
   set_names(c("internal_id", "hugo_gene", "IC50_nM","AC50_nM",
-              "EC50_nM", "C50_nM", "Potency_nM", "Ki_nM", "Kd_nM"))
+              "EC50_nM", "Potency_nM", "Ki_nM", "Kd_nM"))
 
-quant.targets <- full_join(pchembl.summary, chembl.assaytype.summary) 
+quant.targets <- full_join(pchembl.summary, chembl.assaytype.summary)
+
 
 full.db <- full_join(quant.targets, qual.targets, by = c("hugo_gene", "internal_id"))
 
@@ -391,12 +397,13 @@ full.db <- full_join(quant.targets, qual.targets, by = c("hugo_gene", "internal_
 grouped_structures <- read.table(syn$get("syn12978848")$path, 
                                  sep = "\t", 
                                  comment.char = "",
+                                 allowEscapes = F,
                                  header = T,
                                  colClasses = c("character", 
                                                 "character",
                                                 "character",
                                                 "character")) %>% 
-  select(2:6) %>% 
+  dplyr::select(2:6) %>% 
   filter(smiles != "")
 
 dgidb.names <- read.table(syn$get("syn12684108")$path, sep = "\t", quote = "", header = T) %>% 
@@ -435,7 +442,7 @@ chembl.names <- read.table(syn$get("syn12972665")$path,
   set_names(c("external_id", "common_name")) %>% 
   distinct() %>%
   filter(common_name != "NULL") %>% 
-  mutate(external_id = as.character(external_id))
+  mutate(external_id = as.character(external_id)) 
 
 cp.names <- cp_struct %>% select(external_id) %>% 
   mutate(common_name = gsub("_.+", "", external_id))
@@ -443,8 +450,9 @@ cp.names <- cp_struct %>% select(external_id) %>%
 klaeger.names <- klaeger_struct %>% select(external_id) %>% 
   mutate(common_name = gsub("_.+", "", external_id))
 
+grouped_structures <- mutate(grouped_structures, external_id = as.character(external_id))
 all.names <- bind_rows(dgidb.names, db.names, chembl.names, cp.names, klaeger.names) %>% 
-  inner_join(grouped_structures)
+  full_join(grouped_structures)
 
 
 #join single synonym to db for use in app, save full table of synonyms
@@ -457,13 +465,29 @@ syns <- all.names %>%
 full.db <- left_join(full.db, syns) %>% filter(!is.na(internal_id), !is.na(hugo_gene))
 
 ##add confidence metrics, round off data to make table much smaller
+
+total_qualitative <- sum(full.db$n_qualitative, na.rm = T)
+total_quantitative <- sum(full.db$n_quantitative, na.rm = T)
+
 full.db2 <- full.db %>% 
+  group_by(internal_id, hugo_gene) %>% 
+  mutate(total_n = sum(n_quantitative,n_qualitative, na.rm=T)) %>% 
+  ungroup()
+
+sd.n <- sd(full.db2$total_n, na.rm = T)
+mean.n <- mean(full.db2$total_n, na.rm = T)
+
+full.db2 <- full.db2 %>% 
+  mutate(confidence = (total_n-mean.n)/sd.n) %>% 
   group_by(internal_id) %>% 
-  add_tally() %>% 
+  mutate(pchembl_d = sum(mean_pchembl, na.rm = T)) %>% 
+  ungroup() %>% 
+  group_by(hugo_gene) %>% 
+  mutate(pchembl_t = sum(mean_pchembl, na.rm = T)) %>% 
   ungroup() %>% 
   group_by(internal_id, hugo_gene) %>% 
-  mutate(known_selectivity_index = 1/n) %>% 
-  mutate(confidence = (sum(prod(n_qualitative,mean_pchembl,na.rm = T), n_quantitative, na.rm = T))) %>%
+  # mutate(ksi_dt = mean_pchembl/((pchembl_t+pchembl_d)-mean_pchembl)) %>%  ##normalizes for target frequency, perhaps not useful for "drug" selectivity
+  mutate(known_selectivity_index = mean_pchembl/pchembl_d) %>% 
   mutate(confidence = signif(confidence,3)) %>% 
   mutate(mean_pchembl = signif(mean_pchembl,3)) %>% 
   mutate(known_selectivity_index = signif(known_selectivity_index,3)) %>% 
@@ -507,7 +531,7 @@ structures.distinct <- structures %>%
   top_n(1) %>% 
   mutate(count = n()) %>% 
   slice(1) %>% 
-  select(-fp, -external_id, -database)
+  select(-external_id, -database)
 
 valid <- as.character(structures.distinct$smiles)
 
@@ -745,4 +769,42 @@ link <- as.data.frame(link) %>% rownames_to_column("hugo_gene")
 
 write.table(link, "Data/gene_external_links.txt", sep = "\t", row.names = F)
 syn$store(synapse$File("Data/gene_external_links.txt", parentId = "syn12978846"), used = c("syn12978910"), executed = this.file)
+
+
+
+##drug response dataset preparation
+ctrp.structures <- read.table(syn$get("syn5632193")$path, header = T, sep = "\t", quote = "", comment.char = "") 
+ctrp.structures$makenames <- make.names(ctrp.structures$cpd_name)
+
+drug.resp <- read.table(syn$get("syn7466611")$path, sep = "\t", header = TRUE) #%>% 
+#rownames_to_column("cellLine") %>% 
+#gather(makenames, auc, -cellLine)
+
+fp.ctrp <- parseInputFingerprint(as.character(unique(ctrp.structures$cpd_smiles)), type = "extended")
+saveRDS(drug.resp, "Data/drugresp.rds")
+saveRDS(ctrp.structures, "Data/ctrpstructures.rds")
+saveRDS(fp.ctrp, "Data/fpctrp.rds")
+
+
+
+####Sanger Data
+
+sang.structures <- read.table("Data/sanger_structures.txt", header = T, sep = "\t", quote = "", comment.char = "") %>% filter(smiles != "none found")
+sang.structures$makenames <- make.names(sang.structures$sanger_names)
+
+drug.resp.sang <- read.table(syn$get("syn9987866")$path, sep = "\t", header = TRUE) %>% rownames_to_column("cellLine")
+drug.resp.sang <- drug.resp.sang %>% gather(drug, auc, -cellLine)
+drug.resp.sang$drug <- gsub("_.+$", "", drug.resp.sang$drug)
+drug.resp.sang <- drug.resp.sang %>% 
+  group_by(cellLine, drug) %>% 
+  summarize(medianAUC = median(auc)) %>% 
+  ungroup() %>% 
+  spread(drug, medianAUC) %>% 
+  remove_rownames() %>% 
+  column_to_rownames("cellLine")
+
+fp.sang <- parseInputFingerprint(as.character(unique(sang.structures$smiles)), type = "extended")
+saveRDS(drug.resp.sang, "Data/drugresp_sang.rds")
+saveRDS(sang.structures, "Data/sangstructures.rds")
+saveRDS(fp.sang, "Data/fpsang.rds")
 

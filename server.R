@@ -187,7 +187,7 @@ shinyServer(function(input, output, session) {
   
     ccleoutput <- reactive({
       validate(
-        need(is.smiles(input$smiles)==TRUE, "Please enter a valid SMILES.")
+        need((is.smiles(input$smiles)==TRUE & input$smiles!=""), "Please enter a valid SMILES.")
       )
       plotSimCTRPDrugs(input$smiles)
     })
@@ -206,25 +206,25 @@ shinyServer(function(input, output, session) {
       
     })
     
-    output$ccle_1 <- renderPlotly({
-      validate(
-        need(is.smiles(input$smiles)==TRUE, "Please enter a valid SMILES.")
-      )
-      
-      validate(
-        need(((nrow(as.matrix(ccleoutput()))>0)+(ncol(as.matrix(ccleoutput()))>0)==2),"") 
-      )
-    
-    plot1<-ggplot(data = ccleoutput()) +
-      geom_point(aes(x = Correlation, y = -`BH adj p.val`, text = cpd_name, color = (`BH adj p.val` < 0.05))) +
-      theme_bw() +
-      scale_color_discrete(name = "p-value < 0.05") +
-      labs(x = "Drug Response Correlation", y = "BH adjusted p-value")
-    
-    ggplotly(p = plot1, tooltip = c("text", "x", "y"))
-    
-    })
-    
+    # output$ccle_1 <- renderPlotly({
+    #   validate(
+    #     need(is.smiles(input$smiles)==TRUE, "Please enter a valid SMILES.")
+    #   )
+    #   
+    #   validate(
+    #     need(((nrow(as.matrix(ccleoutput()))>0)+(ncol(as.matrix(ccleoutput()))>0)==2),"") 
+    #   )
+    # 
+    # plot1<-ggplot(data = ccleoutput()) +
+    #   geom_point(aes(x = Correlation, y = -`BH adj p.val`, text = cpd_name, color = (`BH adj p.val` < 0.05))) +
+    #   theme_bw() +
+    #   scale_color_discrete(name = "p-value < 0.05") +
+    #   labs(x = "Drug Response Correlation", y = "BH adjusted p-value")
+    # 
+    # ggplotly(p = plot1, tooltip = c("text", "x", "y"))
+    # 
+    # })
+    # 
     output$ccle_2 <- renderPlotly({
       validate(     
         need(((nrow(as.matrix(ccleoutput()))>0)+(ncol(as.matrix(ccleoutput()))>0)==2),"") 
@@ -233,7 +233,7 @@ shinyServer(function(input, output, session) {
     plot2<-ggplot(data = ccleoutput(), aes(x = Correlation, y = `Tanimoto Similarity`, text = cpd_name, color = (`BH adj p.val` < 0.05))) +
       geom_point() +
       theme_bw() +
-      scale_color_discrete(name = "p-value < 0.05") +
+      scale_color_manual(name = "p-value < 0.05", values= c("TRUE" = "#30638E", "FALSE" = "#E16036")) +
       labs(x = "Drug Response Correlation", y = "Chemical Similarity")
     
     ggplotly(p = plot2, tooltip = c("text", "x", "y"))
@@ -242,7 +242,7 @@ shinyServer(function(input, output, session) {
     
     sangoutput <- reactive({
       validate(
-        need(is.smiles(input$smiles)==TRUE, "Please enter a valid SMILES.")
+        need((is.smiles(input$smiles)==TRUE & input$smiles!=""), "Please enter a valid SMILES.")
       )
       plotSimSangDrugs(input$smiles)
       })
@@ -258,20 +258,20 @@ shinyServer(function(input, output, session) {
       
     })
     
-    output$sang_1 <- renderPlotly({
-      validate(
-        need(((nrow(as.matrix(sangoutput()))>0)+(ncol(as.matrix(sangoutput()))>0)==2), "No drugs found!")
-      )
-      
-      plot1<-ggplot(data = sangoutput(), aes(x = Correlation, y = -`BH adj p.val`, text = sanger_names, color = (`BH adj p.val` < 0.05))) +
-        geom_point() +
-        theme_bw() +
-        scale_color_discrete(name = "p-value < 0.05") +
-        labs(x = "Drug Response Correlation", y = "BH adjusted p-value")
-      
-      ggplotly(p = plot1, tooltip = c("text", "x", "y"))
-      
-    })
+    # output$sang_1 <- renderPlotly({
+    #   validate(
+    #     need(((nrow(as.matrix(sangoutput()))>0)+(ncol(as.matrix(sangoutput()))>0)==2), "No drugs found!")
+    #   )
+    #   
+    #   plot1<-ggplot(data = sangoutput(), aes(x = Correlation, y = -`BH adj p.val`, text = sanger_names, color = (`BH adj p.val` < 0.05))) +
+    #     geom_point() +
+    #     theme_bw() +
+    #     scale_color_discrete(name = "p-value < 0.05") +
+    #     labs(x = "Drug Response Correlation", y = "BH adjusted p-value")
+    #   
+    #   ggplotly(p = plot1, tooltip = c("text", "x", "y"))
+    #   
+    # })
     
     output$sang_2 <- renderPlotly({
       validate(
@@ -281,7 +281,7 @@ shinyServer(function(input, output, session) {
       plot2<-ggplot(data = sangoutput(), aes(x = Correlation, y = `Tanimoto Similarity`, text = sanger_names, color = (`BH adj p.val` < 0.05))) +
         geom_point() +
         theme_bw() +
-        scale_color_discrete(name = "p-value < 0.05") +
+        scale_color_manual(name = "p-value < 0.05", values= c("TRUE" = "#30638E", "FALSE" = "#E16036")) +
         labs(x = "Drug Response Correlation", y = "Chemical Similarity")
       
       ggplotly(p = plot2, tooltip = c("text", "x", "y"))

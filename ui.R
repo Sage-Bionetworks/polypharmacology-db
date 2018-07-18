@@ -142,20 +142,18 @@ shinyUI(
               DT::dataTableOutput("GOBP.mol")),
             tabPanel("KEGG Pathways",
               DT::dataTableOutput("kegg")))),
-        tabPanel(title = img("CCLE  ", id = "ccletab", src = "help.png", align = "right"),
-                 bsTooltip(id = "ccletab", title = "This tab searches CCLE drug response data for drugs related to your query compound.", placement = "bottom", trigger = "hover"),
+        tabPanel(title = img("in vitro Comparison  ", id = "celltab", src = "help.png", align = "right"),
+                 bsTooltip(id = "celltab", title = "This tab searches CCLE and Sanger drug response data for drugs related to your query compound.", placement = "bottom", trigger = "hover"),
                  h4(textOutput("ccle_mol")),
                  div(),
                  plotlyOutput("ccle_2", height = "400px", width = "90%") %>% withSpinner(),
-                 plotlyOutput("ccle_1", height = "400px", width = "90%") %>% withSpinner()),
-        tabPanel(title = img("Sanger  ", id = "sangertab", src = "help.png", align = "right"),
-                 bsTooltip(id = "sangertab", title = "This tab searches Sanger cell line response data for drugs related to your query compound.", placement = "bottom", trigger = "hover"),
-                 h4(textOutput("sang_mol")),
+                 # plotlyOutput("ccle_1", height = "400px", width = "90%") %>% withSpinner(),
                  div(),
-                 plotlyOutput("sang_2", height = "400px", width = "90%") %>% withSpinner(),
-                 plotlyOutput("sang_1", height = "400px", width = "90%") %>% withSpinner())
-                 
-        )
+                 h4(textOutput("sang_mol")),
+                 plotlyOutput("sang_2", height = "400px", width = "90%") %>% withSpinner()
+                 # plotlyOutput("sang_1", height = "400px", width = "90%") %>% withSpinner()
+                 ))
+        
     )
   )
   ),
