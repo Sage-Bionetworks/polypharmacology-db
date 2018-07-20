@@ -189,7 +189,7 @@ shinyServer(function(input, output, session) {
       validate(
         need((is.smiles(input$smiles)==TRUE & input$smiles!=""), "Please enter a valid SMILES.")
       )
-      plotSimCTRPDrugs(input$smiles)
+      plotSimCTRPDrugs(input$smiles, input$fp.type)
     })
      
     
@@ -244,7 +244,7 @@ shinyServer(function(input, output, session) {
       validate(
         need((is.smiles(input$smiles)==TRUE & input$smiles!=""), "Please enter a valid SMILES.")
       )
-      plotSimSangDrugs(input$smiles)
+      plotSimSangDrugs(input$smiles, input$fp.type)
       })
     
     

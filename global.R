@@ -52,13 +52,13 @@ parseInputFingerprint <- function(input, fp.type) {
   }
 }
 
-distance.minified <- function(fp1,fp.list){
+distance.minified <- function(fp1,fp.list){ #this function is a stripped down fingerprint::distance that runs about 2-3x faster; big gains for the app, but not as feature rich
   n <- length(fp1)
   f1 <- numeric(n)
   f2 <- numeric(n)
   f1[fp1@bits] <- 1
   
-  sapply(fp.list, function(x){
+  sapply(fp.list, function(x){ 
     f2[x@bits] <- 1
     sim <- 0.0
     ret <- .C("fpdistance", as.double(f1), as.double(f2),
@@ -255,9 +255,13 @@ getSmiles <- function(input.name) {
   query
 }
 
-plotSimCTRPDrugs <- function(input) {
-  input <- input
-  fp.inp <- parseInputFingerprint(input, fp.type = "extended")
+plotSimCTRPDrugs <- function(input, fp.type) {
+
+  fp.inp <- parseInputFingerprint(input, fp.type = fp.type)
+  
+  if(fp.type == "circular"){fp.ctrp <- fp.ctrp.circular}
+  if(fp.type == "extended"){fp.ctrp <- fp.ctrp.extended}
+  if(fp.type == "maccs"){fp.ctrp <- fp.ctrp.maccs}
   
   sims <- lapply(fp.inp, function(i) {
     sim <- sapply(fp.ctrp, function(j) {
@@ -301,9 +305,13 @@ plotSimCTRPDrugs <- function(input) {
   cors
 }
 
-plotSimSangDrugs <- function(input) {
-  input <- input
-  fp.inp <- parseInputFingerprint(input, fp.type = "extended")
+plotSimSangDrugs <- function(input, fp.type) {
+  
+  fp.inp <- parseInputFingerprint(input, fp.type = fp.type)
+  
+  if(fp.type == "circular"){fp.sang <- fp.sang.circular}
+  if(fp.type == "extended"){fp.sang <- fp.sang.extended}
+  if(fp.type == "maccs"){fp.sang <- fp.sang.maccs}
   
   sims <- lapply(fp.inp, function(i) {
     sim <- sapply(fp.sang, function(j) {

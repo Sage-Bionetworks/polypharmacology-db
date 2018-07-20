@@ -190,18 +190,18 @@ valid.df$internal_id <- group_indices(valid.df, smiles)
 
 # valid.std <- unique(valid.df$smiles)
 # 
-# parseInputFingerprint <- function(input, type) {
-#   print("parsing smiles")
-#   input.mol <- parse.smiles(as.character(input))
-#   print("doing typing")
-#   pblapply(input.mol, do.typing)
-#   print("doing aromaticity")
-#   pblapply(input.mol, do.aromaticity)
-#   print("doing isotopes")
-#   pblapply(input.mol, do.isotopes)
-#   print("generating fingerprints")
-#   pblapply(input.mol, get.fingerprint, type = type)
-# }
+ parseInputFingerprint <- function(input, type) {
+   print("parsing smiles")
+   input.mol <- parse.smiles(as.character(input))
+   print("doing typing")
+   pblapply(input.mol, do.typing)
+   print("doing aromaticity")
+   pblapply(input.mol, do.aromaticity)
+   print("doing isotopes")
+   pblapply(input.mol, do.isotopes)
+   print("generating fingerprints")
+   pblapply(input.mol, get.fingerprint, type = type)
+ }
 # 
 # ##takes a while
 # mat <- matrix(ncol = 2)
@@ -403,7 +403,7 @@ grouped_structures <- read.table(syn$get("syn12978848")$path,
                                                 "character",
                                                 "character",
                                                 "character")) %>% 
-  dplyr::select(2:6) %>% 
+  # dplyr::select(2:6) %>% 
   filter(smiles != "")
 
 dgidb.names <- read.table(syn$get("syn12684108")$path, sep = "\t", quote = "", header = T) %>% 
@@ -451,9 +451,11 @@ klaeger.names <- klaeger_struct %>% select(external_id) %>%
   mutate(common_name = gsub("_.+", "", external_id))
 
 grouped_structures <- mutate(grouped_structures, external_id = as.character(external_id))
-all.names <- bind_rows(dgidb.names, db.names, chembl.names, cp.names, klaeger.names) %>% 
-  full_join(grouped_structures)
 
+all.names <- bind_rows(dgidb.names, db.names, chembl.names, cp.names, klaeger.names) %>% 
+  full_join(grouped_structures) %>% 
+  filter(!is.na(internal_id)) %>% 
+  filter(!common_name %in% c("ChEBI_NA", "CAS_", "PubChemCID_NA","ChemSpider_NA"))
 
 #join single synonym to db for use in app, save full table of synonyms
 syns <- all.names %>% 
@@ -508,6 +510,14 @@ syn$store(synapse$File("Data/drug_target_associations_v2.rds", parentId = "syn12
 # syn$store(synapse$File("Data/drug_target_associations_v1.fst", parentId = "syn11678675"), executed = this.file, 
 #          used = c("syn11672909", "syn11672978", "syn11673549", "syn11678713"))
 
+single.names <- all.names %>% 
+  select(common_name, smiles, internal_id) %>% 
+  mutate(tolowername = tolower(common_name)) %>% 
+  group_by(tolowername) %>% 
+  slice(1) %>%
+  ungroup() %>% 
+  select(-tolowername)
+
 write.table(all.names, "Data/compound_names.txt", sep = '\t', row.names = F)
 syn$store(synapse$File("Data/compound_names.txt", parentId = "syn12978846"), executed = this.file, 
           used = c("syn12978848","syn12684108","syn12973257","syn12972665","syn11685586","syn12910000"))
@@ -516,22 +526,39 @@ saveRDS(all.names, "Data/compound_names.rds")
 syn$store(synapse$File("Data/compound_names.rds", parentId = "syn12978846"), executed = this.file, 
           used = c("syn12978848","syn12684108","syn12973257","syn12972665","syn11685586","syn12910000"))
 
-# saveRDS(all.names, "Data/compound_names.fst")
+write.table(single.names, "Data/distinct_compound_names.txt", sep = '\t', row.names = F)
+syn$store(synapse$File("Data/distinct_compound_names.txt", parentId = "syn12978846"), executed = this.file, 
+          used = c("syn12978848","syn12684108","syn12973257","syn12972665","syn11685586","syn12910000"))
+
+saveRDS(single.names, "Data/distinct_compound_names.rds")
+syn$store(synapse$File("Data/distinct_compound_names.rds", parentId = "syn12978846"), executed = this.file, 
+          used = c("syn12978848","syn12684108","syn12973257","syn12972665","syn11685586","syn12910000"))
+
+# write_fst(all.names, "Data/compound_names.fst")
 # syn$store(synapse$File("Data/compound_names.fst", parentId = "syn11678675"), executed = this.file, 
 #          used = c("syn11673040", "syn11681825", "syn11672978"))
 
 ####Generate fingerprints for database.
 
 full.db2 <- readRDS(syn$get("syn12978910")$path)
-structures <- read.table(syn$get("syn12978848")$path, header = T) 
+
+structures <- read.table(syn$get("syn12978848")$path, 
+                                 sep = "\t", 
+                                 comment.char = "",
+                                 allowEscapes = F,
+                                 header = T,
+                                 colClasses = c("character", 
+                                                "character",
+                                                "character",
+                                                "character")) %>% 
+  # dplyr::select(2:6) %>% 
+  filter(smiles != "")
 
 structures.distinct <- structures %>% 
   filter(internal_id %in% full.db2$internal_id) %>% 
   group_by(internal_id) %>% 
-  top_n(1) %>% 
-  mutate(count = n()) %>% 
-  slice(1) %>% 
-  select(-external_id, -database)
+  select(-external_id, -database, -original_smiles) %>% 
+  distinct()
 
 valid <- as.character(structures.distinct$smiles)
 
@@ -780,11 +807,29 @@ drug.resp <- read.table(syn$get("syn7466611")$path, sep = "\t", header = TRUE) #
 #rownames_to_column("cellLine") %>% 
 #gather(makenames, auc, -cellLine)
 
-fp.ctrp <- parseInputFingerprint(as.character(unique(ctrp.structures$cpd_smiles)), type = "extended")
+ctrp.structures$cpd_smiles <- pbmclapply(unique(ctrp.structures$cpd_smiles), function(x){
+  tryCatch({
+    molvs$standardize_smiles(r_to_py(x))
+  }, warning = function(w) {
+    print(paste("structure",x,"has an issue"))
+  }, error = function(e) {
+    print(paste("structure",x,"is invalid"))
+  })
+}) %>% unlist()
+
+
+fp.ctrp <- parseInputFingerprint(as.character(unique(ctrp.structures$cpd_smiles)), type = "circular")
+
 saveRDS(drug.resp, "Data/drugresp.rds")
 saveRDS(ctrp.structures, "Data/ctrpstructures.rds")
-saveRDS(fp.ctrp, "Data/fpctrp.rds")
 
+fp.ctrp.extended <- parseInputFingerprint(as.character(unique(ctrp.structures$cpd_smiles)), type = "extended")
+fp.ctrp.circular <- parseInputFingerprint(as.character(unique(ctrp.structures$cpd_smiles)), type = "circular")
+fp.ctrp.maccs <- parseInputFingerprint(as.character(unique(ctrp.structures$cpd_smiles)), type = "maccs")
+
+saveRDS(fp.ctrp.extended, "Data/fpctrp_extended.rds")
+saveRDS(fp.ctrp.circular, "Data/fpctrp_circular.rds")
+saveRDS(fp.ctrp.maccs, "Data/fpctrp_maccs.rds")
 
 
 ####Sanger Data
@@ -803,8 +848,25 @@ drug.resp.sang <- drug.resp.sang %>%
   remove_rownames() %>% 
   column_to_rownames("cellLine")
 
-fp.sang <- parseInputFingerprint(as.character(unique(sang.structures$smiles)), type = "extended")
+sang.structures$smiles <- pbmclapply(sang.structures$smiles, function(x){
+  tryCatch({
+    molvs$standardize_smiles(r_to_py(x))
+  }, warning = function(w) {
+    print(paste("structure",x,"has an issue"))
+  }, error = function(e) {
+    print(paste("structure",x,"is invalid"))
+  })
+}) %>% unlist()
+
+
+fp.sang.extended <- parseInputFingerprint(as.character(unique(sang.structures$smiles)), type = "extended")
+fp.sang.circular <- parseInputFingerprint(as.character(unique(sang.structures$smiles)), type = "circular")
+fp.sang.maccs <- parseInputFingerprint(as.character(unique(sang.structures$smiles)), type = "maccs")
+
 saveRDS(drug.resp.sang, "Data/drugresp_sang.rds")
 saveRDS(sang.structures, "Data/sangstructures.rds")
-saveRDS(fp.sang, "Data/fpsang.rds")
+
+saveRDS(fp.sang.extended, "Data/fpsang_extended.rds")
+saveRDS(fp.sang.circular, "Data/fpsang_circular.rds")
+saveRDS(fp.sang.maccs, "Data/fpsang_maccs.rds")
 
