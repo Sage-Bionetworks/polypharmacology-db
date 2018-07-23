@@ -457,25 +457,36 @@ all.names <- bind_rows(dgidb.names, db.names, chembl.names, cp.names, klaeger.na
   filter(!is.na(internal_id)) %>% 
   filter(!common_name %in% c("ChEBI_NA", "CAS_", "PubChemCID_NA","ChemSpider_NA"))
 
-single.names <- all.names %>% 
+##drug_claim_primary_names are error prone in dgidb, use external ID instead
+all.names$common_name[all.names$database=="dgidb"] <- all.names$external_id[all.names$database=="dgidb"]
+
+syns <- all.names %>% 
+  distinct() %>% 
   select(common_name, smiles, internal_id) %>% 
   mutate(tolowername = tolower(common_name)) %>% 
-  group_by(tolowername, smiles) %>% 
+  group_by(tolowername, internal_id) %>% 
+  add_tally() %>% 
+  ungroup() %>% 
+  group_by(internal_id) %>% 
+  top_n(1, n) %>% 
+  slice(1) %>% 
+  ungroup() %>% 
+  select(internal_id, common_name)
+
+single.names <- all.names %>% 
+  distinct() %>% 
+  select(common_name, smiles, internal_id) %>% 
+  mutate(tolowername = tolower(common_name)) %>% 
+  group_by(tolowername, internal_id) %>% 
   add_tally() %>% 
   ungroup() %>% 
   group_by(tolowername) %>% 
-  top_n(1, n) %>% 
-  ##above two lines will help filter out single missassigned SMILES - i think. acetaminophen mislabeling is example
   slice(1) %>%
   ungroup() %>% 
   select(-tolowername, -n)
 
 #join single synonym to db for use in app, save full table of synonyms
-syns <- single.names %>% 
-  group_by(internal_id) %>% 
-  top_n(1) %>% 
-  mutate(count = n()) %>% slice(1) %>% 
-  select(internal_id, common_name)
+
 
 full.db <- left_join(full.db, syns) %>% filter(!is.na(internal_id), !is.na(hugo_gene))
 
