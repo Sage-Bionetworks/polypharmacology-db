@@ -187,8 +187,8 @@ shinyUI(
              mainPanel(
                fluidRow(
                  radioButtons("fp.type", "Fingerprint type:",
-                                     c("Circular (ECFP/FCFP-like, default)" = "circular",
-                                       "Extended" = "extended",
+                                     c("Extended" = "extended",
+                                       "Circular (ECFP/FCFP-like, default)" = "circular",
                                        # "Pubchem" = "pubchem",
                                        "MACCS" = "maccs"
                                        # ,"Klekota and Roth" = "kr"
