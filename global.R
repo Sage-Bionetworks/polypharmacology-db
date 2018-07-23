@@ -97,7 +97,8 @@ similarityFunction <- function(input, fp.type) {
 
   bar <- as.data.frame(sim) %>% 
     rownames_to_column("match") %>% 
-    set_names(c("match", "similarity"))
+    set_names(c("match", "similarity")) %>% 
+    top_n(50, similarity) ##hard cutoff to avoid overloading the app - large n of compounds can cause sluggish response wrt visualizations
 }
 
 getSimMols <- function(sims, sim.thres) {

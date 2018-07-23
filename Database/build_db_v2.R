@@ -457,8 +457,21 @@ all.names <- bind_rows(dgidb.names, db.names, chembl.names, cp.names, klaeger.na
   filter(!is.na(internal_id)) %>% 
   filter(!common_name %in% c("ChEBI_NA", "CAS_", "PubChemCID_NA","ChemSpider_NA"))
 
+single.names <- all.names %>% 
+  select(common_name, smiles, internal_id) %>% 
+  mutate(tolowername = tolower(common_name)) %>% 
+  group_by(tolowername, smiles) %>% 
+  add_tally() %>% 
+  ungroup() %>% 
+  group_by(tolowername) %>% 
+  top_n(1, n) %>% 
+  ##above two lines will help filter out single missassigned SMILES - i think. acetaminophen mislabeling is example
+  slice(1) %>%
+  ungroup() %>% 
+  select(-tolowername, -n)
+
 #join single synonym to db for use in app, save full table of synonyms
-syns <- all.names %>% 
+syns <- single.names %>% 
   group_by(internal_id) %>% 
   top_n(1) %>% 
   mutate(count = n()) %>% slice(1) %>% 
@@ -510,13 +523,6 @@ syn$store(synapse$File("Data/drug_target_associations_v2.rds", parentId = "syn12
 # syn$store(synapse$File("Data/drug_target_associations_v1.fst", parentId = "syn11678675"), executed = this.file, 
 #          used = c("syn11672909", "syn11672978", "syn11673549", "syn11678713"))
 
-single.names <- all.names %>% 
-  select(common_name, smiles, internal_id) %>% 
-  mutate(tolowername = tolower(common_name)) %>% 
-  group_by(tolowername) %>% 
-  slice(1) %>%
-  ungroup() %>% 
-  select(-tolowername)
 
 write.table(all.names, "Data/compound_names.txt", sep = '\t', row.names = F)
 syn$store(synapse$File("Data/compound_names.txt", parentId = "syn12978846"), executed = this.file, 
