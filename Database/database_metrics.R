@@ -47,7 +47,8 @@ grouped_structures <- read.table(synGet("syn12978848")$path,
                                                 "character",
                                                 "character")) %>% 
   # select(2:6) %>%
-  filter(smiles != "")
+  filter(smiles != "") %>% 
+  filter(internal_id %in% db$internal_id)
 
 ##Targets
 

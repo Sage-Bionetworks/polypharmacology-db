@@ -20,14 +20,14 @@ shinyUI(
       div(id = "main_content",
   navbarPage("Drug-Target EXplorer", theme = shinytheme("flatly"),
   tabPanel("About",
-           h4(strong("Welcome to the Drug-Target Explorer, powered by Sage Bionetworks.")),
+           h4(strong("Welcome to the Drug-Target Explorer.")),
            h5("The purpose of this app is to facilitate exploration of drug-target interaction databases.
              The underlying database for this app is a harmonized dataset which summarizes quantitative and qualitative 
-             small molecule activity data for human targets from ChEMBL, the Drug-Gene Interaction Database, DrugBank, ChemicalProbes.org, and ProteomicsDB (Klaeger et al, Science, 2017).
-             The database contains summarizes evidence for >480,000 small-molecule-target interactions (>280,000 chemical entities and approximately 4000 human targets)."),
+             small molecule activity data for human targets from ChEMBL, the Drug-Gene Interaction Database, DrugBank, ChemicalProbes.org, and Klaeger et al, Science, 2017.
+             The current database (v2) contains summarizes evidence for >507,000 small-molecule-target interactions (>304,000 chemical entities and 3650 human targets)."),
            br(),
-           h4(strong("How does this app work?")),
-           h5("D-TEX leverages structural information of molecules and the associated target annotations to build a drug-target map 
+           h4(strong("How does this tool work?")),
+           h5("This tool leverages structural information of molecules and the associated target annotations to build a drug-target map 
              based on chemical similarity between molecules.
              Examples of use-cases for this include:"),
            h5(" - prediction of molecular targets for novel molecules based on structural similarity"),
@@ -49,10 +49,10 @@ shinyUI(
            img(src= "sage_logo.png"),
            img(src='CTF_Logo.png'), align = "center"),
            br(),
-           h4(strong("This app relies on the following excellent R packages:")),
+           h4(strong("This app relies on these excellent R packages:")),
            fluidRow(
            h5("shiny, shinyBS, shinythemes, rcdk, fingerprint, rJava"),
-           h5("plyr, dplyr, DT, enrichR, webchem, visNetwork, igraph"), align = "center")), 
+           h5("tidyverse, DT, enrichR, webchem, visNetwork, igraph"), align = "center")), 
   tabPanel("Molecules",
   sidebarLayout(
     sidebarPanel(
@@ -197,7 +197,7 @@ shinyUI(
                           Also, Tanimoto similarity is greatly impacted by fingerprint choice. For example, circular fingerprints will generally have a lower Tanimoto similarity than extended fingerprints for a given chemical pair.
                           We chose extended as the default for here as it seemed to work best for commonly-used Tanimoto thresholds for similarity (e.g. >0.85 indicating highly similar.")),
                fluidRow(
-                 radioButtons("edge.size", "Render edges with confidence score?",
+                 radioButtons("edge.size", "Render edges with confidence score? (values are scaled uniquely for each plot from 0 to 10)",
                               c("Yes (default)" = TRUE,
                                 "No" = FALSE))))
              

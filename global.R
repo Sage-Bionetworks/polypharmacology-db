@@ -154,7 +154,7 @@ getTargetNetwork <- function(selectdrugs, edge.size) {
   targets$from <- targets$common_name
   targets$to <- as.character(targets$hugo_gene)
   if(edge.size==TRUE){
-    targets$width <- (targets$confidence)/10
+    targets$width <- scales::rescale(targets$confidence, to = c(1,10))
   }
   if(edge.size==FALSE){
     targets$width <- 5
@@ -321,6 +321,7 @@ plotSimSangDrugs <- function(input, fp.type) {
     bar$match <- rownames(bar)
     bar
   })
+  
   
   sims <- ldply(sims)
   sims2 <- sims %>% arrange(-sim)

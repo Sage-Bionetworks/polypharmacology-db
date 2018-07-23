@@ -23,7 +23,7 @@ shinyServer(function(input, output, session) {
   
   simmols <- reactive({
     sims<-similarity()
-    getSimMols(sims, input$sim.thres) %>% as.data.frame() %>% print()
+    getSimMols(sims, input$sim.thres) %>% as.data.frame()
     })
   
   output$sims <- renderUI({
