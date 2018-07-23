@@ -39,7 +39,7 @@ shinyServer(function(input, output, session) {
   
   
   output$simmoltab <- renderDataTable({
-    dat <- getSimMols(similarityFunction("CC(=O)Oc1ccccc1C(=O)O", "extended"), 0.8)
+    dat <- simmols()
     dat$external_links <- sapply(dat$internal_id, getExternalDrugLinks) 
     dat <- select(dat, common_name, external_links, `Tanimoto Similarity`)
     DT::datatable(dat, colnames = c("Molecule Name", "External Links", "Tanimoto Similarity"), escape = FALSE)
