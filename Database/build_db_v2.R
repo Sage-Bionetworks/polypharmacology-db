@@ -76,7 +76,7 @@ chembl_struct$external_id <- as.factor(chembl_struct$external_id)
 chembl_struct$database <- "chembl"
 
 ##import DGIDB 3.0.2
-dgidb_struct <- read.table(syn$get("syn11832827")$path, 
+dgidb_struct <- read.table(syn$get("syn14721555")$path, 
                            sep = "\t",
                            header = T, 
                            comment.char = "",
