@@ -312,7 +312,7 @@ shinyServer(function(input, output, session) {
     validate(
       need(genes %in% db.genes, "Please enter a valid gene.")
     )
-    getMolsFromGeneNetworks.nodes(input$inp.gene, getMols())
+    getMolsFromGeneNetworks.nodes(input$inp.gene, getMols(), input$gene.filter.metric)
   })
 
   getMolEdges <- eventReactive(input$genebutton, {
@@ -320,7 +320,7 @@ shinyServer(function(input, output, session) {
     validate(
       need(genes %in% db.genes, "Please enter a valid gene.")
     )
-    getMolsFromGeneNetworks.edges(input$inp.gene, getMols(), input$edge.size)
+    getMolsFromGeneNetworks.edges(input$inp.gene, getMols(), input$edge.size, input$gene.filter.metric)
   })
 
 

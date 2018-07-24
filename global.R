@@ -201,8 +201,10 @@ getMolsFromGenes <- function(genes) {
     select(internal_id, common_name, hugo_gene, mean_pchembl, n_quantitative, n_qualitative, known_selectivity_index, confidence) 
 }
 
-getMolsFromGeneNetworks.edges <- function(inp.gene, genenetmols, edge.size) {
-  mols <- genenetmols %>% top_n(10, confidence)
+
+getMolsFromGeneNetworks.edges <- function(inp.gene, genenetmols, edge.size, gene.filter.metric) {
+  mols <- genenetmols %>% top_n(15, !!sym(gene.filter.metric))
+  
   net <- filter(db, internal_id %in% mols$internal_id) %>% distinct()
   
   net$from <- as.character(net$internal_id)
@@ -219,8 +221,8 @@ getMolsFromGeneNetworks.edges <- function(inp.gene, genenetmols, edge.size) {
 }
 
 
-getMolsFromGeneNetworks.nodes <- function(inp.gene, genenetmols) {
-  mols <- genenetmols %>% top_n(10, confidence)
+getMolsFromGeneNetworks.nodes <- function(inp.gene, genenetmols, gene.filter.metric) {
+  mols <- genenetmols %>% top_n(15, !!sym(gene.filter.metric))
 
   net <- filter(db, internal_id %in% mols$internal_id) %>% 
       distinct() # %>% 

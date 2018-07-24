@@ -185,6 +185,7 @@ shinyUI(
            sidebarLayout(
              sidebarPanel(),
              mainPanel(
+               fluidRow(h1("Molecules Tab")),
                fluidRow(
                  radioButtons("fp.type", "Fingerprint type:",
                                      c("Extended" = "extended",
@@ -199,8 +200,12 @@ shinyUI(
                fluidRow(
                  radioButtons("edge.size", "Render edges with confidence score? (values are scaled uniquely for each plot from 0 to 10)",
                               c("Yes (default)" = TRUE,
-                                "No" = FALSE))))
-             
+                                "No" = FALSE))),
+               fluidRow(h1("Gene Tab")),
+               fluidRow(radioButtons("gene.filter.metric", "Target networks on gene panel are restricted to top 15 molecules for performance. Select on:",
+                                     c("largest pChEMBL" = "mean_pchembl",
+                                       "largest confidence score" = "confidence",
+                                       "largest known selectivity index" = "known_selectivity_index"))))
              )
            ))
   )
