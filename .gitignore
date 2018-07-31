@@ -15,3 +15,6 @@ NoGit/*
 polypharmacology-db.Rproj
 dgidb_curated.xlsx
 molSimMatrix.R
+Data/grouped_structures.txt
+Data/drug_target_associations_v2.txt
+Data/compound_names.txt

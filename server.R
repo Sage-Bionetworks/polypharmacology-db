@@ -28,12 +28,21 @@ shinyServer(function(input, output, session) {
   
   output$sims <- renderUI({
     mols <- simmols()
-    choices <- mols$common_name
-    checkboxGroupInput(inputId = "selectdrugs", "Molecules (similarity)", choices = choices, selected = choices)
+    choice.names <- mols$common_name
+    choice.vals <- mols$internal_id
+    checkboxGroupInput(inputId = "selectdrugs", 
+                       label = "Molecules (similarity)",  
+                       selected = choice.vals,
+                       choiceNames = choice.names,
+                       choiceValues = choice.vals)
   })
   
+  
   output$simmoltab <- renderDataTable({
-    DT::datatable(simmols(), colnames = c("Molecule Name", "Tanimoto Similarity"))
+    dat <- simmols()
+    dat$external_links <- sapply(dat$internal_id, getExternalDrugLinks) 
+    dat <- select(dat, common_name, external_links, `Tanimoto Similarity`)
+    DT::datatable(dat, colnames = c("Molecule Name", "External Links", "Tanimoto Similarity"), escape = FALSE)
   })
   
   ##molecule (SMILES) input
@@ -65,7 +74,7 @@ shinyServer(function(input, output, session) {
     validate(
       need(nrow(getTargetList(input$selectdrugs) %>% as.data.frame())>=1, "No targets found.")
     )
-    targ <- getTargetList(input$selectdrugs) %>% as.data.frame()
+    targ <- getTargetList(input$selectdrugs) %>% as.data.frame() %>% select(-internal_id)
     DT::datatable(targ, options = list(dom = "Bfrtip", 
                                        buttons = c("copy", 
                                                    "excel")), extensions = "Buttons",
@@ -110,10 +119,10 @@ shinyServer(function(input, output, session) {
       need(nrow(getTargetList(input$selectdrugs))>=1, "No targets found for plotting.")
     )
     edges <- getTargetNetwork(input$selectdrugs, input$edge.size)
-    
-    druglinks <- sapply(edges$from, function(x){
-      id<-getInternalId(x)
-      druglinks <- getExternalDrugLinks(id)
+
+    druglinks <- sapply(edges$internal_id, function(x){
+      # id<-getInternalId(x)
+      druglinks <- getExternalDrugLinks(x)
     })
     genelinks <- sapply(edges$to, function(x){
       getExternalGeneLinks(x)
@@ -181,9 +190,9 @@ shinyServer(function(input, output, session) {
   
     ccleoutput <- reactive({
       validate(
-        need(is.smiles(input$smiles)==TRUE, "Please enter a valid SMILES.")
+        need((is.smiles(input$smiles)==TRUE & input$smiles!=""), "Please enter a valid SMILES.")
       )
-      plotSimCTRPDrugs(input$smiles)
+      plotSimCTRPDrugs(input$smiles, input$fp.type)
     })
      
     
@@ -200,25 +209,25 @@ shinyServer(function(input, output, session) {
       
     })
     
-    output$ccle_1 <- renderPlotly({
-      validate(
-        need(is.smiles(input$smiles)==TRUE, "Please enter a valid SMILES.")
-      )
-      
-      validate(
-        need(((nrow(as.matrix(ccleoutput()))>0)+(ncol(as.matrix(ccleoutput()))>0)==2),"") 
-      )
-    
-    plot1<-ggplot(data = ccleoutput()) +
-      geom_point(aes(x = Correlation, y = -`BH adj p.val`, text = cpd_name, color = (`BH adj p.val` < 0.05))) +
-      theme_bw() +
-      scale_color_discrete(name = "p-value < 0.05") +
-      labs(x = "Drug Response Correlation", y = "BH adjusted p-value")
-    
-    ggplotly(p = plot1, tooltip = c("text", "x", "y"))
-    
-    })
-    
+    # output$ccle_1 <- renderPlotly({
+    #   validate(
+    #     need(is.smiles(input$smiles)==TRUE, "Please enter a valid SMILES.")
+    #   )
+    #   
+    #   validate(
+    #     need(((nrow(as.matrix(ccleoutput()))>0)+(ncol(as.matrix(ccleoutput()))>0)==2),"") 
+    #   )
+    # 
+    # plot1<-ggplot(data = ccleoutput()) +
+    #   geom_point(aes(x = Correlation, y = -`BH adj p.val`, text = cpd_name, color = (`BH adj p.val` < 0.05))) +
+    #   theme_bw() +
+    #   scale_color_discrete(name = "p-value < 0.05") +
+    #   labs(x = "Drug Response Correlation", y = "BH adjusted p-value")
+    # 
+    # ggplotly(p = plot1, tooltip = c("text", "x", "y"))
+    # 
+    # })
+    # 
     output$ccle_2 <- renderPlotly({
       validate(     
         need(((nrow(as.matrix(ccleoutput()))>0)+(ncol(as.matrix(ccleoutput()))>0)==2),"") 
@@ -227,7 +236,7 @@ shinyServer(function(input, output, session) {
     plot2<-ggplot(data = ccleoutput(), aes(x = Correlation, y = `Tanimoto Similarity`, text = cpd_name, color = (`BH adj p.val` < 0.05))) +
       geom_point() +
       theme_bw() +
-      scale_color_discrete(name = "p-value < 0.05") +
+      scale_color_manual(name = "p-value < 0.05", values= c("TRUE" = "#30638E", "FALSE" = "#E16036")) +
       labs(x = "Drug Response Correlation", y = "Chemical Similarity")
     
     ggplotly(p = plot2, tooltip = c("text", "x", "y"))
@@ -236,9 +245,9 @@ shinyServer(function(input, output, session) {
     
     sangoutput <- reactive({
       validate(
-        need(is.smiles(input$smiles)==TRUE, "Please enter a valid SMILES.")
+        need((is.smiles(input$smiles)==TRUE & input$smiles!=""), "Please enter a valid SMILES.")
       )
-      plotSimSangDrugs(input$smiles)
+      plotSimSangDrugs(input$smiles, input$fp.type)
       })
     
     
@@ -252,20 +261,20 @@ shinyServer(function(input, output, session) {
       
     })
     
-    output$sang_1 <- renderPlotly({
-      validate(
-        need(((nrow(as.matrix(sangoutput()))>0)+(ncol(as.matrix(sangoutput()))>0)==2), "No drugs found!")
-      )
-      
-      plot1<-ggplot(data = sangoutput(), aes(x = Correlation, y = -`BH adj p.val`, text = sanger_names, color = (`BH adj p.val` < 0.05))) +
-        geom_point() +
-        theme_bw() +
-        scale_color_discrete(name = "p-value < 0.05") +
-        labs(x = "Drug Response Correlation", y = "BH adjusted p-value")
-      
-      ggplotly(p = plot1, tooltip = c("text", "x", "y"))
-      
-    })
+    # output$sang_1 <- renderPlotly({
+    #   validate(
+    #     need(((nrow(as.matrix(sangoutput()))>0)+(ncol(as.matrix(sangoutput()))>0)==2), "No drugs found!")
+    #   )
+    #   
+    #   plot1<-ggplot(data = sangoutput(), aes(x = Correlation, y = -`BH adj p.val`, text = sanger_names, color = (`BH adj p.val` < 0.05))) +
+    #     geom_point() +
+    #     theme_bw() +
+    #     scale_color_discrete(name = "p-value < 0.05") +
+    #     labs(x = "Drug Response Correlation", y = "BH adjusted p-value")
+    #   
+    #   ggplotly(p = plot1, tooltip = c("text", "x", "y"))
+    #   
+    # })
     
     output$sang_2 <- renderPlotly({
       validate(
@@ -275,7 +284,7 @@ shinyServer(function(input, output, session) {
       plot2<-ggplot(data = sangoutput(), aes(x = Correlation, y = `Tanimoto Similarity`, text = sanger_names, color = (`BH adj p.val` < 0.05))) +
         geom_point() +
         theme_bw() +
-        scale_color_discrete(name = "p-value < 0.05") +
+        scale_color_manual(name = "p-value < 0.05", values= c("TRUE" = "#30638E", "FALSE" = "#E16036")) +
         labs(x = "Drug Response Correlation", y = "Chemical Similarity")
       
       ggplotly(p = plot2, tooltip = c("text", "x", "y"))
@@ -303,7 +312,7 @@ shinyServer(function(input, output, session) {
     validate(
       need(genes %in% db.genes, "Please enter a valid gene.")
     )
-    getMolsFromGeneNetworks.nodes(input$inp.gene, getMols())
+    getMolsFromGeneNetworks.nodes(input$inp.gene, getMols(), input$gene.filter.metric)
   })
 
   getMolEdges <- eventReactive(input$genebutton, {
@@ -311,7 +320,7 @@ shinyServer(function(input, output, session) {
     validate(
       need(genes %in% db.genes, "Please enter a valid gene.")
     )
-    getMolsFromGeneNetworks.edges(input$inp.gene, getMols(), input$edge.size)
+    getMolsFromGeneNetworks.edges(input$inp.gene, getMols(), input$edge.size, input$gene.filter.metric)
   })
 
 

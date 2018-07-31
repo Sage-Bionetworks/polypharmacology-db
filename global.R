@@ -1,4 +1,4 @@
-options(java.parameters = "-Xmx14g" ) 
+options(java.parameters = "-Xmx8g" ) 
 library(shiny)
 library(DT)
 library(png)
@@ -52,13 +52,13 @@ parseInputFingerprint <- function(input, fp.type) {
   }
 }
 
-distance.minified <- function(fp1,fp.list){
+distance.minified <- function(fp1,fp.list){ #this function is a stripped down fingerprint::distance that runs about 2-3x faster; big gains for the app, but not as feature rich
   n <- length(fp1)
   f1 <- numeric(n)
   f2 <- numeric(n)
   f1[fp1@bits] <- 1
   
-  sapply(fp.list, function(x){
+  sapply(fp.list, function(x){ 
     f2[x@bits] <- 1
     sim <- 0.0
     ret <- .C("fpdistance", as.double(f1), as.double(f2),
@@ -77,9 +77,9 @@ convertDrugToSmiles <- function(input) {
 getTargetList <- function(selectdrugs) {
   
   targets <- db %>% 
-    filter(common_name %in% selectdrugs) %>% 
+    filter(internal_id %in% selectdrugs) %>% 
     as.data.frame() %>% 
-    dplyr::select(common_name, hugo_gene, mean_pchembl, n_quantitative, n_qualitative, known_selectivity_index, confidence) %>% 
+    dplyr::select(common_name, hugo_gene, mean_pchembl, n_quantitative, n_qualitative, known_selectivity_index, confidence, internal_id) %>% 
     arrange(-n_quantitative) 
   
 }
@@ -97,7 +97,8 @@ similarityFunction <- function(input, fp.type) {
 
   bar <- as.data.frame(sim) %>% 
     rownames_to_column("match") %>% 
-    set_names(c("match", "similarity"))
+    set_names(c("match", "similarity")) %>% 
+    top_n(50, similarity) ##hard cutoff to avoid overloading the app - large n of compounds can cause sluggish response wrt visualizations
 }
 
 getSimMols <- function(sims, sim.thres) {
@@ -105,7 +106,7 @@ getSimMols <- function(sims, sim.thres) {
   sims2$internal_id <- as.character(sims2$match)
   sims2$`Tanimoto Similarity` <- signif(sims2$similarity, 3)
   targets <- left_join(sims2, db) %>% 
-    dplyr::select(common_name, `Tanimoto Similarity`) %>% 
+    dplyr::select(internal_id, common_name, `Tanimoto Similarity`) %>% 
     distinct() %>% 
     as.data.frame()
 }
@@ -115,11 +116,11 @@ getMolImage <- function(input) {
   view.image.2d(smi[[1]])
 }
 
-
-getInternalId <- function(input) { ##this is specifically for getting internal ids for use in network to external links
-  ids <- filter(db.names, common_name==input)
-  unique(ids$internal_id)
-}
+#This should no longer be required as app now works entirely with internal_id under the hood to avoid switching 
+ # getInternalId <- function(input) { ##this is specifically for getting internal ids for use in network to external links
+ #   ids <- filter(db.names, internal_id==input)
+ #   unique(ids$internal_id)
+ # }
 
 getExternalDrugLinks <- function(internal.id) {
   links <- filter(db.links, internal_id %in% internal.id)
@@ -134,33 +135,34 @@ getExternalGeneLinks <- function(gene) {
 
 getNetwork <- function(drugsfound, selectdrugs) {
   targets <- drugsfound %>% 
-    distinct() %>% filter(common_name %in% selectdrugs)
+    distinct() %>% filter(internal_id %in% selectdrugs)
+  
   targets$from <- "input"
   targets$to <- as.character(targets$common_name)
   targets$width <- ((targets$`Tanimoto Similarity`)^2) * 10
   targets$color <- "tomato"
+  
   links <- sapply(selectdrugs, function(x){
-    id<-getInternalId(x)
-    links <- getExternalDrugLinks(id)
+    links <- getExternalDrugLinks(x)
   })
+  
   targets$title <- links
   targets <- dplyr::select(targets, from, to, width, color, title)
 }
 
 getTargetNetwork <- function(selectdrugs, edge.size) {
-  selectdrugs <- selectdrugs
-  targets <- getTargetList(selectdrugs) %>% distinct() %>% filter(common_name %in% selectdrugs)
+  targets <- getTargetList(selectdrugs)
   targets$from <- targets$common_name
   targets$to <- as.character(targets$hugo_gene)
   if(edge.size==TRUE){
-    targets$width <- (targets$confidence)/10
+    targets$width <- scales::rescale(targets$confidence, to = c(1,10))
   }
   if(edge.size==FALSE){
     targets$width <- 5
   }
   targets$color <- "tomato"
 
-  targets <- dplyr::select(targets, from, to, width, color) %>% 
+  targets <- dplyr::select(targets, from, to, width, color, internal_id) %>% 
     filter(from !="NA" & to != "NA")
 }
 
@@ -196,15 +198,16 @@ getMolsFromGenes <- function(genes) {
   }
   
   mols %>% 
-    select(common_name, hugo_gene, mean_pchembl, n_quantitative, n_qualitative, known_selectivity_index, confidence) 
+    select(internal_id, common_name, hugo_gene, mean_pchembl, n_quantitative, n_qualitative, known_selectivity_index, confidence) 
 }
 
-getMolsFromGeneNetworks.edges <- function(inp.gene, genenetmols, edge.size) {
-  mols <- genenetmols %>% top_n(10, confidence)
+
+getMolsFromGeneNetworks.edges <- function(inp.gene, genenetmols, edge.size, gene.filter.metric) {
+  mols <- genenetmols %>% top_n(15, !!sym(gene.filter.metric))
   
-  net <- filter(db, common_name %in% mols$common_name) %>% distinct()
+  net <- filter(db, internal_id %in% mols$internal_id) %>% distinct()
   
-  net$from <- as.character(net$common_name)
+  net$from <- as.character(net$internal_id)
   net$to <- as.character(net$hugo_gene)
   if(edge.size==TRUE){
     net$width <- (net$confidence)/10
@@ -218,25 +221,24 @@ getMolsFromGeneNetworks.edges <- function(inp.gene, genenetmols, edge.size) {
 }
 
 
-getMolsFromGeneNetworks.nodes <- function(inp.gene, genenetmols) {
-  mols <- genenetmols %>% top_n(10, confidence)
+getMolsFromGeneNetworks.nodes <- function(inp.gene, genenetmols, gene.filter.metric) {
+  mols <- genenetmols %>% top_n(15, !!sym(gene.filter.metric))
 
-  net <- filter(db, common_name %in% mols$common_name) %>% 
+  net <- filter(db, internal_id %in% mols$internal_id) %>% 
       distinct() # %>% 
     # group_by(common_name) %>% 
     # top_n(20, confidence) %>% 
     # ungroup()
    
-  id <- c(unique(as.character(net$common_name)), 
+  id <- c(unique(as.character(net$internal_id)), 
           unique(as.character(net$hugo_gene)))
   label <- c(unique(as.character(net$common_name)), 
              unique(as.character(net$hugo_gene)))
   color <- c(rep("blue", length(unique(as.character(net$common_name)))), 
              rep("green", length(unique(as.character(net$hugo_gene)))))
   
-  druglinks <- sapply(unique(as.character(net$common_name)), function(x){
-    internalids<-getInternalId(x)
-    druglinks <- getExternalDrugLinks(internalids)
+  druglinks <- sapply(unique(as.character(net$internal_id)), function(x){
+    druglinks <- getExternalDrugLinks(x)
   })
 
   genelinks <- sapply(unique(as.character(net$hugo_gene)), function(x){
@@ -256,9 +258,13 @@ getSmiles <- function(input.name) {
   query
 }
 
-plotSimCTRPDrugs <- function(input) {
-  input <- input
-  fp.inp <- parseInputFingerprint(input, fp.type = "extended")
+plotSimCTRPDrugs <- function(input, fp.type) {
+
+  fp.inp <- parseInputFingerprint(input, fp.type = fp.type)
+  
+  if(fp.type == "circular"){fp.ctrp <- fp.ctrp.circular}
+  if(fp.type == "extended"){fp.ctrp <- fp.ctrp.extended}
+  if(fp.type == "maccs"){fp.ctrp <- fp.ctrp.maccs}
   
   sims <- lapply(fp.inp, function(i) {
     sim <- sapply(fp.ctrp, function(j) {
@@ -302,9 +308,13 @@ plotSimCTRPDrugs <- function(input) {
   cors
 }
 
-plotSimSangDrugs <- function(input) {
-  input <- input
-  fp.inp <- parseInputFingerprint(input, fp.type = "extended")
+plotSimSangDrugs <- function(input, fp.type) {
+  
+  fp.inp <- parseInputFingerprint(input, fp.type = fp.type)
+  
+  if(fp.type == "circular"){fp.sang <- fp.sang.circular}
+  if(fp.type == "extended"){fp.sang <- fp.sang.extended}
+  if(fp.type == "maccs"){fp.sang <- fp.sang.maccs}
   
   sims <- lapply(fp.inp, function(i) {
     sim <- sapply(fp.sang, function(j) {
@@ -314,6 +324,7 @@ plotSimSangDrugs <- function(input) {
     bar$match <- rownames(bar)
     bar
   })
+  
   
   sims <- ldply(sims)
   sims2 <- sims %>% arrange(-sim)
