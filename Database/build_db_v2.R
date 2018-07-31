@@ -57,7 +57,8 @@ is.smiles <- function(x, verbose = TRUE) { ##corrected version from webchem
 x <- read.csv(syn$get("syn12973257")$path, header = T, comment.char = "", sep = ",")
 db_struct <- x %>% dplyr::select(DrugBank.ID, SMILES) %>% 
   set_names(c("external_id", "original_smiles")) %>% 
-  filter(original_smiles != "")
+  filter(original_smiles != "") %>% 
+  distinct()
 
 db_struct$database <- "drugbank"
 
@@ -82,7 +83,8 @@ dgidb_struct <- read.table(syn$get("syn14721555")$path,
                            comment.char = "",
                            na.strings = NA,
                            allowEscapes = FALSE) %>% 
-  set_names(c("external_id", "original_smiles"))
+  set_names(c("external_id", "original_smiles"))  %>% 
+  distinct()
 
 dgidb_struct$database <- "dgidb"
 
@@ -99,7 +101,8 @@ cp_struct <- read.csv(syn$get("syn12910000")$path,
   select(external.id, smiles, database) %>% 
   set_names(c("external_id", "original_smiles", "database")) %>% 
   mutate(source = "cp") %>% 
-  unite(external_id, c("external_id", "source"), sep = "_")
+  unite(external_id, c("external_id", "source"), sep = "_") %>% 
+  distinct()
 
 ##import 
 klaeger_struct <- read.table(syn$get("syn11685586")$path, 
@@ -112,7 +115,8 @@ klaeger_struct <- read.table(syn$get("syn11685586")$path,
   select(Drug, SMILES.code) %>% 
   set_names(c("external_id", "original_smiles")) %>% 
   mutate(database = "klaeger", source = "klaeger") %>% 
-  unite(external_id, c("external_id", "source"), sep = "_")
+  unite(external_id, c("external_id", "source"), sep = "_") %>% 
+  distinct()
 
 structures <- bind_rows(chembl_struct, db_struct, dgidb_struct, cp_struct, klaeger_struct)
 
@@ -236,7 +240,7 @@ valid.df$internal_id <- group_indices(valid.df, smiles)
 #   inner_join(valid.df) %>% 
 #   inner_join(structures)
 
-mat.df2 <- inner_join(valid.df, structures)
+mat.df2 <- inner_join(valid.df, structures) %>% distinct()
 
 write.table(mat.df2, "Data/grouped_structures.txt", sep = "\t", row.names = F)
 syn$store(synapse$File("Data/grouped_structures.txt", parentId = "syn12978846"), ####"syn11678675"), change this to parentId for current build
