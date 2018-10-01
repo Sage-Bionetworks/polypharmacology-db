@@ -1,4 +1,5 @@
 source("global.R")
+source("helpers.R")
 
 shinyServer(function(input, output, session) {
 #session$sendCustomMessage(type="readCookie",
@@ -7,11 +8,9 @@ shinyServer(function(input, output, session) {
 # synLogin(sessionToken=input$cookie)
 # synLogin()
   
-  source("helpers.R")
-  
   loading()
-
-    similarity <- reactive({
+  
+  similarity <- reactive({
     validate(
       need(input$smiles!="", "Please select a molecule.")
     )
