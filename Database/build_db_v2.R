@@ -459,10 +459,13 @@ grouped_structures <- mutate(grouped_structures, external_id = as.character(exte
 all.names <- bind_rows(dgidb.names, db.names, chembl.names, cp.names, klaeger.names) %>% 
   full_join(grouped_structures) %>% 
   filter(!is.na(internal_id)) %>% 
-  filter(!common_name %in% c("ChEBI_NA", "CAS_", "PubChemCID_NA","ChemSpider_NA"))
+  filter(!common_name %in% c("ChEBI_NA", "CAS_", "PubChemCID_NA","ChemSpider_NA")) 
 
 ##drug_claim_primary_names are error prone in dgidb, use external ID instead
 all.names$common_name[all.names$database=="dgidb"] <- all.names$external_id[all.names$database=="dgidb"]
+
+##change C21 to chembl id to prevent confusion with other C21 from paper vignette - manual change
+all.names$common_name[all.names$common_name == "C21"] <- "CHEMBL189568"
 
 syns <- all.names %>% 
   distinct() %>% 
