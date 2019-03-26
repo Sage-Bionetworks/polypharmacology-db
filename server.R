@@ -8,10 +8,9 @@ shinyServer(function(input, output, session) {
 # synLogin(sessionToken=input$cookie)
 # synLogin()
   
-
   loading()
-
-    similarity <- reactive({
+  
+  similarity <- reactive({
     validate(
       need(input$smiles!="", "Please select a molecule.")
     )
