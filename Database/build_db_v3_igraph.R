@@ -2,9 +2,13 @@
 ### create igraph object from db
 ##for fendr
 
-this.file <- 
+this.file <- "https://raw.githubusercontent.com/Sage-Bionetworks/polypharmacology-db/develop/Database/build_db_v3_igraph.R"
+
+library(tidyverse)
 library(synapser)
+synLogin()
 library(igraph)
+
 db <- readRDS(synGet("syn17091507")$path) %>%
   filter(!is.na(hugo_gene)) %>%
   select(internal_id, hugo_gene, mean_pchembl, n_quantitative, n_qualitative) %>%
@@ -30,17 +34,4 @@ synStore(File("drug-target_explorer_igraph_name_map.rds", parentId = "syn1180219
          used = "syn11712148",
          executed = this.file)
 
-names <- readRDS(synTableQuery("SELECT internal_id, std_name FROM syn17090819")$asDataFrame())
-write.table(names, "Data/drug-target_explorer_igraph_name_map.txt", sep = "\t", row.names = F)
 
-results <- synTableQuery(sprintf("select * from %s", "syn11831632"))
-x <- nrow(results$asDataFrame())/10000
-for(i in 1:ceiling(x)){
-  print(i)
-  results <- synTableQuery(sprintf("select * from %s limit 10000", "syn11831632"))
-  deleted <- synDelete(results$asRowSet())
-}
-
-results <- synGet("syn11831632")
-tableToAppend <- Table(results, names)
-table <- synStore(tableToAppend)
