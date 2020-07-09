@@ -77,7 +77,7 @@ shinyUI(
                                                 multiple = FALSE,
                                                 width = "90%"),
                                  bsTooltip("drugnames", "Type molecule name here to search this database for SMILES strings.",
-                                           "right", options = list(container = "body")), align = "center"),
+                                           "right"), align = "center"),
                         fluidRow(actionButton("ppdbsearchbutton", "Find Molecules", align = "center"), align = "center"),
                         br(),
                         p("Search this database for structures by compound name. Can't find what you're looking for? Move to the next panel to search CIR."), style = "info"),
@@ -88,7 +88,7 @@ shinyUI(
                                     value = "brigatinib",
                                     width = "90%"),
                                  bsTooltip("input.name", "Type molecule name here to search this database for SMILES strings.",
-                                           "right", options = list(container = "body")), align = "center"),
+                                           "right"), align = "center"),
                  fluidRow(actionButton("cirbutton", "Find CIR Mols"), align = "center"), 
                  br(),
                  p("Input a compound name in this box to search CIR for the structure."),
@@ -100,7 +100,7 @@ shinyUI(
                                      width = "90%"
                                      ),
                  bsTooltip("smiles", "Input the structural string (SMILES) here.",
-                           "right", options = list(container = "body")), align = "center"),
+                           "right"), align = "center"),
                  div(),
                  p("Know your SMILES string already? Search by structure directly here."), style = "info"), open = "Quick Start Guide"),
         bsCollapse(bsCollapsePanel("Similarity Threshold",  
@@ -111,7 +111,7 @@ shinyUI(
                              step = 0.01,
                              ticks = FALSE),
                  bsTooltip("sim.thres", "Set the Tanimoto similarity (1 being identical) here.",
-                           "right", options = list(container = "body")), style = "warning"), open = "Similarity Threshold"),
+                           "right"), style = "warning"), open = "Similarity Threshold"),
                  uiOutput("sims"),
       bsCollapse(
       bsCollapsePanel("2D Structure (input)", fluidRow(imageOutput("structureimage"), align = "center"), style = "danger"), open = "2D Structure (input)")
