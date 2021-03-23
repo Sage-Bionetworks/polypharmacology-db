@@ -2,12 +2,7 @@ source("global.R")
 source("helpers.R")
 
 shinyServer(function(input, output, session) {
-#session$sendCustomMessage(type="readCookie",
-#                          message=list(name="org.sagebionetworks.security.user.login.token'"))
-#  foo <- observeEvent(input$cookie, {
-# synLogin(sessionToken=input$cookie)
-# synLogin()
-  
+
   loading()
   
   similarity <- reactive({
@@ -27,8 +22,8 @@ shinyServer(function(input, output, session) {
   
   output$sims <- renderUI({
     mols <- simmols()
-    choice.names <- mols$common_name
-    choice.vals <- mols$internal_id
+    choice.names <- mols$pref_name
+    choice.vals <- mols$inchikey
     checkboxGroupInput(inputId = "selectdrugs", 
                        label = "Molecules (similarity)",  
                        selected = choice.vals,
@@ -39,8 +34,8 @@ shinyServer(function(input, output, session) {
   
   output$simmoltab <- renderDataTable({
     dat <- simmols()
-    dat$external_links <- sapply(dat$internal_id, getExternalDrugLinks) 
-    dat <- select(dat, common_name, external_links, `Tanimoto Similarity`)
+    dat$external_links <- sapply(dat$inchikey, getExternalDrugLinks) 
+    dat <- select(dat, pref_name, external_links, `Tanimoto Similarity`)
     DT::datatable(dat, colnames = c("Molecule Name", "External Links", "Tanimoto Similarity"), escape = FALSE)
   })
   
@@ -73,11 +68,11 @@ shinyServer(function(input, output, session) {
     validate(
       need(nrow(getTargetList(input$selectdrugs) %>% as.data.frame())>=1, "No targets found.")
     )
-    targ <- getTargetList(input$selectdrugs) %>% as.data.frame() %>% select(-internal_id)
+    targ <- getTargetList(input$selectdrugs) %>% as.data.frame() 
     DT::datatable(targ, options = list(dom = "Bfrtip", 
                                        buttons = c("copy", 
                                                    "excel")), extensions = "Buttons",
-                  colnames =  c("Molecule Name", "HGNC Symbol", "Mean pChEMBL", "n Quantitative", "n Qualitative", "KSI", "Confidence"))
+                  colnames =  c("InChIKey", "Molecule Name", "HGNC Symbol", "Mean pChEMBL", "n Quantitative", "n Qualitative", "KSI", "Confidence"))
   }, server = FALSE)
   
   
@@ -119,7 +114,7 @@ shinyServer(function(input, output, session) {
     )
     edges <- getTargetNetwork(input$selectdrugs, input$edge.size)
 
-    druglinks <- sapply(edges$internal_id, function(x){
+    druglinks <- sapply(edges$inchikey, function(x){
       # id<-getInternalId(x)
       druglinks <- getExternalDrugLinks(x)
     })
