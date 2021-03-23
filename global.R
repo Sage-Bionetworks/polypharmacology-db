@@ -70,16 +70,16 @@ distance.minified <- function(fp1,fp.list){ #this function is a stripped down fi
 }
 
 convertDrugToSmiles <- function(input) {
-  filt <- filter(db.names, common_name == input) %>% dplyr::select(smiles)
+  filt <- filter(db.names, pref_name == input) %>% dplyr::select(std_smiles)
   filt
 }
 
 getTargetList <- function(selectdrugs) {
   
   targets <- db %>% 
-    filter(internal_id %in% selectdrugs) %>% 
+    filter(inchikey %in% selectdrugs) %>% 
     as.data.frame() %>% 
-    dplyr::select(common_name, hugo_gene, mean_pchembl, n_quantitative, n_qualitative, known_selectivity_index, confidence, internal_id) %>% 
+    dplyr::select(pref_name, hugo_gene, mean_pchembl, n_quantitative, n_qualitative, known_selectivity_index, confidence, inchikey) %>% 
     arrange(-n_quantitative) 
   
 }
@@ -103,10 +103,10 @@ similarityFunction <- function(input, fp.type) {
 
 getSimMols <- function(sims, sim.thres) {
   sims2 <- sims %>% dplyr::filter(similarity >= sim.thres) %>% arrange(-similarity)
-  sims2$internal_id <- as.character(sims2$match)
+  sims2$inchikey <- as.character(sims2$match)
   sims2$`Tanimoto Similarity` <- signif(sims2$similarity, 3)
   targets <- left_join(sims2, db) %>% 
-    dplyr::select(internal_id, common_name, `Tanimoto Similarity`) %>% 
+    dplyr::select(inchikey, pref_name, `Tanimoto Similarity`) %>% 
     distinct() %>% 
     as.data.frame()
 }
@@ -122,8 +122,8 @@ getMolImage <- function(input) {
  #   unique(ids$internal_id)
  # }
 
-getExternalDrugLinks <- function(internal.id) {
-  links <- filter(db.links, internal_id %in% internal.id)
+getExternalDrugLinks <- function(inchikey) {
+  links <- filter(db.links, inchikey %in% inchikey)
   links <- as.character(links$link)
   links <- paste(links, collapse = ",")
 }
@@ -135,10 +135,10 @@ getExternalGeneLinks <- function(gene) {
 
 getNetwork <- function(drugsfound, selectdrugs) {
   targets <- drugsfound %>% 
-    distinct() %>% filter(internal_id %in% selectdrugs)
+    distinct() %>% filter(inchikey %in% selectdrugs)
   
   targets$from <- "input"
-  targets$to <- as.character(targets$common_name)
+  targets$to <- as.character(targets$pref_name)
   targets$width <- ((targets$`Tanimoto Similarity`)^2) * 10
   targets$color <- "tomato"
   
@@ -152,7 +152,7 @@ getNetwork <- function(drugsfound, selectdrugs) {
 
 getTargetNetwork <- function(selectdrugs, edge.size) {
   targets <- getTargetList(selectdrugs)
-  targets$from <- targets$common_name
+  targets$from <- targets$pref_name
   targets$to <- as.character(targets$hugo_gene)
   if(edge.size==TRUE){
     targets$width <- scales::rescale(targets$confidence, to = c(1,10))
@@ -162,7 +162,7 @@ getTargetNetwork <- function(selectdrugs, edge.size) {
   }
   targets$color <- "tomato"
 
-  targets <- dplyr::select(targets, from, to, width, color, internal_id) %>% 
+  targets <- dplyr::select(targets, from, to, width, color, inchikey) %>% 
     filter(from !="NA" & to != "NA")
 }
 
@@ -187,7 +187,7 @@ getMolsFromGenes <- function(genes) {
   if(length(genes)>1){
   mols <- db %>% 
     filter(hugo_gene %in% genes) %>% 
-    group_by(internal_id) %>% 
+    group_by(inchikey) %>% 
     mutate(count = n()) %>% 
     filter(count == length(genes)) %>% 
     ungroup() %>% 
@@ -198,16 +198,16 @@ getMolsFromGenes <- function(genes) {
   }
   
   mols %>% 
-    select(internal_id, common_name, hugo_gene, mean_pchembl, n_quantitative, n_qualitative, known_selectivity_index, confidence) 
+    select(inchikey, pref_name, hugo_gene, mean_pchembl, n_quantitative, n_qualitative, known_selectivity_index, confidence) 
 }
 
 
 getMolsFromGeneNetworks.edges <- function(inp.gene, genenetmols, edge.size, gene.filter.metric) {
   mols <- genenetmols %>% top_n(15, !!sym(gene.filter.metric))
   
-  net <- filter(db, internal_id %in% mols$internal_id) %>% distinct()
+  net <- filter(db, inchikey %in% mols$inchikey) %>% distinct()
   
-  net$from <- as.character(net$internal_id)
+  net$from <- as.character(net$inchikey)
   net$to <- as.character(net$hugo_gene)
   if(edge.size==TRUE){
     net$width <- (net$confidence)/10
@@ -224,20 +224,20 @@ getMolsFromGeneNetworks.edges <- function(inp.gene, genenetmols, edge.size, gene
 getMolsFromGeneNetworks.nodes <- function(inp.gene, genenetmols, gene.filter.metric) {
   mols <- genenetmols %>% top_n(15, !!sym(gene.filter.metric))
 
-  net <- filter(db, internal_id %in% mols$internal_id) %>% 
+  net <- filter(db, inchikey %in% mols$inchikey) %>% 
       distinct() # %>% 
     # group_by(common_name) %>% 
     # top_n(20, confidence) %>% 
     # ungroup()
    
-  id <- c(unique(as.character(net$internal_id)), 
+  id <- c(unique(as.character(net$inchikey)), 
           unique(as.character(net$hugo_gene)))
-  label <- c(unique(as.character(net$common_name)), 
+  label <- c(unique(as.character(net$pref_name)), 
              unique(as.character(net$hugo_gene)))
-  color <- c(rep("blue", length(unique(as.character(net$common_name)))), 
+  color <- c(rep("blue", length(unique(as.character(net$pref_name)))), 
              rep("green", length(unique(as.character(net$hugo_gene)))))
   
-  druglinks <- sapply(unique(as.character(net$internal_id)), function(x){
+  druglinks <- sapply(unique(as.character(net$inchikey)), function(x){
     druglinks <- getExternalDrugLinks(x)
   })
 
