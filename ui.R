@@ -202,7 +202,8 @@ shinyUI(
                fluidRow(h1("Gene Tab")),
                fluidRow(radioButtons("gene.filter.metric", "Target networks on gene panel are restricted to top 15 molecules for performance. Select on:",
                                      c("largest pChEMBL" = "mean_pchembl",
-                                       "largest confidence score" = "confidence"))))
+                                       "largest confidence score" = "confidence",
+                                       "largest known selectivity index" = "known_selectivity_index"))))
              )
            ))
   )
