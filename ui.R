@@ -23,8 +23,8 @@ shinyUI(
            h4(strong("Welcome to the Drug-Target Explorer.")),
            h5("The purpose of this app is to facilitate exploration of drug-target interaction databases.
              The underlying database for this app is a harmonized dataset which summarizes quantitative and qualitative 
-             small molecule activity data for human targets from ChEMBL, the Drug-Gene Interaction Database, DrugBank, ChemicalProbes.org, and Klaeger et al, Science, 2017.
-             The current database (v2) contains summarizes evidence for >507,000 small-molecule-target interactions (>304,000 chemical entities and 3650 human targets)."),
+             small molecule activity data for human targets from ChEMBL, the Drug-Gene Interaction Database, DrugBank, and ChemicalProbes.org
+             The current database (v4) summarizes evidence for >659,000 small-molecule-target interactions (>382,000 chemical entities and 4130 human targets)."),
            br(),
            h4(strong("How does this tool work?")),
            h5("This tool leverages structural information of molecules and the associated target annotations to build a drug-target map 
@@ -190,9 +190,7 @@ shinyUI(
                  radioButtons("fp.type", "Fingerprint type:",
                                      c("Extended" = "extended",
                                        "Circular (ECFP/FCFP-like, default)" = "circular",
-                                       # "Pubchem" = "pubchem",
                                        "MACCS" = "maccs"
-                                       # ,"Klekota and Roth" = "kr"
                                        ))),
                fluidRow(p("The molecules were grouped for this database using circular fingerprints. Therefore, any other selection may result in multiple compounds having a Tanimoto similarity of 1. 
                           Also, Tanimoto similarity is greatly impacted by fingerprint choice. For example, circular fingerprints will generally have a lower Tanimoto similarity than extended fingerprints for a given chemical pair.
@@ -204,8 +202,7 @@ shinyUI(
                fluidRow(h1("Gene Tab")),
                fluidRow(radioButtons("gene.filter.metric", "Target networks on gene panel are restricted to top 15 molecules for performance. Select on:",
                                      c("largest pChEMBL" = "mean_pchembl",
-                                       "largest confidence score" = "confidence",
-                                       "largest known selectivity index" = "known_selectivity_index"))))
+                                       "largest confidence score" = "confidence"))))
              )
            ))
   )
