@@ -70,7 +70,10 @@ distance.minified <- function(fp1,fp.list){ #this function is a stripped down fi
 }
 
 convertDrugToSmiles <- function(input) {
-  filt <- filter(db.names, pref_name == input) %>% dplyr::select(std_smiles)
+  filt <- filter(db.names, synonym == input) %>% 
+    dplyr::select(inchikey) %>% 
+    dplyr::inner_join(db_structures) %>% 
+    dplyr::select(std_smiles)
   filt
 }
 
@@ -79,7 +82,7 @@ getTargetList <- function(selectdrugs) {
   targets <- db %>% 
     filter(inchikey %in% selectdrugs) %>% 
     as.data.frame() %>% 
-    dplyr::select(pref_name, hugo_gene, mean_pchembl, n_quantitative, n_qualitative, known_selectivity_index, confidence, inchikey) %>% 
+    dplyr::select(inchikey, pref_name, hugo_gene, mean_pchembl, n_quantitative, n_qualitative, known_selectivity_index, confidence) %>% 
     arrange(-n_quantitative) 
   
 }
@@ -95,10 +98,10 @@ similarityFunction <- function(input, fp.type) {
   # if(fp.type=="kr"){ sim <- distance.minified(fp.inp[[1]], fp.kr) }
   # if(fp.type=="pubchem"){ sim <- distance.minified(fp.inp[[1]], fp.pubchem) 
 
-  bar <- as.data.frame(sim) %>% 
-    rownames_to_column("match") %>% 
+  bar <- enframe(sim) %>% 
     set_names(c("match", "similarity")) %>% 
     top_n(50, similarity) ##hard cutoff to avoid overloading the app - large n of compounds can cause sluggish response wrt visualizations
+
 }
 
 getSimMols <- function(sims, sim.thres) {
@@ -109,6 +112,7 @@ getSimMols <- function(sims, sim.thres) {
     dplyr::select(inchikey, pref_name, `Tanimoto Similarity`) %>% 
     distinct() %>% 
     as.data.frame()
+
 }
 
 getMolImage <- function(input) {
@@ -116,16 +120,11 @@ getMolImage <- function(input) {
   view.image.2d(smi[[1]])
 }
 
-#This should no longer be required as app now works entirely with internal_id under the hood to avoid switching 
- # getInternalId <- function(input) { ##this is specifically for getting internal ids for use in network to external links
- #   ids <- filter(db.names, internal_id==input)
- #   unique(ids$internal_id)
- # }
 
-getExternalDrugLinks <- function(inchikey) {
-  links <- filter(db.links, inchikey %in% inchikey)
+getExternalDrugLinks <- function(inchikey_input) {
+  links <- filter(db.links, inchikey %in% inchikey_input)
   links <- as.character(links$link)
-  links <- paste(links, collapse = ",")
+  links <- paste(links, collapse = ", ")
 }
 
 getExternalGeneLinks <- function(gene) {
@@ -166,8 +165,8 @@ getTargetNetwork <- function(selectdrugs, edge.size) {
     filter(from !="NA" & to != "NA")
 }
 
-dbs <- c("GO_Molecular_Function_2017", "GO_Cellular_Component_2017", "GO_Biological_Process_2017", 
-         "KEGG_2016")
+dbs <- c("GO_Biological_Process_2018", "GO_Cellular_Component_2018", "GO_Biological_Process_2018", 
+         "KEGG_2019_Human")
 
 getGeneOntologyfromTargets <- function(selectdrugs) {
   selectdrugs <- selectdrugs

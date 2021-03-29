@@ -22,8 +22,8 @@ shinyServer(function(input, output, session) {
   
   output$sims <- renderUI({
     mols <- simmols()
-    choice.names <- mols$pref_name
     choice.vals <- mols$inchikey
+    choice.names <- mols$pref_name
     checkboxGroupInput(inputId = "selectdrugs", 
                        label = "Molecules (similarity)",  
                        selected = choice.vals,
@@ -52,7 +52,7 @@ shinyServer(function(input, output, session) {
   })
   
 
-  updateSelectizeInput(session, "drugnames", choices = db.names$common_name, server = TRUE) 
+  updateSelectizeInput(session, "drugnames", choices = db.names$synonym, server = TRUE) 
 
   observeEvent(input$ppdbsearchbutton, {
     pp.smiles<-as.character(convertDrugToSmiles(input$drugnames)[1,1])
@@ -115,7 +115,6 @@ shinyServer(function(input, output, session) {
     edges <- getTargetNetwork(input$selectdrugs, input$edge.size)
 
     druglinks <- sapply(edges$inchikey, function(x){
-      # id<-getInternalId(x)
       druglinks <- getExternalDrugLinks(x)
     })
     genelinks <- sapply(edges$to, function(x){
@@ -148,8 +147,8 @@ shinyServer(function(input, output, session) {
   })
   
   output$GOMF.mol <- DT::renderDataTable({
-    foo <- gene.ont.mol()[["GO_Molecular_Function_2017"]] %>% 
-      dplyr::select(Term, Overlap, Adjusted.P.value, Z.score) %>%
+    foo <- gene.ont.mol()[["GO_Biological_Process_2018"]] %>% 
+      dplyr::select(Term, Overlap, Adjusted.P.value, Combined.Score) %>%
       filter(Adjusted.P.value < 0.05) %>%
       arrange(Adjusted.P.value)
     
@@ -157,8 +156,8 @@ shinyServer(function(input, output, session) {
   }, server = FALSE)
   
   output$GOCC.mol <- DT::renderDataTable({
-    foo <- gene.ont.mol()[["GO_Cellular_Component_2017"]] %>% dplyr::select(Term, 
-                                                                     Overlap, Adjusted.P.value, Z.score) %>% filter(Adjusted.P.value < 
+    foo <- gene.ont.mol()[["GO_Cellular_Component_2018"]] %>% dplyr::select(Term, 
+                                                                     Overlap, Adjusted.P.value, Combined.Score) %>% filter(Adjusted.P.value < 
                                                                                                                       0.05) %>% arrange(Adjusted.P.value)
     
     DT::datatable(foo, options = list(dom = "Bfrtip", buttons = c("copy", 
@@ -166,15 +165,15 @@ shinyServer(function(input, output, session) {
   }, server = FALSE)
   
   output$GOBP.mol <- DT::renderDataTable({
-    foo <- gene.ont.mol()[["GO_Biological_Process_2017"]] %>% dplyr::select(Term, 
-                                                                     Overlap, Adjusted.P.value, Z.score) %>% filter(Adjusted.P.value < 
+    foo <- gene.ont.mol()[["GO_Biological_Process_2018"]] %>% dplyr::select(Term, 
+                                                                     Overlap, Adjusted.P.value, Combined.Score) %>% filter(Adjusted.P.value < 
                                                                                                                       0.05) %>% arrange(Adjusted.P.value)
     
     DT::datatable(foo, options = list(dom = "Bfrtip", buttons = c("copy","excel")), extensions = "Buttons")
   }, server = FALSE)
   
   output$kegg <- DT::renderDataTable({
-    foo <- gene.ont.mol()[["KEGG_2016"]] %>% dplyr::select(Term, Overlap, Adjusted.P.value, Z.score) %>% 
+    foo <- gene.ont.mol()[["KEGG_2019_Human"]] %>% dplyr::select(Term, Overlap, Adjusted.P.value, Combined.Score) %>% 
       filter(Adjusted.P.value <0.05) %>% 
       arrange(Adjusted.P.value)
     
@@ -325,6 +324,7 @@ shinyServer(function(input, output, session) {
     )
       DT::datatable(mol, options = list(dom = "Bfrtip",
                                          buttons = c("copy","excel")),
+                    colnames =  c("InChIKey", "Molecule Name", "HGNC Symbol", "Mean pChEMBL", "n Quantitative", "n Qualitative", "KSI", "Confidence"),
                     extensions = "Buttons")
   }, server = FALSE)
 

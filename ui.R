@@ -192,8 +192,7 @@ shinyUI(
                                        "Circular (ECFP/FCFP-like, default)" = "circular",
                                        "MACCS" = "maccs"
                                        ))),
-               fluidRow(p("The molecules were grouped for this database using circular fingerprints. Therefore, any other selection may result in multiple compounds having a Tanimoto similarity of 1. 
-                          Also, Tanimoto similarity is greatly impacted by fingerprint choice. For example, circular fingerprints will generally have a lower Tanimoto similarity than extended fingerprints for a given chemical pair.
+               fluidRow(p("Tanimoto similarity is greatly impacted by fingerprint choice. For example, circular fingerprints will generally have a lower Tanimoto similarity than extended fingerprints for a given chemical pair.
                           We chose extended as the default for here as it seemed to work best for commonly-used Tanimoto thresholds for similarity (e.g. >0.85 indicating highly similar.")),
                fluidRow(
                  radioButtons("edge.size", "Render edges with confidence score? (values are scaled uniquely for each plot from 0 to 10)",
