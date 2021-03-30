@@ -250,11 +250,25 @@ getMolsFromGeneNetworks.nodes <- function(inp.gene, genenetmols, gene.filter.met
   
 }
 
-getSmiles <- function(input.name) {
-  input.name <- input.name
-  input.name <- URLencode(input.name)
-  query <- as.vector(cir_query(input.name, representation = "smiles", first = TRUE))
-  query
+convert_id_to_structure_pubchem <- function(input_id, id_type = c("name", "inchikey"), output_type = c("InChI", "InChIKey", "CanonicalSMILES", "IsomericSMILES")){
+  Sys.sleep(0.25) ##to prevent requests from happening too fast
+  
+  input <- URLencode(input_id)
+  
+  statement <- glue::glue('https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/{id_type}/{input}/property/{output_type}/xml')
+  
+  res <- httr::GET(statement)
+  if(res$status_code==200){
+    res_2 <- XML::xmlToList(rawToChar(res$content))
+    struct <- purrr::pluck(res_2, "Properties", 2)
+    if(is.null(struct)){struct <- NA}
+  }else{
+    message(glue::glue('input "{input_id}" appears to be invalid'))
+    struct <- NA
+  }
+  
+  struct
+  
 }
 
 plotSimCTRPDrugs <- function(input, fp.type) {

@@ -41,8 +41,8 @@ shinyServer(function(input, output, session) {
   
   ##molecule (SMILES) input
   
-  observeEvent(input$cirbutton, {
-    pc.smiles <- getSmiles(input$input.name)
+  observeEvent(input$pugrestbutton, {
+    pc.smiles <- convert_id_to_structure_pubchem(input$input.name, id_type = "name", output_type = "IsomericSMILES")
     updateTextInput(session, "smiles", value = pc.smiles)
     if(is.na(pc.smiles)){ 
       output$cirsearchNA <- renderText({
