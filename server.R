@@ -5,6 +5,8 @@ shinyServer(function(input, output, session) {
 
   loading()
   
+  showNotification("Database last updated on March 29, 2021 (v4).", type = "message", duration = NULL)
+  
   similarity <- reactive({
     validate(
       need(input$smiles!="", "Please select a molecule.")
