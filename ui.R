@@ -23,8 +23,8 @@ shinyUI(
            h4(strong("Welcome to the Drug-Target Explorer.")),
            h5("The purpose of this app is to facilitate exploration of drug-target interaction databases.
              The underlying database for this app is a harmonized dataset which summarizes quantitative and qualitative 
-             small molecule activity data for human targets from ChEMBL, the Drug-Gene Interaction Database, DrugBank, ChemicalProbes.org, and Klaeger et al, Science, 2017.
-             The current database (v2) contains summarizes evidence for >507,000 small-molecule-target interactions (>304,000 chemical entities and 3650 human targets)."),
+             small molecule activity data for human targets from ChEMBL, the Drug-Gene Interaction Database, DrugBank, and ChemicalProbes.org
+             The current database (v4) summarizes evidence for >659,000 small-molecule-target interactions (>382,000 chemical entities and 4130 human targets)."),
            br(),
            h4(strong("How does this tool work?")),
            h5("This tool leverages structural information of molecules and the associated target annotations to build a drug-target map 
@@ -38,7 +38,7 @@ shinyUI(
            h4(strong("How do I use the app to search by chemical entity?")),
            p("Click on the 'Molecules' tab to find targets associated with your molecule of interest. 
              Search for the drug using the 'Molecule Lookup' panel on the left. 
-             Alternatively, use the 'CIR Search' panel to use the NCI CACTUS Chemical Identifier Resolver, or directly enter the SMILES structural string in the 'Direct Structure Input' panel.
+             Alternatively, use the 'PubChem Search' panel to use the PubChem PUG-REST API, or directly enter the SMILES structural string in the 'Direct Structure Input' panel.
              Set the Tanimoto similarity threshold using the slider, where 1 represents an identical molecular fingerprint."),
            h4(strong("How do I use the app to search by target?")),
            p("If you have a target in mind, please enter the HUGO Gene Symbol on the 'Genes' tab."), 
@@ -63,7 +63,7 @@ shinyUI(
                           div(),
                           p("1) look up by molecule name in our database,"),
                           div(),
-                          p("2) search CIR for structures associated with your molecule name, or"),
+                          p("2) search PubChem for structures associated with your molecule name, or"),
                           div(),
                           p("3) directly enter the structure as represented by a SMILES string."),
                           div(),
@@ -81,7 +81,7 @@ shinyUI(
                         fluidRow(actionButton("ppdbsearchbutton", "Find Molecules", align = "center"), align = "center"),
                         br(),
                         p("Search this database for structures by compound name. Can't find what you're looking for? Move to the next panel to search CIR."), style = "info"),
-        bsCollapsePanel("CIR Search",
+        bsCollapsePanel("PubChem Search",
                  fluidRow(textInput("input.name",
                                     "input text", 
                                     label = NULL, 
@@ -89,9 +89,9 @@ shinyUI(
                                     width = "90%"),
                                  bsTooltip("input.name", "Type molecule name here to search this database for SMILES strings.",
                                            "right", options = list(container = "body")), align = "center"),
-                 fluidRow(actionButton("cirbutton", "Find CIR Mols"), align = "center"), 
+                 fluidRow(actionButton("pugrestbutton", "Find PubChem Mols"), align = "center"), 
                  br(),
-                 p("Input a compound name in this box to search CIR for the structure."),
+                 p("Input a compound name in this box to search PubChem for the structure."),
                  textOutput("cirsearchNA"), style = "info"),
         bsCollapsePanel("Direct Structure Input", fluidRow(textInput("smiles",
                                      "SMILES string", 
@@ -190,12 +190,9 @@ shinyUI(
                  radioButtons("fp.type", "Fingerprint type:",
                                      c("Extended" = "extended",
                                        "Circular (ECFP/FCFP-like, default)" = "circular",
-                                       # "Pubchem" = "pubchem",
                                        "MACCS" = "maccs"
-                                       # ,"Klekota and Roth" = "kr"
                                        ))),
-               fluidRow(p("The molecules were grouped for this database using circular fingerprints. Therefore, any other selection may result in multiple compounds having a Tanimoto similarity of 1. 
-                          Also, Tanimoto similarity is greatly impacted by fingerprint choice. For example, circular fingerprints will generally have a lower Tanimoto similarity than extended fingerprints for a given chemical pair.
+               fluidRow(p("Tanimoto similarity is greatly impacted by fingerprint choice. For example, circular fingerprints will generally have a lower Tanimoto similarity than extended fingerprints for a given chemical pair.
                           We chose extended as the default for here as it seemed to work best for commonly-used Tanimoto thresholds for similarity (e.g. >0.85 indicating highly similar.")),
                fluidRow(
                  radioButtons("edge.size", "Render edges with confidence score? (values are scaled uniquely for each plot from 0 to 10)",

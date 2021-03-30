@@ -1,26 +1,25 @@
 
-db <- readRDS("Data/drug_target_associations_v2.rds")
+db <- readRDS("Data/compound_target_associations_v4.rds")
+db.genes <- db$hugo_gene %>% unique()
 
+db_structures <- readRDS("Data/compound_structures_v4.rds")
 
-db.names <- readRDS("Data/distinct_compound_names.rds")
-db$internal_id <- as.character(db$internal_id)
+db.names <- readRDS("Data/distinct_compound_synonyms_v4.rds")
 
-fp.extended <- readRDS("Data/db_fingerprints_extended.rds")
+db$inchikey <- as.character(db$inchikey)
 
-fp.circular <- readRDS("Data/db_fingerprints_circular.rds")
+db <- select(db.names, inchikey, pref_name) %>% 
+  distinct() %>% 
+  full_join(db)
+  
+fp.extended <- readRDS("Data/db_fingerprints_extended_v4.rds")
 
-# fp.kr <- readRDS(synGet("syn11898431")$path)
-# fp.kr <- fp.kr[names(fp.kr) %in% unique(db$internal_id)]
+fp.circular <- readRDS("Data/db_fingerprints_circular_v4.rds")
 
-fp.maccs <- readRDS("Data/db_fingerprints_maccs.rds")
+fp.maccs <- readRDS("Data/db_fingerprints_maccs_v4.rds")
 
-# fp.pubchem <- readRDS(synGet("syn12031332")$path)
-# fp.pubchem <- fp.pubchem[names(fp.pubchem) %in% unique(db$internal_id)]
-
-
-db.links <- read.table("Data/db_external_links.txt", sep = "\t", header = T)
-db.gene.links <- read.table("Data/gene_external_links.txt", sep = "\t", header = T)
-db.genes <- db.gene.links$hugo_gene
+db.links <- readRDS("Data/cmpd_links_v4.rds")
+db.gene.links <- readRDS("Data/gene_links_v4.rds")
 
 ##get CTRP data for heatmap
 
