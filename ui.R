@@ -38,7 +38,7 @@ shinyUI(
            h4(strong("How do I use the app to search by chemical entity?")),
            p("Click on the 'Molecules' tab to find targets associated with your molecule of interest. 
              Search for the drug using the 'Molecule Lookup' panel on the left. 
-             Alternatively, use the 'CIR Search' panel to use the NCI CACTUS Chemical Identifier Resolver, or directly enter the SMILES structural string in the 'Direct Structure Input' panel.
+             Alternatively, use the 'PubChem Search' panel to use the PubChem PUG-REST API, or directly enter the SMILES structural string in the 'Direct Structure Input' panel.
              Set the Tanimoto similarity threshold using the slider, where 1 represents an identical molecular fingerprint."),
            h4(strong("How do I use the app to search by target?")),
            p("If you have a target in mind, please enter the HUGO Gene Symbol on the 'Genes' tab."), 
@@ -63,7 +63,7 @@ shinyUI(
                           div(),
                           p("1) look up by molecule name in our database,"),
                           div(),
-                          p("2) search CIR for structures associated with your molecule name, or"),
+                          p("2) search PubChem for structures associated with your molecule name, or"),
                           div(),
                           p("3) directly enter the structure as represented by a SMILES string."),
                           div(),
@@ -81,7 +81,7 @@ shinyUI(
                         fluidRow(actionButton("ppdbsearchbutton", "Find Molecules", align = "center"), align = "center"),
                         br(),
                         p("Search this database for structures by compound name. Can't find what you're looking for? Move to the next panel to search CIR."), style = "info"),
-        bsCollapsePanel("CIR Search",
+        bsCollapsePanel("PubChem Search",
                  fluidRow(textInput("input.name",
                                     "input text", 
                                     label = NULL, 
