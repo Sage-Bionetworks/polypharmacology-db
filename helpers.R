@@ -4,7 +4,7 @@ db.genes <- db$hugo_gene %>% unique()
 
 db_structures <- readRDS("Data/compound_structures_v4.rds")
 
-db.names <- readRDS("Data/distinct_compound_names_v4.rds")
+db.names <- readRDS("Data/distinct_compound_synonyms_v4.rds")
 
 db$inchikey <- as.character(db$inchikey)
 
