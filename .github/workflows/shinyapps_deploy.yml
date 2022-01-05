@@ -30,7 +30,9 @@ jobs:
           # The binary package distributions from R Studio dramatically speed up installation time
           options(repos = c(REPO_NAME = "https://packagemanager.rstudio.com/all/__linux__/focal/latest", 
              getOption("repos")))
-          install.packages(c("DT", "png"), lib="~")
+          install.packages(c("DT", "png", "rJava", "rcdk", "fingerprint", "enrichR", 
+          "webchem", "plyr", "tidyverse", "plotly", "shinyBS", "shinythemes", 
+          "visNetwork", "igraph", "shinyjs", "shinycssloaders", "rsconnect"), lib="~")
         shell: Rscript {0}
 
       - name: Authorize and deploy app
