@@ -19,6 +19,7 @@ jobs:
       - name: Install System Dependencies
         run: |
           sudo apt-get update
+          # The rsconnect R package needs cUrl
           sudo apt-get install -y libcurl4-openssl-dev
  
       - uses: actions/checkout@v2
@@ -28,6 +29,7 @@ jobs:
           # The binary package distributions from R Studio dramatically speed up installation time
           options(repos = c(REPO_NAME = "https://packagemanager.rstudio.com/all/__linux__/focal/latest", 
              getOption("repos")))
+          # This list of packages came from global.R.  Also we need rsconnect to deploy the app'
           install.packages(c("DT", "png", "rJava", "rcdk", "fingerprint", "enrichR", 
           "webchem", "plyr", "tidyverse", "plotly", "shinyBS", "shinythemes", 
           "visNetwork", "igraph", "shinyjs", "shinycssloaders", "rsconnect"))
