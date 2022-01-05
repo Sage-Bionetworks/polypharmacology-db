@@ -1,0 +1,46 @@
+# Workflow derived from https://github.com/r-lib/actions/tree/master/examples
+# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
+
+name: shiny-deploy
+
+on:
+  push:
+    branches:
+      - develop
+      - IT-828
+      - release*
+
+jobs:
+  shiny-deploy:
+    runs-on: ubuntu-latest
+ 
+    steps:
+ 
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+ 
+      - uses: actions/checkout@v2
+        
+      - name: Install R packages
+        run: |
+          # The binary package distributions from R Studio dramatically speed up installation time
+          options(repos = c(REPO_NAME = "https://packagemanager.rstudio.com/all/__linux__/focal/latest", 
+             getOption("repos")))
+          install.packages(c("DT", "png"))
+        shell: Rscript {0}
+
+      - name: Authorize and deploy app
+        run: |
+          branch<-Sys.getenv("GITHUB_REF_NAME")
+          repo<-Sys.getenv("GITHUB_REPOSITORY")
+          appName<-strsplit(repo, "/")[[1]][2]
+          if (!startsWith(branch, "release")) {
+             appName = paste(appName, "staging", sep="-")
+          }
+          rsConnectUser <-"${{ secrets.RSCONNECT_USER }}"
+          rsConnectToken <- "${{ secrets.RSCONNECT_TOKEN }}"
+          rsConnectSecret <- "${{ secrets.RSCONNECT_SECRET }}" 
+          rsconnect::setAccountInfo(rsConnectUser, rsConnectToken, rsConnectSecret)
+          rsconnect::deployApp(appName = appName)
+        shell: Rscript {0}
