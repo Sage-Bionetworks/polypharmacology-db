@@ -16,6 +16,10 @@ jobs:
  
     steps:
  
+      - name: Create library
+        run: |
+          sudo mkdir -p /usr/local/lib/R/site-library
+ 
       - uses: actions/checkout@v2
         
       - name: Install R packages
@@ -26,7 +30,7 @@ jobs:
           install.packages(c("DT", "png", "rJava", "rcdk", "fingerprint", "enrichR", 
           "webchem", "plyr", "tidyverse", "plotly", "shinyBS", "shinythemes", 
           "visNetwork", "igraph", "shinyjs", "shinycssloaders", "rsconnect"))
-        shell: Rscript {0}
+        shell: sudo Rscript {0}
 
       - name: Authorize and deploy app
         run: |
@@ -41,4 +45,4 @@ jobs:
           rsConnectSecret <- "${{ secrets.RSCONNECT_SECRET }}" 
           rsconnect::setAccountInfo(rsConnectUser, rsConnectToken, rsConnectSecret)
           rsconnect::deployApp(appName = appName)
-        shell: Rscript {0}
+        shell: sudo Rscript {0}
