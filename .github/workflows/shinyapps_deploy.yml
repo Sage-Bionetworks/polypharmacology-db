@@ -13,6 +13,9 @@ on:
 jobs:
   shiny-deploy:
     runs-on: ubuntu-latest
+    env:
+      # Note, this name is referred to in 'global.R'
+      R_LIBS_USER: ~
  
     steps:
  
