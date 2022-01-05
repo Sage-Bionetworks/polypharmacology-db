@@ -16,10 +16,6 @@ jobs:
  
     steps:
  
-      - name: Create library
-        run: |
-          sudo mkdir -p /usr/local/lib/R/site-library
- 
       - uses: actions/checkout@v2
         
       - name: Install R packages
@@ -32,7 +28,7 @@ jobs:
           "visNetwork", "igraph", "shinyjs", "shinycssloaders", "rsconnect"))
         shell: sudo Rscript {0}
 
-      - name: Authorize and deploy app
+      - name: Deploy app
         run: |
           branch<-Sys.getenv("GITHUB_REF_NAME")
           repo<-Sys.getenv("GITHUB_REPOSITORY")
