@@ -19,7 +19,7 @@ jobs:
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          # The rsconnect R package needs cUrl
+          # The rsconnect R package needs cUrl.  This app needs the Java JDK (runtime AND compiler).
           sudo apt-get install -y libcurl4-openssl-dev default-jdk
  
       - uses: actions/checkout@v2
@@ -33,6 +33,7 @@ jobs:
           install.packages(c("DT", "png", "rJava", "rcdk", "fingerprint", "enrichR", 
           "webchem", "plyr", "tidyverse", "plotly", "shinyBS", "shinythemes", 
           "visNetwork", "igraph", "shinyjs", "shinycssloaders", "XML", "rsconnect"))
+          # running this step as 'sudo' is necessary to be able to install packages in default library
         shell: sudo Rscript {0}
 
       - name: Deploy app
@@ -40,7 +41,6 @@ jobs:
           branch<-Sys.getenv("GITHUB_REF_NAME")
           repo<-Sys.getenv("GITHUB_REPOSITORY")
           appName<-strsplit(repo, "/")[[1]][2]
-          message(sprintf("branch: %s, repo: %s, appName %s", branch, repo, appName))
           if (!startsWith(branch, "release")) {
              appName = paste(appName, "staging", sep="-")
           }
@@ -48,6 +48,9 @@ jobs:
           rsConnectToken <- "${{ secrets.RSCONNECT_TOKEN }}"
           rsConnectSecret <- "${{ secrets.RSCONNECT_SECRET }}" 
           rsconnect::setAccountInfo(rsConnectUser, rsConnectToken, rsConnectSecret)
-          # omit archive/ from the collection to be deployed
-          rsconnect::deployApp(appName = appName, appFiles=dir()[which(dir()!="archive")])
+          # omit archive/ folder from the collection to be deployed
+          # (Tried using .rcsignore file but it did not work as documented.)
+          appFiles<-dir()[which(dir()!="archive")]
+          rsconnect::deployApp(appName = appName, appFiles=appFiles)
+          # important NOT to run this step as sudo, otherwise env var's will be missing
         shell: Rscript {0}
