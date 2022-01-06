@@ -40,6 +40,7 @@ jobs:
           branch<-Sys.getenv("GITHUB_REF_NAME")
           repo<-Sys.getenv("GITHUB_REPOSITORY")
           appName<-strsplit(repo, "/")[[1]][2]
+          message(sprintf("branch: %s, repo: %s, appName %s", branch, repo, appName))
           if (!startsWith(branch, "release")) {
              appName = paste(appName, "staging", sep="-")
           }
@@ -49,4 +50,4 @@ jobs:
           rsconnect::setAccountInfo(rsConnectUser, rsConnectToken, rsConnectSecret)
           # omit archive/ from the collection to be deployed
           rsconnect::deployApp(appName = appName, appFiles=dir()[which(dir()!="archive")])
-        shell: sudo Rscript {0}
+        shell: Rscript {0}
