@@ -20,7 +20,7 @@ jobs:
         run: |
           sudo apt-get update
           # The rsconnect R package needs cUrl
-          sudo apt-get install -y libcurl4-openssl-dev default-jre
+          sudo apt-get install -y libcurl4-openssl-dev default-jdk
  
       - uses: actions/checkout@v2
         
