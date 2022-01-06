@@ -47,5 +47,6 @@ jobs:
           rsConnectToken <- "${{ secrets.RSCONNECT_TOKEN }}"
           rsConnectSecret <- "${{ secrets.RSCONNECT_SECRET }}" 
           rsconnect::setAccountInfo(rsConnectUser, rsConnectToken, rsConnectSecret)
-          rsconnect::deployApp(appName = appName)
+          # omit archive/ from the collection to be deployed
+          rsconnect::deployApp(appName = appName, appFiles=dir()[which(dir()!="archive")])
         shell: sudo Rscript {0}
