@@ -20,7 +20,7 @@ jobs:
         run: |
           sudo apt-get update
           # The rsconnect R package needs cUrl
-          sudo apt-get install -y libcurl4-openssl-dev
+          sudo apt-get install -y libcurl4-openssl-dev default-jre
  
       - uses: actions/checkout@v2
         
@@ -32,7 +32,7 @@ jobs:
           # This list of packages came from global.R.  Also we need rsconnect to deploy the app'
           install.packages(c("DT", "png", "rJava", "rcdk", "fingerprint", "enrichR", 
           "webchem", "plyr", "tidyverse", "plotly", "shinyBS", "shinythemes", 
-          "visNetwork", "igraph", "shinyjs", "shinycssloaders", "rsconnect"))
+          "visNetwork", "igraph", "shinyjs", "shinycssloaders", "XML", "rsconnect"))
         shell: sudo Rscript {0}
 
       - name: Deploy app
