@@ -32,7 +32,7 @@ jobs:
           # This list of packages came from global.R.  Also we need rsconnect to deploy the app'
           install.packages(c("DT", "png", "rJava", "rcdk", "fingerprint", "enrichR", 
           "webchem", "plyr", "dplyr", "tidyr", "purrr", "tibble", "plotly", "shinyBS", "shinythemes", 
-          "visNetwork", "igraph", "shinyjs", "shinycssloaders", "XML", "rsconnect", "renv"))
+          "visNetwork", "igraph", "shinyjs", "shinycssloaders", "XML", "rsconnect", "renv", "conflicted"))
           # running this step as 'sudo' is necessary to be able to install packages in default library
         shell: sudo Rscript {0}
 
