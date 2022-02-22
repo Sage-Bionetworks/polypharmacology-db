@@ -19,6 +19,12 @@ library(visNetwork)
 library(igraph)
 library(shinyjs)
 library(shinycssloaders)
+library(conflicted)
+conflict_prefer("filter", "dplyr")
+conflict_prefer("is.connected", "rcdk")
+conflict_prefer("count", "fingerprint")
+conflict_prefer("renderDataTable", "DT")
+conflict_prefer("arrange", "dplyr")
 
 loading <- function() {
   shinyjs::hide("loading_page")
@@ -65,9 +71,9 @@ distance.minified <- function(fp1,fp.list){ #this function is a stripped down fi
     f2[x@bits] <- 1
     sim <- 0.0
     ret <- .C("fpdistance", as.double(f1), as.double(f2),
-               as.integer(n), as.integer(1),
-               as.double(sim),
-               PACKAGE="fingerprint")
+              as.integer(n), as.integer(1),
+              as.double(sim),
+              PACKAGE="fingerprint")
     return (ret[[5]])
   })
 }
@@ -100,11 +106,11 @@ similarityFunction <- function(input, fp.type) {
   if(fp.type=="maccs"){ sim <- distance.minified(fp.inp[[1]], fp.maccs) }
   # if(fp.type=="kr"){ sim <- distance.minified(fp.inp[[1]], fp.kr) }
   # if(fp.type=="pubchem"){ sim <- distance.minified(fp.inp[[1]], fp.pubchem) 
-
+  
   bar <- enframe(sim) %>% 
     set_names(c("match", "similarity")) %>% 
     top_n(50, similarity) ##hard cutoff to avoid overloading the app - large n of compounds can cause sluggish response wrt visualizations
-
+  
 }
 
 getSimMols <- function(sims, sim.thres) {
@@ -115,7 +121,7 @@ getSimMols <- function(sims, sim.thres) {
     dplyr::select(inchikey, pref_name, `Tanimoto Similarity`) %>% 
     distinct() %>% 
     as.data.frame()
-
+  
 }
 
 getMolImage <- function(input) {
@@ -163,7 +169,7 @@ getTargetNetwork <- function(selectdrugs, edge.size) {
     targets$width <- 5
   }
   targets$color <- "tomato"
-
+  
   targets <- dplyr::select(targets, from, to, width, color, inchikey) %>% 
     filter(from !="NA" & to != "NA")
 }
@@ -185,16 +191,16 @@ getGeneOntologyfromTargets <- function(selectdrugs) {
 }
 
 getMolsFromGenes <- function(genes) {
-
+  
   if(length(genes)>1){
-  mols <- db %>% 
-    filter(hugo_gene %in% genes) %>% 
-    group_by(inchikey) %>% 
-    mutate(count = n()) %>% 
-    filter(count == length(genes)) %>% 
-    ungroup() %>% 
-    distinct() %>% 
-    dplyr::select(-count) 
+    mols <- db %>% 
+      filter(hugo_gene %in% genes) %>% 
+      group_by(inchikey) %>% 
+      mutate(count = n()) %>% 
+      filter(count == length(genes)) %>% 
+      ungroup() %>% 
+      distinct() %>% 
+      dplyr::select(-count) 
   }else{
     mols <- filter(db, hugo_gene == genes)
   }
@@ -225,13 +231,13 @@ getMolsFromGeneNetworks.edges <- function(inp.gene, genenetmols, edge.size, gene
 
 getMolsFromGeneNetworks.nodes <- function(inp.gene, genenetmols, gene.filter.metric) {
   mols <- genenetmols %>% top_n(15, !!sym(gene.filter.metric))
-
+  
   net <- filter(db, inchikey %in% mols$inchikey) %>% 
-      distinct() # %>% 
-    # group_by(common_name) %>% 
-    # top_n(20, confidence) %>% 
-    # ungroup()
-   
+    distinct() # %>% 
+  # group_by(common_name) %>% 
+  # top_n(20, confidence) %>% 
+  # ungroup()
+  
   id <- c(unique(as.character(net$inchikey)), 
           unique(as.character(net$hugo_gene)))
   label <- c(unique(as.character(net$pref_name)), 
@@ -242,13 +248,13 @@ getMolsFromGeneNetworks.nodes <- function(inp.gene, genenetmols, gene.filter.met
   druglinks <- sapply(unique(as.character(net$inchikey)), function(x){
     druglinks <- getExternalDrugLinks(x)
   })
-
+  
   genelinks <- sapply(unique(as.character(net$hugo_gene)), function(x){
     getExternalGeneLinks(x)
   })
-
+  
   title <- c(druglinks, genelinks)
-
+  
   net <- as.data.frame(cbind(id, label, color, title))
   
 }
@@ -275,7 +281,7 @@ convert_id_to_structure_pubchem <- function(input_id, id_type = c("name", "inchi
 }
 
 plotSimCTRPDrugs <- function(input, fp.type) {
-
+  
   fp.inp <- parseInputFingerprint(input, fp.type = fp.type)
   
   if(fp.type == "circular"){fp.ctrp <- fp.ctrp.circular}
