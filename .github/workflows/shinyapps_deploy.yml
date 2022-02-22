@@ -28,10 +28,11 @@ jobs:
         shell: bash
         run: |
           echo "RENV_PATHS_ROOT=${{ runner.temp }}/renv" >> $GITHUB_ENV
-      - name: Install and activate renv
+      - name: Install and activate renv and install rsconnect
         run: |
           install.packages("renv")
           renv::activate()
+          renv::install('rsconnect')
         shell: Rscript {0}
       - name: Get R and OS version
         id: get-version
