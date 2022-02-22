@@ -24,37 +24,18 @@ jobs:
  
       - uses: actions/checkout@v2
         
-      - name: Set RENV_PATHS_ROOT
-        shell: bash
+      - name: Install R packages
         run: |
-          echo "RENV_PATHS_ROOT=${{ runner.temp }}/renv" >> $GITHUB_ENV
-      
-      - name: Install rsconnect
-        run: |
-          install.packages("rsconnect")
-        shell: Rscript {0}
-     
-      - name: Get R and OS version
-        id: get-version
-        run: |
-          cat("##[set-output name=os-version;]", sessionInfo()$running, "\n", sep = "")
-          cat("##[set-output name=r-version;]", R.Version()$version.string, sep = "")
-        shell: Rscript {0}
+          # The binary package distributions from R Studio dramatically speed up installation time
+          options(repos = c(REPO_NAME = "https://packagemanager.rstudio.com/all/__linux__/focal/latest", 
+             getOption("repos")))
+          # This list of packages came from global.R.  Also we need rsconnect to deploy the app'
+          install.packages(c("DT", "png", "rJava", "rcdk", "fingerprint", "enrichR", 
+          "webchem", "plyr", "dplyr", "tidyr", "purrr", "tibble", "plotly", "shinyBS", "shinythemes", 
+          "visNetwork", "igraph", "shinyjs", "shinycssloaders", "XML", "rsconnect"))
+          # running this step as 'sudo' is necessary to be able to install packages in default library
+        shell: sudo Rscript {0}
 
-      - name: Restore packages
-        shell: Rscript {0}
-        run: |
-          if (!requireNamespace("renv", quietly = TRUE)) install.packages("renv")
-          renv::restore()
-
-      - name: Cache packages
-        uses: actions/cache@v1
-        with:
-          path: ${{ env.RENV_PATHS_ROOT }}
-          key: ${{ runner.os }}-renv-${{ hashFiles('**/renv.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-renv-
-            
       - name: Deploy app
         run: |
           branch<-Sys.getenv("GITHUB_REF_NAME")
