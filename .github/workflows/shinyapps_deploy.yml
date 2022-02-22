@@ -29,11 +29,9 @@ jobs:
         run: |
           echo "RENV_PATHS_ROOT=${{ runner.temp }}/renv" >> $GITHUB_ENV
       
-      - name: Install and activate renv and install rsconnect
+      - name: Install rsconnect
         run: |
-          install.packages("renv")
-          renv::activate()
-          renv::install('rsconnect')
+          install.packages("rsconnect")
         shell: Rscript {0}
      
       - name: Get R and OS version
@@ -42,8 +40,13 @@ jobs:
           cat("##[set-output name=os-version;]", sessionInfo()$running, "\n", sep = "")
           cat("##[set-output name=r-version;]", R.Version()$version.string, sep = "")
         shell: Rscript {0}
-      
-      
+
+      - name: Restore packages
+        shell: Rscript {0}
+        run: |
+          if (!requireNamespace("renv", quietly = TRUE)) install.packages("renv")
+          renv::restore()
+
       - name: Cache packages
         uses: actions/cache@v1
         with:
@@ -51,13 +54,7 @@ jobs:
           key: ${{ runner.os }}-renv-${{ hashFiles('**/renv.lock') }}
           restore-keys: |
             ${{ runner.os }}-renv-
-
-      - name: Restore packages
-        shell: Rscript {0}
-        run: |
-          if (!requireNamespace("renv", quietly = TRUE)) install.packages("renv")
-          renv::restore()
-      
+            
       - name: Deploy app
         run: |
           branch<-Sys.getenv("GITHUB_REF_NAME")
