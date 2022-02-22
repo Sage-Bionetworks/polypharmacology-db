@@ -296,6 +296,13 @@
       "Repository": "CRAN",
       "Hash": "422046b717c3c795f2c0a4dd9489174c"
     },
+    "flexdashboard": {
+      "Package": "flexdashboard",
+      "Version": "0.5.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "a0534e167498732ac0137e7ba46364dc"
+    },
     "fontawesome": {
       "Package": "fontawesome",
       "Version": "0.2.2",
