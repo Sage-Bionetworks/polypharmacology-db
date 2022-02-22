@@ -16,6 +16,7 @@ library(visNetwork)
 library(igraph)
 library(shinyjs)
 library(shinycssloaders)
+library(flexdashboard)
 
 loading <- function() {
   shinyjs::hide("loading_page")
