@@ -177,13 +177,6 @@
       "Repository": "CRAN",
       "Hash": "8cdcd06e4fa171911dc4d83feaa26467"
     },
-    "evaluate": {
-      "Package": "evaluate",
-      "Version": "0.14",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "ec8ca05cffcc70569eaaad8469d2a3a7"
-    },
     "fansi": {
       "Package": "fansi",
       "Version": "1.0.2",
@@ -211,13 +204,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "422046b717c3c795f2c0a4dd9489174c"
-    },
-    "flexdashboard": {
-      "Package": "flexdashboard",
-      "Version": "0.5.2",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "a0534e167498732ac0137e7ba46364dc"
     },
     "fontawesome": {
       "Package": "fontawesome",
@@ -260,13 +246,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "ac5c6baf7822ce8732b343f14c072c4d"
-    },
-    "highr": {
-      "Package": "highr",
-      "Version": "0.9",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "8eb36c8125038e648e5d111c0d7b2ed4"
     },
     "htmltools": {
       "Package": "htmltools",
@@ -337,13 +316,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "68c37fd8f863c6273dcd24928c17d6e1"
-    },
-    "knitr": {
-      "Package": "knitr",
-      "Version": "1.36",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "46344b93f8854714cdf476433a59ed10"
     },
     "labeling": {
       "Package": "labeling",
@@ -520,13 +492,6 @@
       "Repository": "CRAN",
       "Hash": "3bf0219f19d9f5b3c682acbb3546a151"
     },
-    "rmarkdown": {
-      "Package": "rmarkdown",
-      "Version": "2.11",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "320017b52d05a943981272b295750388"
-    },
     "rvest": {
       "Package": "rvest",
       "Version": "1.0.2",
@@ -639,13 +604,6 @@
       "Repository": "CRAN",
       "Hash": "7243004a708d06d4716717fa1ff5b2fe"
     },
-    "tinytex": {
-      "Package": "tinytex",
-      "Version": "0.35",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "1d7220fe46159fb9f5c99a44354a2bff"
-    },
     "utf8": {
       "Package": "utf8",
       "Version": "1.2.2",
@@ -687,13 +645,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "a376b424c4817cda4920bbbeb3364e85"
-    },
-    "xfun": {
-      "Package": "xfun",
-      "Version": "0.28",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "f7f3a61ab62cd046d307577a8ae12999"
     },
     "xml2": {
       "Package": "xml2",
