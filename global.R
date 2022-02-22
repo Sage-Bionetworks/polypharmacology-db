@@ -51,6 +51,7 @@ is.smiles <- function(x, verbose = TRUE) { ##corrected version from webchem
 
 parseInputFingerprint <- function(input, fp.type) {
   if(is.smiles(input)==TRUE){
+    cat(file=stderr(), input)
     input.mol <- parse.smiles(as.character(input))
     lapply(input.mol, do.typing)
     lapply(input.mol, do.aromaticity)
