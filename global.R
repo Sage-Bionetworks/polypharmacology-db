@@ -26,6 +26,7 @@ conflict_prefer("is.connected", "rcdk")
 conflict_prefer("count", "fingerprint")
 conflict_prefer("renderDataTable", "DT")
 conflict_prefer("arrange", "dplyr")
+conflict_prefer("mutate", "dplyr")
 
 loading <- function() {
   shinyjs::hide("loading_page")
