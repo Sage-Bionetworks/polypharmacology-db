@@ -28,6 +28,8 @@ conflict_prefer("renderDataTable", "DT")
 conflict_prefer("arrange", "dplyr")
 conflict_prefer("mutate", "dplyr")
 
+sessionInfo()
+
 loading <- function() {
   shinyjs::hide("loading_page")
   shinyjs::show("main_content")
