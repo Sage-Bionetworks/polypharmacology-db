@@ -53,7 +53,8 @@ parseInputFingerprint <- function(input, fp.type) {
   if(is.smiles(input)==TRUE){
     cat(file=stderr(), input)
     input.mol <- parse.smiles(as.character(input))
-    lapply(input.mol, do.typing)
+    cat(file=stderr(), input.mol)
+    lapply(input.mol, set.atom.types)
     lapply(input.mol, do.aromaticity)
     lapply(input.mol, do.isotopes)
     fp.inp <- lapply(input.mol, get.fingerprint, type = fp.type)
