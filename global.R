@@ -1,4 +1,5 @@
 options(java.parameters = "-Xmx8g" ) 
+options(shiny.trace = TRUE)
 library(shiny)
 library(DT)
 library(png)
@@ -52,8 +53,8 @@ is.smiles <- function(x, verbose = TRUE) { ##corrected version from webchem
 parseInputFingerprint <- function(input, fp.type) {
   if(is.smiles(input)==TRUE){
     cat(file=stderr(), input)
-    input.mol <- parse.smiles(as.character(input))
-    cat(file=stderr(), input.mol)
+    input.mol <- rcdk::parse.smiles(as.character(input))
+    cat(file=stderr(), as.character(input.mol))
     lapply(input.mol, set.atom.types)
     lapply(input.mol, do.aromaticity)
     lapply(input.mol, do.isotopes)
