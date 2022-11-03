@@ -18,9 +18,12 @@ shinyServer(function(input, output, session) {
   })
   
   simmols <- reactive({
+  	message("simmols: At start")
     sims<-similarity()
+  	message("simmols: After similarity")
     getSimMols(sims, input$sim.thres) %>% as.data.frame()
     })
+  	message("simmols: After getSimMols")
   
   output$sims <- renderUI({
     mols <- simmols()
@@ -31,14 +34,20 @@ shinyServer(function(input, output, session) {
                        selected = choice.vals,
                        choiceNames = choice.names,
                        choiceValues = choice.vals)
+  	message("simmols: At End")
   })
   
   
   output$simmoltab <- renderDataTable({
+  	message("At start of renderDataTable")
     dat <- simmols()
+  	message("\trenderDataTable: After simmols")
     dat$external_links <- sapply(dat$inchikey, getExternalDrugLinks) 
+  	message("\trenderDataTable: After sapply")
     dat <- select(dat, pref_name, external_links, `Tanimoto Similarity`)
+  	message("\trenderDataTable: After select")
     DT::datatable(dat, colnames = c("Molecule Name", "External Links", "Tanimoto Similarity"), escape = FALSE)
+  	message("At end of renderDataTable")
   })
   
   ##molecule (SMILES) input
