@@ -30,18 +30,12 @@ RUN chmod -R 777 /var/lib/shiny-server
 # This is where the app' will be installed
 WORKDIR /srv/shiny-server/app
 
-# Set up the entrypoint script
-COPY ./startup.sh ./
-
 # Run the server as the 'shiny' user
 USER shiny
 
 # Send application logs to stderr
 ENV SHINY_LOG_STDERR=1
 ENV SHINY_LOG_LEVEL=TRACE
-
-# start up the server
-CMD ["./startup.sh"]
 
 
 #

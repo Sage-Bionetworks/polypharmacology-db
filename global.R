@@ -19,6 +19,7 @@ library(shinythemes)
 library(visNetwork)
 library(igraph)
 library(shinyjs)
+library(rjson)
 library(shinycssloaders)
 library(conflicted)
 conflict_prefer("filter", "dplyr")
@@ -45,7 +46,7 @@ is.smiles <- function(x, verbose = TRUE) { ##corrected version from webchem
   if (length(x) > 1) {
     stop('Cannot handle multiple input strings.')
   }
-  message(sprintf("In 'is.smiles'. About to call parse.smiles() with %s", x))
+  message(sprintf("In 'is.smiles'. About to call parse.smiles() with %s", toJSON(x)))
   out <- try(rcdk::parse.smiles(x), silent = TRUE)
   if (inherits(out[[1]], "try-error") | is.null(out[[1]])) {
     return(FALSE)
@@ -57,7 +58,7 @@ is.smiles <- function(x, verbose = TRUE) { ##corrected version from webchem
 parseInputFingerprint <- function(input, fp.type) {
   if(is.smiles(input)==TRUE){
     cat(file=stderr(), input)
-  message(sprintf("In 'parseInputFingerprint'. About to call parse.smiles() with %s", as.character(input)))
+  message(sprintf("In 'parseInputFingerprint'. About to call parse.smiles() with %s", toJSON(as.character(input))))
     input.mol <- rcdk::parse.smiles(as.character(input))
     cat(file=stderr(), as.character(input.mol))
     lapply(input.mol, set.atom.types)
@@ -133,7 +134,7 @@ getSimMols <- function(sims, sim.thres) {
 }
 
 getMolImage <- function(input) {
-  message(sprintf("In 'getMolImage'. About to call parse.smiles() with %s", input))
+  message(sprintf("In 'getMolImage'. About to call parse.smiles() with %s", toJSON(input)))
   smi <- parse.smiles(input)
   view.image.2d(smi[[1]])
 }
