@@ -22,8 +22,8 @@ shinyServer(function(input, output, session) {
     sims<-similarity()
   	message("simmols: After similarity")
     getSimMols(sims, input$sim.thres) %>% as.data.frame()
-    })
   	message("simmols: After getSimMols")
+  })
   
   output$sims <- renderUI({
     mols <- simmols()

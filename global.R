@@ -58,12 +58,17 @@ is.smiles <- function(x, verbose = TRUE) { ##corrected version from webchem
 parseInputFingerprint <- function(input, fp.type) {
   if(is.smiles(input)==TRUE){
     cat(file=stderr(), input)
-  message(sprintf("In 'parseInputFingerprint'. About to call parse.smiles() with %s", toJSON(as.character(input))))
+    message(sprintf("In 'parseInputFingerprint'. About to call parse.smiles() with %s", toJSON(as.character(input))))
     input.mol <- rcdk::parse.smiles(as.character(input))
+    message(sprintf("In 'parseInputFingerprint'. input.mol: %s", toJSON(input.mol)))
     cat(file=stderr(), as.character(input.mol))
+    message("In 'parseInputFingerprint'. About to call 'set.atom.types'")
     lapply(input.mol, set.atom.types)
+    message("In 'parseInputFingerprint'. About to call 'do.aromaticity'")
     lapply(input.mol, do.aromaticity)
+    message("In 'parseInputFingerprint'. About to call 'do.isotopes'")
     lapply(input.mol, do.isotopes)
+    message(sprintf("In 'parseInputFingerprint'. About to call 'get.fingerprint'. type: %s", toJSON(fp.type)))
     fp.inp <- lapply(input.mol, get.fingerprint, type = fp.type)
   }else{
     print('Please input a valid SMILES string.')
