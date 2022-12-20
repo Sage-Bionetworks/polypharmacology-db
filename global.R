@@ -57,11 +57,12 @@ is.smiles <- function(x, verbose = TRUE) { ##corrected version from webchem
 
 parseInputFingerprint <- function(input, fp.type) {
   if(is.smiles(input)==TRUE){
-    cat(file=stderr(), input)
+  	# One hypothesis is that 'input' is not the character string it appears to be.
+  	# We can test this by replacing 'input' with a character string known to work with rcdk::parse.smiles()
+  	input <- "O=C1O/C(=C/Br)CCC1c1cccc2ccccc12"
     message(sprintf("In 'parseInputFingerprint'. About to call parse.smiles() with %s", toJSON(as.character(input))))
     input.mol <- rcdk::parse.smiles(as.character(input))
     message(sprintf("In 'parseInputFingerprint'. input.mol: %s", toJSON(input.mol)))
-    cat(file=stderr(), as.character(input.mol))
     message("In 'parseInputFingerprint'. About to call 'set.atom.types'")
     lapply(input.mol, set.atom.types)
     message("In 'parseInputFingerprint'. About to call 'do.aromaticity'")
