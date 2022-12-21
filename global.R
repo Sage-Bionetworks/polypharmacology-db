@@ -58,7 +58,6 @@ is.smiles <- function(x, verbose = TRUE) { ##corrected version from webchem
    		message(sprintf("In 'is.smiles'. parse.smiles() returned an error: %s", out))
     	return(FALSE)
   	}
-   	message(sprintf("In 'is.smiles'. parse.smiles() result looks good: %s", toJSON(out)))
     return(TRUE)
   }
 }
@@ -67,7 +66,6 @@ parseInputFingerprint <- function(input, fp.type) {
   if(is.smiles(input)==TRUE){
     message(sprintf("In 'parseInputFingerprint'. About to call parse.smiles() with %s", toJSON(input)))
     input.mol <- rcdk::parse.smiles(input)
-    message(sprintf("In 'parseInputFingerprint'. input.mol: %s", toJSON(input.mol)))
     if (is.null(input.mol[[1]])) {
     	stop("rcdk::parse.smiles failed to return a result.")
     }
