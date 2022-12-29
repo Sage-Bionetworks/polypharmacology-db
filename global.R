@@ -36,6 +36,13 @@ loading <- function() {
   shinyjs::show("main_content")
 }
 
+smiles_parser <- get.smiles.parser()
+
+parse_smiles<-function(input) {
+    input.mol <- tryCatch(rcdk::parse.smiles(input, smiles.parser=smiles_parser), error = function(e) {
+		stop(sprintf("In 'parse_smiles' rcdk::parse.smiles raised an exception: %s", e))
+  	})
+}
 
 is.smiles <- function(x, verbose = TRUE) { ##corrected version from webchem
   if (!requireNamespace("rcdk", quietly = TRUE)) {
@@ -49,23 +56,21 @@ is.smiles <- function(x, verbose = TRUE) { ##corrected version from webchem
   if (length(x) > 1) {
     stop('Cannot handle multiple input strings.')
   }
-  message(sprintf("In 'is.smiles'. About to call parse.smiles() with %s", toJSON(x)))
-  out <- try(rcdk::parse.smiles(x), silent = TRUE)
-  if (inherits(out[[1]], "try-error") | is.null(out[[1]])) {
+  out <- tryCatch(parse_smiles(x), error = function(e) {
+	message(e)
+	return(FALSE)
+  })
+  if (is.null(out[[1]])) {
     return(FALSE)
   } else {
-  	if (is.character(out) & unlist(gregexpr('Error', out))[1]>-1) {
-   		message(sprintf("In 'is.smiles'. parse.smiles() returned an error: %s", out))
-    	return(FALSE)
-  	}
-    return(TRUE)
+  	return(TRUE)
   }
 }
 
 parseInputFingerprint <- function(input, fp.type) {
   if(is.smiles(input)==TRUE){
     message(sprintf("In 'parseInputFingerprint'. About to call parse.smiles() with %s", toJSON(input)))
-    input.mol <- rcdk::parse.smiles(input)
+    input.mol <- parse_smiles(input)
     if (is.null(input.mol[[1]])) {
     	stop("rcdk::parse.smiles failed to return a result.")
     }
@@ -146,8 +151,7 @@ getSimMols <- function(sims, sim.thres) {
 }
 
 getMolImage <- function(input) {
-  message(sprintf("In 'getMolImage'. About to call parse.smiles() with %s", toJSON(input)))
-  smi <- parse.smiles(input)
+  smi <- parse_smiles(input)
   view.image.2d(smi[[1]])
 }
 
