@@ -1,4 +1,4 @@
-FROM sagebionetworks/shiny-base:release-1.0
+FROM sagebionetworks/shiny-base:release-1.1
 USER root
 RUN apt-get install -y default-jdk
 USER shiny
