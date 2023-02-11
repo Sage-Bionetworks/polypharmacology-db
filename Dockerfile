@@ -7,4 +7,4 @@ WORKDIR /srv/shiny-server/app
 COPY --chown=shiny ./ ./
 # renv restore
 RUN Rscript -e "install.packages(c('renv'), repos='http://cran.rstudio.com/'); renv::restore()"
-RUN Rscript -e "install.packages(c('conflicted','rjson'), repos='http://cran.rstudio.com/')"
+RUN Rscript -e "install.packages(c('conflicted','rjson','callr'), repos='http://cran.rstudio.com/')"
