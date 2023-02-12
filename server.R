@@ -21,8 +21,9 @@ shinyServer(function(input, output, session) {
   	message("simmols: At start")
     sims<-similarity()
   	message("simmols: After similarity")
-    getSimMols(sims, input$sim.thres) %>% as.data.frame()
+    result <- getSimMols(sims, input$sim.thres) %>% as.data.frame()
   	message("simmols: After getSimMols")
+  	result
   })
   
   output$sims <- renderUI({
@@ -44,6 +45,8 @@ shinyServer(function(input, output, session) {
   	message("\trenderDataTable: After simmols")
     dat$external_links <- sapply(dat$inchikey, getExternalDrugLinks) 
   	message("\trenderDataTable: After sapply")
+  	# The following line causes: "Error in select: `select()` doesn't handle lists."
+  	# I *think* this is dplyr::select and the error refers to the type of 'dat'
     dat <- select(dat, pref_name, external_links, `Tanimoto Similarity`)
   	message("\trenderDataTable: After select")
     DT::datatable(dat, colnames = c("Molecule Name", "External Links", "Tanimoto Similarity"), escape = FALSE)
