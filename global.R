@@ -37,73 +37,20 @@ loading <- function() {
   shinyjs::show("main_content")
 }
 
-#-----------------------------------------------------------------------------------------
-
-withRetries<-function(fcn, context) {
-	cntr<-0
-	backoff<-as.difftime("00:00:01") # one second
-	startTime<-Sys.time()
-	
-	repeat {
-		cntr<-cntr+1
-		fcnResult<-try(fcn())
-		
-		# retry
-		if (is(fcnResult, "try-error")) {
-			reportableResult<-fcnResult[[1]]
-		} else {
-			return(fcnResult)
-		}
-		sleepTime<-sleepTime(startTime, Sys.time(), backoff)
-		if (sleepTime>0) {
-			message(sprintf("%s Error encountered: %s. Will wait for %.1f seconds then retry. Press CTRL+C to quit.", 
-							context, reportableResult, sleepTime))
-			Sys.sleep(sleepTime)
-		}
-		backoff <- increaseBackoff(backoff)
-		if (maxWaitTimeExceeded(startTime, Sys.time())) break
-	} # end 'repeat' loop
-	stop("Max backoff exceeded.")
-}
-
-MAX_WAIT_TIME<-as.difftime("00:05:00")
-BACKOFF_MULTIPLIER <- 2
-MAX_BACKOFF<-as.difftime("00:01:00")
-
-maxWaitTimeExceeded<-function(startTime, currentTime) {
-	currentTime-startTime>=MAX_WAIT_TIME
-}
-
-sleepTime<-function(startTime, currentTime, backoff) {
-	maxWaitTimeRemaining<-max(as.difftime("00:00:00"),MAX_WAIT_TIME-(currentTime-startTime))
-	min(backoff, maxWaitTimeRemaining)
-}
-
-increaseBackoff<-function(currentBackOffSeconds) {
-	min(MAX_BACKOFF, BACKOFF_MULTIPLIER*currentBackOffSeconds)
-}
-
-#-----------------------------------------------------------------------------------------
+#
+# Functions using `rcdk` fail when called from the R process
+# running in Shiny.  To fix this we start a second process
+# using `callr` and run the `rcdk`-realted code in that 
+# process.  We factor out the relevant code into the
+# file `global_for_callr.R`.
 
 remote_session<-callr::r_session$new(wait=TRUE)
 
 call_remote_function<-function(function_name, arguments=list()) {
-	if (FALSE) { # retries and debug statements
-		fcn<-function() {
-			remote_session$run(do.call, list(what=function_name, args=arguments))
-		}
-		message(sprintf("About to call %s.  Remote session has state %s.", function_name, remote_session$get_state()))
-		result<-withRetries(fcn, function_name)
-		message(sprintf("Done calling %s.  Remote session has state %s.", function_name, remote_session$get_state()))
-		result
-	} else {
-		remote_session$run(do.call, list(what=function_name, args=arguments))
-	}
+	remote_session$run(do.call, list(what=function_name, args=arguments))
 }
 
-message("Loading global_for_callr.R into remote session...")
 remote_session$run(function(){source("global_for_callr.R")}, list())
-message("...done.")
 
 
 is.smiles <- function(x, verbose = TRUE) {

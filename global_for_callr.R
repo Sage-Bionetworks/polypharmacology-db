@@ -1,3 +1,8 @@
+#
+# This file contains the parts of `global.R` which use `rcdk` and which will be
+# invoked from a separate process using `callr`.
+#
+
 options(java.parameters = "-Xmx8g" ) 
 options(shiny.trace = TRUE)
 library(shiny)
@@ -46,7 +51,6 @@ is.smiles <- function(x, verbose = TRUE) { ##corrected version from webchem
          call. = FALSE)
   }
   if (!is.character(x)) {
-  	message(sprintf("In 'is.smiles'. %s is not a character string", toJSON(x)))
   	return(FALSE)
   }
   if (length(x) > 1) {
@@ -65,18 +69,13 @@ is.smiles <- function(x, verbose = TRUE) { ##corrected version from webchem
 
 parseInputFingerprint <- function(input, fp.type) {
   if(is.smiles(input)==TRUE){
-    message(sprintf("In 'parseInputFingerprint'. About to call parse.smiles() with %s", toJSON(input)))
     input.mol <- parse_smiles(input)
     if (is.null(input.mol[[1]])) {
     	stop("rcdk::parse.smiles failed to return a result.")
     }
-    message("In 'parseInputFingerprint'. About to call 'set.atom.types'")
     lapply(input.mol, set.atom.types)
-    message("In 'parseInputFingerprint'. About to call 'do.aromaticity'")
     lapply(input.mol, do.aromaticity)
-    message("In 'parseInputFingerprint'. About to call 'do.isotopes'")
     lapply(input.mol, do.isotopes)
-    message(sprintf("In 'parseInputFingerprint'. About to call 'get.fingerprint'. type: %s", toJSON(fp.type)))
     fp.inp <- lapply(input.mol, get.fingerprint, type = fp.type)
   }else{
     print('Please input a valid SMILES string.')

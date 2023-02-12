@@ -1,3 +1,8 @@
+#
+# This file factors out the objects from `helpers.R` which
+# are used in `global_for_callr.R`.
+#
+
 db_structures <- readRDS("Data/compound_structures_v4.rds")
 
 db.names <- readRDS("Data/distinct_compound_synonyms_v4.rds")
