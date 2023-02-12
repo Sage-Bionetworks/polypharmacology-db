@@ -85,16 +85,20 @@ increaseBackoff<-function(currentBackOffSeconds) {
 
 #-----------------------------------------------------------------------------------------
 
-message("Creating remote session....")
 remote_session<-callr::r_session$new(wait=TRUE)
-message("...done.")
 
 call_remote_function<-function(function_name, arguments=list()) {
-	fcn<-function() {
+	if (FALSE) { # retries and debug statements
+		fcn<-function() {
+			remote_session$run(do.call, list(what=function_name, args=arguments))
+		}
+		message(sprintf("About to call %s.  Remote session has state %s.", function_name, remote_session$get_state()))
+		result<-withRetries(fcn, function_name)
+		message(sprintf("Done calling %s.  Remote session has state %s.", function_name, remote_session$get_state()))
+		result
+	} else {
 		remote_session$run(do.call, list(what=function_name, args=arguments))
 	}
-	withRetries(fcn, function_name)
-	# remote_session$run(do.call, list(what=function_name, args=arguments))
 }
 
 message("Loading global_for_callr.R into remote session...")
