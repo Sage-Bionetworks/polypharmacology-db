@@ -7,7 +7,6 @@ on:
   push:
     branches:
       - develop
-      - IT-828
       - release*
 
 jobs:
@@ -26,13 +25,11 @@ jobs:
         
       - name: Install R packages
         run: |
-          # The binary package distributions from R Studio dramatically speed up installation time
-          options(repos = c(REPO_NAME = "https://packagemanager.rstudio.com/all/__linux__/focal/latest", 
-             getOption("repos")))
+          options(repos = 'http://cran.fhcrc.org')
           # This list of packages came from global.R.  Also we need rsconnect to deploy the app'
           install.packages(c("DT", "png", "rJava", "rcdk", "fingerprint", "enrichR", 
           "webchem", "plyr", "dplyr", "tidyr", "purrr", "tibble", "plotly", "shinyBS", "shinythemes", 
-          "visNetwork", "igraph", "shinyjs", "shinycssloaders", "XML", "rsconnect", "renv", "conflicted"))
+          "visNetwork", "igraph", "shinyjs", "shinycssloaders", "XML", "rsconnect", "renv", "conflicted",'rjson', 'callr'))
           # running this step as 'sudo' is necessary to be able to install packages in default library
         shell: sudo Rscript {0}
 
@@ -48,9 +45,8 @@ jobs:
           rsConnectToken <- "${{ secrets.RSCONNECT_TOKEN }}"
           rsConnectSecret <- "${{ secrets.RSCONNECT_SECRET }}" 
           rsconnect::setAccountInfo(rsConnectUser, rsConnectToken, rsConnectSecret)
-          # omit archive/ folder from the collection to be deployed
-          # (Tried using .rcsignore file but it did not work as documented.)
-          appFiles<-dir()[which(dir()!="archive")]
+          # omit renv/ folder from the collection to be deployed
+          appFiles<-dir(all.files=T,no..=T)[which(dir(all.files=T,no..=T)!="renv")]
           rsconnect::deployApp(appName = appName, appFiles=appFiles)
           # important NOT to run this step as sudo, otherwise env var's will be missing
         shell: Rscript {0}

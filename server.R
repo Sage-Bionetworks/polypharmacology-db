@@ -20,7 +20,7 @@ shinyServer(function(input, output, session) {
   simmols <- reactive({
     sims<-similarity()
     getSimMols(sims, input$sim.thres) %>% as.data.frame()
-    })
+  })
   
   output$sims <- renderUI({
     mols <- simmols()
@@ -57,7 +57,7 @@ shinyServer(function(input, output, session) {
   updateSelectizeInput(session, "drugnames", choices = db.names$synonym, server = TRUE) 
 
   observeEvent(input$ppdbsearchbutton, {
-    pp.smiles<-as.character(convertDrugToSmiles(input$drugnames)[1,1])
+    pp.smiles<-convertDrugToSmiles(input$drugnames)
     updateTextInput(session, "smiles", value = pp.smiles)
   })
   
@@ -83,8 +83,7 @@ shinyServer(function(input, output, session) {
       need(is.smiles(input$smiles)==TRUE, "Please enter a valid SMILES.")
     )
     outfile <- tempfile(fileext='.png')
-    img<-getMolImage(input$smiles)
-    writePNG(img, target = outfile, dpi = 600)
+    getMolImage(input$smiles, outfile)
     list(src = outfile,
          alt = paste("Input molecule structure:", input$smiles))
   }, deleteFile = T)

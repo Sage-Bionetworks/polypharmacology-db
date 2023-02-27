@@ -12,3 +12,14 @@ Potential use cases include:
 - facilitating polypharmacologic drug discovery
 
 To learn more about this project and access the underlying database, please go to www.synapse.org/dtexplorer. 
+
+
+## Deployment to ShinyApps
+
+- Enable workflows in the GitHub repository
+- Under [secrets](https://github.com/Sage-Bionetworks/polypharmacology-db/settings/secrets/actions) click 'New repository secret'
+- Enter secrets for `RSCONNECT_USER`, `RSCONNECT_TOKEN`, and `RSCONNECT_SECRET`, the values for which are saved in Sage's LastPass.
+- Trigger the GitHub action.
+- Check out the app here: https://sagebio.shinyapps.io/polypharmacology-db-staging.
+- After verifying correctness, create a Git branch named release*, e.g., `release-1.0`.
+- The application will become available at https://sagebio.shinyapps.io/polypharmacology-db
